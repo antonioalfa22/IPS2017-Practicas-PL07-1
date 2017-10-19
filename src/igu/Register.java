@@ -147,7 +147,7 @@ public class Register extends JDialog {
 	}
 	private JLabel getLblNombreYApellidos() {
 		if (lblNombreYApellidos == null) {
-			lblNombreYApellidos = new JLabel("Nombre y Apellidos");
+			lblNombreYApellidos = new JLabel("Nombre y Apellidos(*)");
 			lblNombreYApellidos.setForeground(Color.BLACK);
 			lblNombreYApellidos.setFont(new Font("Source Sans Pro Semibold", Font.PLAIN, 12));
 			lblNombreYApellidos.setBounds(30, 101, 125, 24);
@@ -166,7 +166,7 @@ public class Register extends JDialog {
 	}
 	private JLabel getLblFechaNacimiento() {
 		if (lblFechaNacimiento == null) {
-			lblFechaNacimiento = new JLabel("Fecha Nacimiento");
+			lblFechaNacimiento = new JLabel("Fecha Nacimiento(*)");
 			lblFechaNacimiento.setForeground(Color.BLACK);
 			lblFechaNacimiento.setFont(new Font("Source Sans Pro Semibold", Font.PLAIN, 12));
 			lblFechaNacimiento.setBounds(30, 147, 125, 24);
@@ -219,6 +219,7 @@ public class Register extends JDialog {
 			cbYear.setBounds(383, 146, 85, 24);
 			int[] years = new int[150];
 			for(int i=0; i<150 ;i++) { years[i] = 2017-i;cbYear.addItem(years[i]);}
+			cbYear.setSelectedItem(1999);
 			cbYear.addItemListener(new ItemListener() {
 				public void itemStateChanged(ItemEvent arg0) {
 					year = (Integer)cbYear.getSelectedItem();
@@ -275,7 +276,7 @@ public class Register extends JDialog {
 	}
 	private JLabel getLbTelefono() {
 		if (lbTelefono == null) {
-			lbTelefono = new JLabel("Telefono");
+			lbTelefono = new JLabel("Telefono(*)");
 			lbTelefono.setForeground(Color.BLACK);
 			lbTelefono.setFont(new Font("Source Sans Pro Semibold", Font.PLAIN, 12));
 			lbTelefono.setBounds(30, 217, 125, 24);
@@ -332,7 +333,7 @@ public class Register extends JDialog {
 	}
 	private JLabel getLbCorreo() {
 		if (lbCorreo == null) {
-			lbCorreo = new JLabel("Correo");
+			lbCorreo = new JLabel("Correo(*)");
 			lbCorreo.setForeground(Color.BLACK);
 			lbCorreo.setFont(new Font("Source Sans Pro Semibold", Font.PLAIN, 12));
 			lbCorreo.setBounds(30, 322, 125, 24);
@@ -433,7 +434,7 @@ public class Register extends JDialog {
 	}
 	private JLabel getLbGenero() {
 		if (lbGenero == null) {
-			lbGenero = new JLabel("Genero");
+			lbGenero = new JLabel("Genero(*)");
 			lbGenero.setForeground(Color.BLACK);
 			lbGenero.setFont(new Font("Source Sans Pro Semibold", Font.PLAIN, 12));
 			lbGenero.setBounds(30, 387, 125, 24);
@@ -450,7 +451,7 @@ public class Register extends JDialog {
 	}
 	private JLabel getLbDni() {
 		if (lbDni == null) {
-			lbDni = new JLabel("DNI");
+			lbDni = new JLabel("DNI(*)");
 			lbDni.setForeground(Color.BLACK);
 			lbDni.setFont(new Font("Source Sans Pro Semibold", Font.PLAIN, 12));
 			lbDni.setBounds(30, 73, 125, 24);
@@ -492,7 +493,11 @@ public class Register extends JDialog {
 	
 	private boolean comprobarDatos() {
 		addCamposToVariables();
-		
+		if(2017-year < c.getEdad_minima()) {
+			JOptionPane.showMessageDialog(null, "No tienes la edad suficiente para participar en la carrera",
+					"Edad menor que la mínima especificada", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
 		try {
 			tel = Integer.parseInt(txtTelefono.getText());
 		}catch (Exception e) {
@@ -500,10 +505,12 @@ public class Register extends JDialog {
 					"Telefono incorrecto", JOptionPane.ERROR_MESSAGE);
 			return false;
 		}
-		
-		if(dni.length()>=1 && nombre.length()>=1 && fecha.length()>=1 && dir.length()>=1 && tel > 0 && loc.length()>=1 &&
-				cp.length()>=1 && (genero==1 || genero==0)
-				&& correo != null && contra != null) {
+		if(dir.length()<=1) dir = "";
+		if(loc.length()<=1) loc = "";
+		if(cp.length()<=1) cp = "";
+		if(contra == null) contra ="";
+		if(dni.length()>=1 && nombre.length()>=1 && fecha.length()>=1  && tel > 0 && (genero==1 || genero==0)
+				&& correo != null ) {
 			
 			for (Usuario p : gestor.getUsuarios()) {
 				if(p.getDni().equals(dni)) {
@@ -544,15 +551,6 @@ public class Register extends JDialog {
 						"Usuario ya preinscrito", JOptionPane.ERROR_MESSAGE);
 				return false;
 			}
-			
-			try {
-				Integer.parseInt(cp);
-			} catch (Exception e) {
-				JOptionPane.showMessageDialog(null, "El Codigo Postal tiene que ser numerico",
-						"Codigo postal erroneo", JOptionPane.ERROR_MESSAGE);
-				return false;
-			}
-			
 			List<Preinscrito> preinscritos = VentanaPrincipal.gestorCarreras.getTodosLosPreinscritos(c);
 			List<Corredor> corredores = VentanaPrincipal.gestorCarreras.getTodosLosCorredores(c);
 			for (Preinscrito preinscrito : preinscritos) {

@@ -105,7 +105,7 @@ public class VentanaUsuario extends JDialog {
 	public VentanaUsuario(GestorApp g) {
 		this.gestor = g;
 		setTitle("Ventana Usuario");
-		setBounds(100, 100, 1017, 340);
+		setBounds(100, 100, 1017, 526);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));

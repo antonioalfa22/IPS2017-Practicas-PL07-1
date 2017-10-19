@@ -154,7 +154,7 @@ public class CarreraDescripcion extends JDialog {
 			contentPanel.add(label);
 		}
 		{
-			JLabel label = new JLabel("Precio: "+c.getPrecio()+" $");
+			JLabel label = new JLabel("Precio: "+c.getPrecio()+" €");
 			label.setForeground(Color.DARK_GRAY);
 			label.setFont(new Font("Source Sans Pro Semibold", Font.PLAIN, 12));
 			label.setBounds(244, 259, 166, 27);

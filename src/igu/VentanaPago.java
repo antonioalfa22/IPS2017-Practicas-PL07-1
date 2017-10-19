@@ -125,7 +125,7 @@ public class VentanaPago extends JDialog {
 	private void mostrarInfoPago() {
 		int option = JOptionPane.showConfirmDialog(this,
 				"Número de cuenta: " + carrera.getNum_cuenta() + "\nCantidad a pagar: " + carrera.getPrecio()
-						+ "\n¿Está conforme con el pago?",
+						+" €\n¿Está conforme con el pago?",
 				"Información de pago", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 		if (option == JOptionPane.YES_OPTION) {
 			try {

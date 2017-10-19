@@ -204,7 +204,7 @@ public class VentanaPrincipal extends JFrame {
 					dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 					dialog.setVisible(true);
 					dialog.setLocationRelativeTo(null);
-					dialog.setResizable(false);
+					dialog.setResizable(true);
 				}
 			});
 			mntmVerCarreras.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_MASK | InputEvent.ALT_MASK));
@@ -384,7 +384,7 @@ public class VentanaPrincipal extends JFrame {
 				gbc_lbTipoKm.gridy = ++fila;
 				if(numCarreras < carreras.size())
 					panel.add(getLbTipoKm(null,carreras.get(numCarreras).getTipo(),
-							carreras.get(numCarreras).getDistancia()), gbc_lbTipoKm);
+							carreras.get(numCarreras).getDistancia(),carreras.get(numCarreras).getLugar()), gbc_lbTipoKm);
 				GridBagConstraints gbc_lbPrecio = new GridBagConstraints();
 				gbc_lbPrecio.insets = new Insets(0, 0, 5, 5);
 				gbc_lbPrecio.gridx = 6;
@@ -483,9 +483,9 @@ public class VentanaPrincipal extends JFrame {
 		return lbCarrera;
 	}
 	
-	private JLabel getLbTipoKm(JLabel lbtipo,String tipo,int km) {
+	private JLabel getLbTipoKm(JLabel lbtipo,String tipo,int km,String localidad) {
 		if (lbtipo == null) {
-			lbtipo = new JLabel("Tipo: "+tipo+" - "+km +"km");
+			lbtipo = new JLabel("Tipo: "+tipo+" - "+km +"km"+" - Lugar: "+localidad);
 			lbtipo.setForeground(new Color(47, 79, 79));
 			lbtipo.setFont(new Font("Segoe WP Semibold", Font.PLAIN, 12));
 		}
@@ -536,7 +536,7 @@ public class VentanaPrincipal extends JFrame {
 	}
 	private JLabel getLbPrecio(JLabel lbPrecio,int precio) {
 		if (lbPrecio == null) {
-			lbPrecio = new JLabel(precio+ " $");
+			lbPrecio = new JLabel(precio+ " €");
 			lbPrecio.setForeground(Color.DARK_GRAY);
 			lbPrecio.setFont(new Font("Segoe UI Semibold", Font.BOLD | Font.ITALIC, 16));
 		}
