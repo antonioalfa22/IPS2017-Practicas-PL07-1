@@ -5,6 +5,7 @@ package logic;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import entities.Carrera;
@@ -15,7 +16,7 @@ import gestorBBDD.GestorDB;
 
 /**
  * Clase que hace de interfaz para hacer modificaciones en la base de datos
- * @author ntonio Paya Gonzalez
+ * @author Antonio Paya Gonzalez
  *
  */
 public class GestorApp {
@@ -30,7 +31,7 @@ public class GestorApp {
 	public GestorApp() {
 		try {
 			carreras = GestorDB.sacarTodasLasCarreras();
-			
+			Collections.sort(carreras);
 		} catch (SQLException e) {
 			System.out.println("Error al sacar las carreras de la base de datos");
 			e.printStackTrace();

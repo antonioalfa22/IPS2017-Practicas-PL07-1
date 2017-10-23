@@ -2,18 +2,14 @@ package igu;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-
 import com.jtattoo.plaf.aluminium.AluminiumLookAndFeel;
 import com.toedter.calendar.JCalendar;
-
 import entities.Carrera;
 import logic.Date;
 import logic.GestorApp;
-
 import java.awt.Font;
 import java.awt.Color;
 import javax.swing.JLabel;
@@ -38,13 +34,14 @@ import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import javax.swing.JLayeredPane;
-
 import java.awt.CardLayout;
 import java.awt.SystemColor;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import java.beans.PropertyChangeListener;
 import java.sql.SQLException;
+import javax.swing.JTextField;
+import javax.swing.JCheckBox;
 
 
 /**
@@ -75,6 +72,12 @@ public class VentanaPrincipal extends JFrame {
 	private JMenu mnUsuario;
 	private JMenuItem mntmVerCarreras;
 	private JMenuItem mntmClasificaciones;
+	private JLabel lbNombreCarreraFiltro;
+	private JTextField txtNombreCarrera;
+	private JLabel lbTipoCarreraFiltro;
+	private JCheckBox chckbxUrbana;
+	private JCheckBox chcbxMontain;
+	private String txtmemoria;
 
 
 	/**
@@ -307,7 +310,12 @@ public class VentanaPrincipal extends JFrame {
 					actualizarCarreras();
 				}
 			});
+			panelFiltros.add(getLbNombreCarreraFiltro());
+			panelFiltros.add(getLbTipoCarreraFiltro());
 			panelFiltros.add(calendar);
+			panelFiltros.add(getTxtNombreCarrera());
+			panelFiltros.add(getChckbxUrbana());
+			panelFiltros.add(getChcbxMontain());
 		}
 		return panelFiltros;
 	}
@@ -317,9 +325,84 @@ public class VentanaPrincipal extends JFrame {
 			lbFiltros = new JLabel("FILTROS:");
 			lbFiltros.setForeground(UIManager.getColor("Button.light"));
 			lbFiltros.setFont(new Font("Showcard Gothic", Font.BOLD | Font.ITALIC, 26));
-			lbFiltros.setBounds(23, 22, 140, 41);
+			lbFiltros.setBounds(10, 11, 140, 41);
 		}
 		return lbFiltros;
+	}
+	
+	private JLabel getLbNombreCarreraFiltro() {
+		if (lbNombreCarreraFiltro == null) {
+			lbNombreCarreraFiltro = new JLabel("Nombre Carrera:");
+			lbNombreCarreraFiltro.setForeground(SystemColor.controlHighlight);
+			lbNombreCarreraFiltro.setFont(new Font("Source Sans Pro Semibold", Font.PLAIN, 12));
+			lbNombreCarreraFiltro.setBounds(10, 57, 110, 19);
+		}
+		return lbNombreCarreraFiltro;
+	}
+	private JTextField getTxtNombreCarrera() {
+		if (txtNombreCarrera == null) {
+			txtNombreCarrera = new JTextField();
+			txtmemoria = "";
+			txtNombreCarrera.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					if(!txtmemoria.equals(txtNombreCarrera.getText())) {
+						txtmemoria = txtNombreCarrera.getText();
+						gestorCarreras = new GestorApp();
+						carreras = gestorCarreras.carreras;
+						ArrayList<Carrera> aeliminar = new ArrayList<Carrera>();
+						for (Carrera carrera : carreras) {
+							if(!carrera.getNombre().toLowerCase().contains(txtmemoria.toLowerCase()))aeliminar.add(carrera);
+						}
+						for (Carrera carrera : aeliminar) {
+							carreras.remove(carrera);
+						}
+						actualizarCarreras();
+					}
+				}
+			});
+			txtNombreCarrera.setFont(new Font("Source Sans Pro Semibold", Font.PLAIN, 11));
+			txtNombreCarrera.setBounds(122, 51, 239, 20);
+			txtNombreCarrera.setColumns(10);
+		}
+		return txtNombreCarrera;
+	}
+	private JLabel getLbTipoCarreraFiltro() {
+		if (lbTipoCarreraFiltro == null) {
+			lbTipoCarreraFiltro = new JLabel("Tipo Carrera:");
+			lbTipoCarreraFiltro.setForeground(SystemColor.controlHighlight);
+			lbTipoCarreraFiltro.setFont(new Font("Source Sans Pro Semibold", Font.PLAIN, 12));
+			lbTipoCarreraFiltro.setBounds(10, 88, 110, 19);
+		}
+		return lbTipoCarreraFiltro;
+	}
+	private JCheckBox getChckbxUrbana() {
+		if (chckbxUrbana == null) {
+			chckbxUrbana = new JCheckBox("Urbana");
+			chckbxUrbana.setForeground(Color.DARK_GRAY);
+			chckbxUrbana.setFont(new Font("Source Sans Pro Semibold", Font.BOLD, 12));
+			chckbxUrbana.setBounds(10, 116, 153, 23);
+			chckbxUrbana.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					comprobarCHC();		
+				}
+			});
+		}
+		return chckbxUrbana;
+	}
+
+	private JCheckBox getChcbxMontain() {
+		if (chcbxMontain == null) {
+			chcbxMontain = new JCheckBox("Monta\u00F1a");
+			chcbxMontain.setForeground(Color.DARK_GRAY);
+			chcbxMontain.setFont(new Font("Source Sans Pro Semibold", Font.BOLD, 12));
+			chcbxMontain.setBounds(196, 115, 165, 24);
+			chcbxMontain.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					comprobarCHC();			
+				}
+			});
+		}
+		return chcbxMontain;
 	}
 	
 	//==========================================================================================
@@ -563,4 +646,24 @@ public class VentanaPrincipal extends JFrame {
 		panelCarreras.updateUI();
 	}
 	
+	protected void comprobarCHC() {
+		gestorCarreras = new GestorApp();
+		carreras = new ArrayList<Carrera>();
+		if(chcbxMontain.isSelected() && chckbxUrbana.isSelected()) {
+			carreras = gestorCarreras.carreras;
+		}else if(chcbxMontain.isSelected() && !chckbxUrbana.isSelected()) {
+			for (Carrera carrera : gestorCarreras.carreras) {
+				if(carrera.getTipo().equals("Montaña"))carreras.add(carrera);
+			}
+		}else if(!chcbxMontain.isSelected() && chckbxUrbana.isSelected()) {
+			for (Carrera carrera : gestorCarreras.carreras) {
+				if(carrera.getTipo().equals("Urbana"))carreras.add(carrera);
+			}
+		}
+		else {
+			carreras = gestorCarreras.carreras;
+		}
+		actualizarCarreras();		
+	}
+
 }

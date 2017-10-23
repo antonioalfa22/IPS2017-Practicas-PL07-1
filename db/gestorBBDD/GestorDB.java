@@ -103,7 +103,7 @@ public class GestorDB {
 			String cp = rs.getString("Codigo_postal");
 			String correo = rs.getString("Correo");
 			String contra = rs.getString("Contraseña");
-			int genero = rs.getInt("Genero");
+			String genero = rs.getString("Genero");
 			Usuario u = new Usuario(dni,nombre,fecha_nacimiento,dir,tel,localidad,cp,correo,contra,genero);
 			usuarios.add(u);
 		}
@@ -311,7 +311,7 @@ public class GestorDB {
 		addUsuario.setString(7, u.getCodigo_postal());
 		addUsuario.setString(8, u.getCorreo());
 		addUsuario.setString(9, u.getContra());
-		addUsuario.setString(10, u.getGenero() == 1? "Masculino":"Femenino");
+		addUsuario.setString(10, u.getGenero());
 		addUsuario.executeUpdate();
 		addUsuario.close();
 		cerrar();
@@ -344,7 +344,7 @@ public class GestorDB {
 		addPreinscrito.setString(1, u.getDni());
 		addPreinscrito.setInt(2, c.getId());
 		addPreinscrito.setString(3, u.getCategoria());
-		addPreinscrito.setString(4, u.getGenero() == 1? "Masculino":"Femenino");
+		addPreinscrito.setString(4, u.getGenero());
 		addPreinscrito.setString(5, u.getNombre());
 		addPreinscrito.setString(6, fecha);
 		addPreinscrito.executeUpdate();

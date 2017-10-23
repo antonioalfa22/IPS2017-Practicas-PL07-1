@@ -9,6 +9,8 @@ import javax.swing.border.EmptyBorder;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 
 import javax.swing.JLabel;
@@ -32,10 +34,11 @@ import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.JTextField;
 import javax.swing.JList;
+import javax.swing.JScrollPane;
 
 /**
  * 
- * @author UO252406
+ * @author Pablo Menendez y Antonio Paya
  *
  */
 public class VentanaUsuario extends JDialog {
@@ -97,7 +100,10 @@ public class VentanaUsuario extends JDialog {
 	private JList<Usuario> listaUsuarios;
 	private DefaultListModel<Usuario> modeloLista;
 	private GestorApp gestor;
-	
+	private final static int DNI = 1,NOMBRE = 2,CORREO = 3;
+	private int rbSeleccionado;
+	private JScrollPane scrollPane;
+	private String txtmemoria;
 	
 	/**
 	 * Create the frame.
@@ -546,9 +552,9 @@ public class VentanaUsuario extends JDialog {
 			panelBusqueda = new JPanel();
 			GridBagLayout gbl_panelBusqueda = new GridBagLayout();
 			gbl_panelBusqueda.columnWidths = new int[]{137, 86, 114, 136, 0, 0};
-			gbl_panelBusqueda.rowHeights = new int[]{24, 17, 31, 0, 0};
-			gbl_panelBusqueda.columnWeights = new double[]{0.0, 1.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
-			gbl_panelBusqueda.rowWeights = new double[]{0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+			gbl_panelBusqueda.rowHeights = new int[]{24, 17, 31, 69, 0};
+			gbl_panelBusqueda.columnWeights = new double[]{1.0, 1.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+			gbl_panelBusqueda.rowWeights = new double[]{0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
 			panelBusqueda.setLayout(gbl_panelBusqueda);
 			GridBagConstraints gbc_lblBuscarPor = new GridBagConstraints();
 			gbc_lblBuscarPor.insets = new Insets(0, 0, 5, 5);
@@ -577,13 +583,13 @@ public class VentanaUsuario extends JDialog {
 			gbc_txtDatos.gridx = 1;
 			gbc_txtDatos.gridy = 2;
 			panelBusqueda.add(getTxtDatos(), gbc_txtDatos);
-			GridBagConstraints gbc_listaUsuarios = new GridBagConstraints();
-			gbc_listaUsuarios.gridwidth = 3;
-			gbc_listaUsuarios.insets = new Insets(0, 0, 0, 5);
-			gbc_listaUsuarios.fill = GridBagConstraints.BOTH;
-			gbc_listaUsuarios.gridx = 1;
-			gbc_listaUsuarios.gridy = 3;
-			panelBusqueda.add(getListaUsuarios(), gbc_listaUsuarios);
+			GridBagConstraints gbc_scrollPane = new GridBagConstraints();
+			gbc_scrollPane.gridwidth = 3;
+			gbc_scrollPane.insets = new Insets(0, 0, 0, 5);
+			gbc_scrollPane.fill = GridBagConstraints.BOTH;
+			gbc_scrollPane.gridx = 1;
+			gbc_scrollPane.gridy = 3;
+			panelBusqueda.add(getScrollPane(), gbc_scrollPane);
 		}
 		return panelBusqueda;
 	}
@@ -592,6 +598,14 @@ public class VentanaUsuario extends JDialog {
 			rbDNI = new JRadioButton("DNI");
 			buttonGroup.add(rbDNI);
 			rbDNI.setFont(new Font("Tahoma", Font.ITALIC, 13));
+			rbDNI.addItemListener(new ItemListener() {
+				public void itemStateChanged(ItemEvent e) {
+					if(e.getStateChange()==ItemEvent.SELECTED){
+						rbSeleccionado = DNI;
+						txtDatos.setText("");
+					}
+				}
+			});
 		}
 		return rbDNI;
 	}
@@ -600,6 +614,14 @@ public class VentanaUsuario extends JDialog {
 			rbNombre = new JRadioButton("Nombre");
 			buttonGroup.add(rbNombre);
 			rbNombre.setFont(new Font("Tahoma", Font.ITALIC, 13));
+			rbNombre.addItemListener(new ItemListener() {
+				public void itemStateChanged(ItemEvent e) {
+					if(e.getStateChange()==ItemEvent.SELECTED){
+						rbSeleccionado = NOMBRE;
+						txtDatos.setText("");
+					}
+				}
+			});
 		}
 		return rbNombre;
 	}
@@ -608,6 +630,14 @@ public class VentanaUsuario extends JDialog {
 			rdbtnCorreo = new JRadioButton("Correo");
 			buttonGroup.add(rdbtnCorreo);
 			rdbtnCorreo.setFont(new Font("Tahoma", Font.ITALIC, 13));
+			rdbtnCorreo.addItemListener(new ItemListener() {
+				public void itemStateChanged(ItemEvent e) {
+					if(e.getStateChange()==ItemEvent.SELECTED){
+						rbSeleccionado = CORREO;
+						txtDatos.setText("");
+					}
+				}
+			});
 		}
 		return rdbtnCorreo;
 	}
@@ -621,7 +651,17 @@ public class VentanaUsuario extends JDialog {
 	private JTextField getTxtDatos() {
 		if (txtDatos == null) {
 			txtDatos = new JTextField();
+			txtDatos.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					if(!txtmemoria.toLowerCase().equals(txtDatos.getText().toLowerCase())) {
+						txtmemoria = txtDatos.getText();
+						actualizarLista();
+					}
+				}
+			});
 			txtDatos.setColumns(10);
+			txtmemoria = "";
+			
 		}
 		return txtDatos;
 	}
@@ -651,5 +691,28 @@ public class VentanaUsuario extends JDialog {
 			   modeloLista.addElement(usuario);
 		   }
 		   return modeloLista;
+	}
+	private JScrollPane getScrollPane() {
+		if (scrollPane == null) {
+			scrollPane = new JScrollPane();
+			scrollPane.setViewportView(getListaUsuarios());
+		}
+		return scrollPane;
+	}
+	
+	private void actualizarLista() {
+		modeloLista = new DefaultListModel<>();
+	    ArrayList<Usuario> usuarios = gestor.getUsuarios();
+	    for (Usuario usuario : usuarios) {
+	    	if(rbSeleccionado == DNI) {
+	    		if(usuario.getDni().contains(txtmemoria))modeloLista.addElement(usuario);
+	    	}else if(rbSeleccionado == NOMBRE) {
+	    		if(usuario.getNombre().contains(txtmemoria))modeloLista.addElement(usuario);
+	    	}else if(rbSeleccionado == CORREO) {
+	    		if(usuario.getCorreo().contains(txtmemoria))modeloLista.addElement(usuario);
+	    	}
+	    	
+	    }
+	    listaUsuarios.setModel(modeloLista);
 	}
 }

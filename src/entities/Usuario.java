@@ -16,15 +16,12 @@ public class Usuario{
 
 	// Atributos del atleta
 	private String dni,nombre,fecha_nacimiento,direccion,localidad,codigo_postal,correo,contra;
-	private int genero,telefono;
-
-	// Constantes para el género del atleta
-	public final static int MASCULINO = 1;
-	public final static int FEMENINO = 0;
+	private String genero;
+	private int telefono;
 
 	
 	public Usuario(String dni,String nombre,String fecha,String dir,int telefono,String localidad,String cp,
-			String correo,String contra,int genero) {
+			String correo,String contra,String genero) {
 		setDni(dni);
 		setNombre(nombre);
 		setFecha_nacimiento(fecha);
@@ -34,6 +31,19 @@ public class Usuario{
 		setTelefono(telefono);
 		setCorreo(correo);
 		setContra(contra);
+		setGenero(genero);
+	}
+	
+	public Usuario(String dni,String nombre,String fecha,int telefono,String correo,String genero) {
+		setDni(dni);
+		setNombre(nombre);
+		setFecha_nacimiento(fecha);
+		setDireccion("");
+		setLocalidad("");
+		setCodigo_postal("");
+		setTelefono(telefono);
+		setCorreo(correo);
+		setContra("");
 		setGenero(genero);
 	}
 	
@@ -185,7 +195,7 @@ public class Usuario{
 	/**
 	 * @return the genero
 	 */
-	public int getGenero() {
+	public String getGenero() {
 		return genero;
 	}
 
@@ -194,7 +204,7 @@ public class Usuario{
 	/**
 	 * @param genero the genero to set
 	 */
-	public void setGenero(int genero) {
+	public void setGenero(String genero) {
 		this.genero = genero;
 	}
 
@@ -253,11 +263,7 @@ public class Usuario{
 			categoria = "Veterano F";
 		}
 		// DIVISIÓN POR GÉNERO
-		if (genero == MASCULINO) {
-			categoria += " - Masculino";
-		} else {
-			categoria += " - Femenino";
-		}
+			categoria += " - "+genero;
 		return categoria;
 	}
 
