@@ -33,6 +33,8 @@ import java.util.List;
 import java.awt.event.ItemEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 
 /**
  * Ventana que realiza el registro de un usuario en una carrera
@@ -83,16 +85,14 @@ public class Register extends JDialog {
 	private String contra;
 	private int genero;
 	private GestorApp gestor;
-	private boolean dniUsado;
 
 	/**
 	 * Create the dialog.
 	 */
 	public Register(Carrera c,GestorApp g) {
-		dniUsado = false;
 		this.c = c;
 		this.gestor = g;
-		dia = 1;mes = 1; year = 2017;
+		dia = 1;mes = 1; year = 1999;
 		getContentPane().setBackground(Color.LIGHT_GRAY);
 		setBounds(100, 100, 509, 511);
 		getContentPane().setLayout(null);
@@ -126,6 +126,11 @@ public class Register extends JDialog {
 		getContentPane().add(getTxtDni());
 
 	}
+	
+	//==========================================================================================
+	//										CAMPOS: 
+	//==========================================================================================
+	
 	private JPanel getPanelTitulo() {
 		if (panelTitulo == null) {
 			panelTitulo = new JPanel();
@@ -377,40 +382,7 @@ public class Register extends JDialog {
 			btRegistrar.setBounds(280, 430, 93, 31);
 			btRegistrar.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					if(comprobarDatos())
-						if(!dniUsado && meterDatos()) {
-							int seleccion = JOptionPane.showOptionDialog(null,"Registrado con Exito", "Registrado con Exito",
-									   JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE,null,
-									   new Object[] { "Obtener justificante", "Cerrar"},
-									   "opcion 1");
-
-									if (seleccion == 0) {
-										try {
-											generarJustificante();
-										} catch (IOException e) {
-											System.out.println("Error al generar el justificante");
-											e.printStackTrace();
-										}
-									}
-							dispose();
-						}
-						else if(dniUsado) {
-							int seleccion = JOptionPane.showOptionDialog(null,"Registrado con Exito", "Registrado con Exito",
-									   JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE,null,
-									   new Object[] { "Obtener justificante", "Cerrar"},
-									   "opcion 1");
-
-									if (seleccion == 0) {
-										try {
-											generarJustificante();
-										} catch (IOException e) {
-											System.out.println("Error al generar el justificante");
-											e.printStackTrace();
-										}
-									}
-							dispose();
-						}
-					
+					registrar();
 				}
 			});
 		}
@@ -461,6 +433,13 @@ public class Register extends JDialog {
 	private JTextField getTxtDni() {
 		if (txtDni == null) {
 			txtDni = new JTextField();
+			txtDni.addFocusListener(new FocusAdapter() {
+				@Override
+				public void focusLost(FocusEvent e) {
+					dni = txtDni.getText();
+					comprobarUsuarioRegistrado();
+				}
+			});
 			txtDni.setFont(new Font("Source Sans Pro Semibold", Font.PLAIN, 12));
 			txtDni.setColumns(10);
 			txtDni.setBackground(SystemColor.controlHighlight);
@@ -474,6 +453,10 @@ public class Register extends JDialog {
 	//==========================================================================================
 	
 
+	/**
+	 * Mete los datos en la base de datos
+	 * @return true si los mete correctamente, false en caso contrario
+	 */
 	private boolean meterDatos() {
 		Usuario u = new Usuario(dni,nombre,fecha,dir,tel,loc,cp,correo,contra,genero);
 		Calendar f = new GregorianCalendar();
@@ -491,13 +474,20 @@ public class Register extends JDialog {
 		return true;
 	}
 	
+	/**
+	 * Metodo que comprueba cada uno de los campos
+	 * @return true si esta todo correcto
+	 */
 	private boolean comprobarDatos() {
 		addCamposToVariables();
+		
+		//COMPRUEBA QUE TENGA MAS EDAD QUE LA MINIMA
 		if(2017-year < c.getEdad_minima()) {
 			JOptionPane.showMessageDialog(null, "No tienes la edad suficiente para participar en la carrera",
 					"Edad menor que la mínima especificada", JOptionPane.ERROR_MESSAGE);
 			return false;
 		}
+		//COMPRUEBA QUE EL TELEFONO SEAN NUMEROS
 		try {
 			tel = Integer.parseInt(txtTelefono.getText());
 		}catch (Exception e) {
@@ -505,52 +495,16 @@ public class Register extends JDialog {
 					"Telefono incorrecto", JOptionPane.ERROR_MESSAGE);
 			return false;
 		}
+		//SI HAY ALGUN CAMPO NO OBLIGATORIO VACIO, LO INICIALIZA
 		if(dir.length()<=1) dir = "";
 		if(loc.length()<=1) loc = "";
 		if(cp.length()<=1) cp = "";
 		if(contra == null) contra ="";
+		
+		//COMPRUEBA QUE LOS CAMPOS OBLIGATORIOS ESTAN RELLENADOS
 		if(dni.length()>=1 && nombre.length()>=1 && fecha.length()>=1  && tel > 0 && (genero==1 || genero==0)
 				&& correo != null ) {
-			
-			for (Usuario p : gestor.getUsuarios()) {
-				if(p.getDni().equals(dni)) {
-					int seleccion = JOptionPane.showOptionDialog(null, "Ese DNI ya está registrado en la aplicación,"
-							+ "¿Deseas usar sus datos?","DNI Ya registrado",
-							   JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE,null,
-							   new Object[] { "Usar los datos de ese DNI", "Cancelar"},
-							   "opcion 1");
-
-							if (seleccion == 0) {
-								ArrayList<Usuario> users = gestor.getUsuarios();
-								Usuario u = users.stream().filter(x -> x.getDni().equals(p.getDni())).findFirst().get();
-								if(gestor.isUsuarioRegistradoInCarrera(u, c)) {
-									JOptionPane.showMessageDialog(null,"El DNI especificado ya está registrado",
-											"El Usuario ya se ha registrado", JOptionPane.ERROR_MESSAGE);
-									return false;
-								}
-								dni = u.getDni();
-								correo = u.getCorreo();
-								nombre = u.getNombre();
-								Calendar f = new GregorianCalendar();
-								String fecha_insc = f.get(Calendar.DAY_OF_MONTH)+"/"+(f.get(Calendar.MONTH)+1)+"/"+f.get(Calendar.YEAR);
-								try {
-									VentanaPrincipal.gestorCarreras.addPreeinscrito(u, c, fecha_insc);
-									dniUsado = true;
-									return true;
-								} catch (Exception e) {
-									JOptionPane.showMessageDialog(null, "Ha ocurrido un error",
-											"Error", JOptionPane.ERROR_MESSAGE);
-									return false;
-								}
-							}
-				}
-			}
-			
-			if(VentanaPrincipal.gestorCarreras.isPreeinscrito(dni, c)) {
-				JOptionPane.showMessageDialog(null, "Este usuario ya se ha preinscrito en esta carrera",
-						"Usuario ya preinscrito", JOptionPane.ERROR_MESSAGE);
-				return false;
-			}
+			//COMPRUEBA QUE EL USUARIO CON ESE DNI NO ESTE INSCRITO EN ESA CARRERA YA(PREINSCRITO O INSCRITO)
 			List<Preinscrito> preinscritos = VentanaPrincipal.gestorCarreras.getTodosLosPreinscritos(c);
 			List<Corredor> corredores = VentanaPrincipal.gestorCarreras.getTodosLosCorredores(c);
 			for (Preinscrito preinscrito : preinscritos) {
@@ -574,6 +528,62 @@ public class Register extends JDialog {
 				  "Campos vacíos o erroneos", JOptionPane.ERROR_MESSAGE);
 		return false;
 	}
+
+	/**
+	 * Comprueba si ese DNI ya está en uso y en caso afirmativo
+	 * da la opción al usuario de registrarse con los datos de dicho DNI
+	 */
+	private void comprobarUsuarioRegistrado() {
+		for (Usuario p : gestor.getUsuarios()) {
+			if(p.getDni().equals(dni)) {
+				int seleccion = JOptionPane.showOptionDialog(null, "Ese DNI ya está registrado en la aplicación,"
+						+ "¿Deseas usar sus datos?","DNI Ya registrado",
+						   JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE,null,
+						   new Object[] { "Usar los datos de ese DNI", "Cancelar"},
+						   "opcion 1");
+
+				if (seleccion == 0) {
+					ArrayList<Usuario> users = gestor.getUsuarios();
+					Usuario u = users.stream().filter(x -> x.getDni().equals(p.getDni())).findFirst().get();
+					if(gestor.isUsuarioRegistradoInCarrera(u, c)) {
+						JOptionPane.showMessageDialog(null,"El DNI especificado ya está registrado",
+								"El Usuario ya se ha registrado", JOptionPane.ERROR_MESSAGE);
+						dispose();
+						return;
+					}
+					dni = u.getDni();
+					correo = u.getCorreo();
+					nombre = u.getNombre();
+					Calendar f = new GregorianCalendar();
+					String fecha_insc = f.get(Calendar.DAY_OF_MONTH)+"/"+(f.get(Calendar.MONTH)+1)+"/"+f.get(Calendar.YEAR);
+					try {
+						VentanaPrincipal.gestorCarreras.addPreeinscrito(u, c, fecha_insc);
+						int seleccion2 = JOptionPane.showOptionDialog(null,"Registrado con Exito", "Registrado con Exito",
+								   JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE,null,
+								   new Object[] { "Obtener justificante", "Cerrar"},
+								   "opcion 1");
+
+						if (seleccion2 == 0) {
+							try {
+								generarJustificante();
+							} catch (IOException e1) {
+								System.out.println("Error al generar el justificante");
+								e1.printStackTrace();
+							}
+						}
+						dispose();
+					} catch (Exception e) {
+						JOptionPane.showMessageDialog(null, "Ha ocurrido un error",
+								"Error", JOptionPane.ERROR_MESSAGE);
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Metodo que añade a las variables cada uno de los campos
+	 */
 	private void addCamposToVariables() {
 		dni = txtDni.getText();
 		nombre = txtNombre.getText();
@@ -586,6 +596,33 @@ public class Register extends JDialog {
 		genero = ((String) cbGenero.getSelectedItem()).equals("Masculino") ? 1 : 0;
 	}
 	
+	/**
+	 * Metodo que registra el usuario en la base de datos
+	 */
+	private void registrar() {
+		if(comprobarDatos())
+			if(meterDatos()) {
+				int seleccion = JOptionPane.showOptionDialog(null,"Registrado con Exito", "Registrado con Exito",
+						   JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE,null,
+						   new Object[] { "Obtener justificante", "Cerrar"},
+						   "opcion 1");
+
+				if (seleccion == 0) {
+					try {
+						generarJustificante();
+					} catch (IOException e) {
+						System.out.println("Error al generar el justificante");
+						e.printStackTrace();
+					}
+				}
+				dispose();
+			}
+	}
+	
+	/**
+	 * Metodo que genera un .txt con el justificante
+	 * @throws IOException
+	 */
 	private void generarJustificante() throws IOException {
 		String ruta = "justificantes/"+c.getNombre()+"_"+dni+".txt";
 		File archivo = new File(ruta);

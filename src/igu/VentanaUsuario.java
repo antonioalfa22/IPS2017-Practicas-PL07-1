@@ -32,6 +32,9 @@ import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.JTextField;
 import javax.swing.JList;
+import java.awt.SystemColor;
+import javax.swing.border.LineBorder;
+import javax.swing.SwingConstants;
 
 /**
  * 
@@ -103,6 +106,8 @@ public class VentanaUsuario extends JDialog {
 	 * Create the frame.
 	 */
 	public VentanaUsuario(GestorApp g) {
+		setModal(true);
+		setResizable(false);
 		this.gestor = g;
 		setTitle("Ventana Usuario");
 		setBounds(100, 100, 1017, 526);
@@ -110,7 +115,7 @@ public class VentanaUsuario extends JDialog {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
 		setContentPane(contentPane);
-		contentPane.add(getPanelBusqueda(), BorderLayout.NORTH);
+		contentPane.add(getPanelBusqueda(), BorderLayout.SOUTH);
 		contentPane.add(getPnInfoPersonal(), BorderLayout.WEST);
 		contentPane.add(getPanel_2(), BorderLayout.CENTER);
 		if(user!=null) {
@@ -123,6 +128,7 @@ public class VentanaUsuario extends JDialog {
 	private JPanel getPnInfoPersonal() {
 		if (pnInfoPersonal == null) {
 			pnInfoPersonal = new JPanel();
+			pnInfoPersonal.setBackground(SystemColor.activeCaption);
 			pnInfoPersonal.setLayout(new GridLayout(1, 1, 0, 0));
 			pnInfoPersonal.add(getPnInfo());
 		}
@@ -131,7 +137,8 @@ public class VentanaUsuario extends JDialog {
 	private JPanel getPnInfo() {
 		if (pnInfo == null) {
 			pnInfo = new JPanel();
-			pnInfo.setBorder(new MatteBorder(2, 2, 2, 2, (Color) new Color(0, 0, 0)));
+			pnInfo.setBackground(new Color(210, 180, 140));
+			pnInfo.setBorder(new MatteBorder(3, 3, 2, 2, (Color) new Color(0, 0, 0)));
 			pnInfo.setLayout(new BorderLayout(0, 0));
 			pnInfo.add(getLbInfo(), BorderLayout.NORTH);
 			pnInfo.add(getPnSubInfo(), BorderLayout.CENTER);
@@ -141,13 +148,16 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLbInfo() {
 		if (lbInfo == null) {
 			lbInfo = new JLabel("Informaci\u00F3n personal");
-			lbInfo.setFont(new Font("Tahoma", Font.PLAIN, 19));
+			lbInfo.setBackground(SystemColor.desktop);
+			lbInfo.setFont(new Font("Tahoma", Font.BOLD, 19));
 		}
 		return lbInfo;
 	}
 	private JPanel getPnSubInfo() {
 		if (pnSubInfo == null) {
 			pnSubInfo = new JPanel();
+			pnSubInfo.setBorder(new MatteBorder(2, 0, 0, 0, (Color) new Color(0, 0, 0)));
+			pnSubInfo.setBackground(SystemColor.info);
 			pnSubInfo.setLayout(new GridLayout(8, 2, 0, 0));
 			pnSubInfo.add(getLblNombre());
 			pnSubInfo.add(getLbDatosNombre());
@@ -171,6 +181,7 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLblNombre() {
 		if (lblNombre == null) {
 			lblNombre = new JLabel("  Nombre:");
+			lblNombre.setForeground(new Color(255, 0, 0));
 			lblNombre.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lblNombre;
@@ -178,6 +189,7 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLblDNI() {
 		if (lblDNI == null) {
 			lblDNI = new JLabel("  DNI:");
+			lblDNI.setForeground(new Color(255, 0, 0));
 			lblDNI.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lblDNI;
@@ -185,6 +197,7 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLblCategoria() {
 		if (lblCategoria == null) {
 			lblCategoria = new JLabel("  Categoria:");
+			lblCategoria.setForeground(new Color(255, 0, 0));
 			lblCategoria.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lblCategoria;
@@ -192,7 +205,7 @@ public class VentanaUsuario extends JDialog {
 	private JPanel getPanel_2() {
 		if (pnCard == null) {
 			pnCard = new JPanel();
-			pnCard.setBorder(new MatteBorder(2, 2, 2, 2, (Color) new Color(0, 0, 0)));
+			pnCard.setBorder(new MatteBorder(3, 2, 2, 3, (Color) new Color(0, 0, 0)));
 			pnCard.setLayout(new CardLayout(0, 0));
 			pnCard.add(getPanel_1_1(), "carreras");
 			pnCard.add(getPnClasificaciones(), "clasificacion");
@@ -202,6 +215,7 @@ public class VentanaUsuario extends JDialog {
 	private JPanel getPnClasificaciones() {
 		if (pnClasificaciones == null) {
 			pnClasificaciones = new JPanel();
+			pnClasificaciones.setBackground(new Color(210, 180, 140));
 			pnClasificaciones.setLayout(new BorderLayout(0, 0));
 			pnClasificaciones.add(getPnSubClasis(), BorderLayout.CENTER);
 			pnClasificaciones.add(getLblClasificacion(), BorderLayout.NORTH);
@@ -246,6 +260,8 @@ public class VentanaUsuario extends JDialog {
 	private JPanel getPanel_1_3() {
 		if (pnSelectCarrera == null) {
 			pnSelectCarrera = new JPanel();
+			pnSelectCarrera.setBorder(new MatteBorder(2, 0, 0, 0, (Color) new Color(0, 0, 0)));
+			pnSelectCarrera.setBackground(SystemColor.info);
 			pnSelectCarrera.setLayout(new GridLayout(2,0,0,0));
 		}
 		return pnSelectCarrera;
@@ -253,6 +269,8 @@ public class VentanaUsuario extends JDialog {
 	private JPanel getPanel_1_4() {
 		if (pnEstadoInscripcion == null) {
 			pnEstadoInscripcion = new JPanel();
+			pnEstadoInscripcion.setBorder(new MatteBorder(2, 2, 0, 0, (Color) new Color(0, 0, 0)));
+			pnEstadoInscripcion.setBackground(SystemColor.info);
 			pnEstadoInscripcion.setLayout(new GridLayout(1, 0, 0, 0));
 		}
 		return pnEstadoInscripcion;
@@ -260,6 +278,8 @@ public class VentanaUsuario extends JDialog {
 	private JPanel getPanel_1_5() {
 		if (pnAccederClasificacion == null) {
 			pnAccederClasificacion = new JPanel();
+			pnAccederClasificacion.setBorder(new MatteBorder(2, 2, 0, 0, (Color) new Color(0, 0, 0)));
+			pnAccederClasificacion.setBackground(SystemColor.info);
 			pnAccederClasificacion.setLayout(new GridLayout(1, 0, 0, 0));
 		}
 		return pnAccederClasificacion;
@@ -267,6 +287,7 @@ public class VentanaUsuario extends JDialog {
 	private JPanel getPnLabelsCarreras() {
 		if (pnLabelsCarreras == null) {
 			pnLabelsCarreras = new JPanel();
+			pnLabelsCarreras.setBackground(new Color(210, 180, 140));
 			pnLabelsCarreras.setLayout(new GridLayout(0, 3, 0, 0));
 			pnLabelsCarreras.add(getLblCarrerasDisponibles());
 			pnLabelsCarreras.add(getLblEstadoInscripcion());
@@ -277,45 +298,49 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLblCarrerasDisponibles() {
 		if (lblCarrerasDisponibles == null) {
 			lblCarrerasDisponibles = new JLabel("Carreras disponibles");
-			lblCarrerasDisponibles.setFont(new Font("Tahoma", Font.PLAIN, 19));
+			lblCarrerasDisponibles.setFont(new Font("Tahoma", Font.BOLD, 19));
 		}
 		return lblCarrerasDisponibles;
 	}
 	private JLabel getLblEstadoInscripcion() {
 		if (lblEstadoInscripcion == null) {
 			lblEstadoInscripcion = new JLabel(" Estado inscripci\u00F3n");
-			lblEstadoInscripcion.setFont(new Font("Tahoma", Font.PLAIN, 19));
+			lblEstadoInscripcion.setFont(new Font("Tahoma", Font.BOLD, 19));
 		}
 		return lblEstadoInscripcion;
 	}
 	private JLabel getLblAccesoClasificacin() {
 		if (lblAccesoClasificacin == null) {
 			lblAccesoClasificacin = new JLabel("Acceso clasificaci\u00F3n");
-			lblAccesoClasificacin.setFont(new Font("Tahoma", Font.PLAIN, 19));
+			lblAccesoClasificacin.setFont(new Font("Tahoma", Font.BOLD, 19));
 		}
 		return lblAccesoClasificacin;
 	}
 	private JLabel getLbDatosNombre() {
 		if (lbDatosNombre == null) {
 			lbDatosNombre = new JLabel("");
+			lbDatosNombre.setHorizontalAlignment(SwingConstants.CENTER);
 		}
 		return lbDatosNombre;
 	}
 	private JLabel getLbDatosDNI() {
 		if (lbDatosDNI == null) {
 			lbDatosDNI = new JLabel("");
+			lbDatosDNI.setHorizontalAlignment(SwingConstants.CENTER);
 		}
 		return lbDatosDNI;
 	}
 	private JLabel getLbDatosCategoria() {
 		if (lbDatosCategoria == null) {
 			lbDatosCategoria = new JLabel("");
+			lbDatosCategoria.setHorizontalAlignment(SwingConstants.CENTER);
 		}
 		return lbDatosCategoria;
 	}
 	private JLabel getLblFecha() {
 		if (lblFecha == null) {
 			lblFecha = new JLabel("  Fecha de nacimiento:");
+			lblFecha.setForeground(new Color(255, 0, 0));
 			lblFecha.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lblFecha;
@@ -323,12 +348,14 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLbDatosFecha() {
 		if (lbDatosFecha == null) {
 			lbDatosFecha = new JLabel("");
+			lbDatosFecha.setHorizontalAlignment(SwingConstants.CENTER);
 		}
 		return lbDatosFecha;
 	}
 	private JLabel getLblDireccion() {
 		if (lblDireccion == null) {
 			lblDireccion = new JLabel("  Direcci\u00F3n:");
+			lblDireccion.setForeground(new Color(255, 0, 0));
 			lblDireccion.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lblDireccion;
@@ -336,12 +363,14 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLbDatosDireccion() {
 		if (lbDatosDireccion == null) {
 			lbDatosDireccion = new JLabel("");
+			lbDatosDireccion.setHorizontalAlignment(SwingConstants.CENTER);
 		}
 		return lbDatosDireccion;
 	}
 	private JLabel getLblCodigoPostal() {
 		if (lblCodigoPostal == null) {
 			lblCodigoPostal = new JLabel("  Codigo Postal:");
+			lblCodigoPostal.setForeground(new Color(255, 0, 0));
 			lblCodigoPostal.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lblCodigoPostal;
@@ -349,12 +378,14 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLbDatosCodigo() {
 		if (lbDatosCodigo == null) {
 			lbDatosCodigo = new JLabel("");
+			lbDatosCodigo.setHorizontalAlignment(SwingConstants.CENTER);
 		}
 		return lbDatosCodigo;
 	}
 	private JLabel getLblCorreo() {
 		if (lblCorreo == null) {
 			lblCorreo = new JLabel("  Correo:");
+			lblCorreo.setForeground(new Color(255, 0, 0));
 			lblCorreo.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lblCorreo;
@@ -362,12 +393,14 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLbDatosCorreo() {
 		if (lbDatosCorreo == null) {
 			lbDatosCorreo = new JLabel("");
+			lbDatosCorreo.setHorizontalAlignment(SwingConstants.CENTER);
 		}
 		return lbDatosCorreo;
 	}
 	private JLabel getLblLocalidad() {
 		if (lblLocalidad == null) {
 			lblLocalidad = new JLabel("  Localidad");
+			lblLocalidad.setForeground(new Color(255, 0, 0));
 			lblLocalidad.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lblLocalidad;
@@ -375,6 +408,7 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLbDatosLocalidad() {
 		if (lbDatosLocalidad == null) {
 			lbDatosLocalidad = new JLabel("");
+			lbDatosLocalidad.setHorizontalAlignment(SwingConstants.CENTER);
 		}
 		return lbDatosLocalidad;
 	}
@@ -383,6 +417,7 @@ public class VentanaUsuario extends JDialog {
 	private JPanel getPnAtras() {
 		if (pnAtras == null) {
 			pnAtras = new JPanel();
+			pnAtras.setBackground(SystemColor.info);
 			pnAtras.setLayout(new BorderLayout(0, 0));
 			pnAtras.add(getBtnAtrs(), BorderLayout.SOUTH);
 		}
@@ -403,6 +438,7 @@ public class VentanaUsuario extends JDialog {
 	private JPanel getPanel_1() {
 		if (pnResultados == null) {
 			pnResultados = new JPanel();
+			pnResultados.setBackground(SystemColor.info);
 			pnResultados.setLayout(new GridLayout(3, 3, 0, 0));
 			pnResultados.add(getLbTiempo());
 			pnResultados.add(getLbDatosTiempo());
@@ -416,6 +452,7 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLbTiempo() {
 		if (lbTiempo == null) {
 			lbTiempo = new JLabel("  Tiempo:");
+			lbTiempo.setForeground(new Color(255, 0, 0));
 			lbTiempo.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lbTiempo;
@@ -429,6 +466,7 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLbPosAbsoluta() {
 		if (lbPosAbsoluta == null) {
 			lbPosAbsoluta = new JLabel("  Posicion Absoluta:");
+			lbPosAbsoluta.setForeground(new Color(255, 0, 0));
 			lbPosAbsoluta.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lbPosAbsoluta;
@@ -442,6 +480,7 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLbPosCategoria() {
 		if (lbPosCategoria == null) {
 			lbPosCategoria = new JLabel("  Posicion en Categor\u00EDa:");
+			lbPosCategoria.setForeground(new Color(255, 0, 0));
 			lbPosCategoria.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lbPosCategoria;
@@ -544,6 +583,9 @@ public class VentanaUsuario extends JDialog {
 	private JPanel getPanelBusqueda() {
 		if (panelBusqueda == null) {
 			panelBusqueda = new JPanel();
+			panelBusqueda.setForeground(new Color(210, 180, 140));
+			panelBusqueda.setBorder(new MatteBorder(0, 2, 2, 2, (Color) new Color(0, 0, 0)));
+			panelBusqueda.setBackground(new Color(210, 180, 140));
 			GridBagLayout gbl_panelBusqueda = new GridBagLayout();
 			gbl_panelBusqueda.columnWidths = new int[]{137, 86, 114, 136, 0, 0};
 			gbl_panelBusqueda.rowHeights = new int[]{24, 17, 31, 0, 0};
@@ -590,6 +632,7 @@ public class VentanaUsuario extends JDialog {
 	private JRadioButton getRbDNI() {
 		if (rbDNI == null) {
 			rbDNI = new JRadioButton("DNI");
+			rbDNI.setBackground(SystemColor.info);
 			buttonGroup.add(rbDNI);
 			rbDNI.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
@@ -598,6 +641,7 @@ public class VentanaUsuario extends JDialog {
 	private JRadioButton getRbNombre() {
 		if (rbNombre == null) {
 			rbNombre = new JRadioButton("Nombre");
+			rbNombre.setBackground(SystemColor.info);
 			buttonGroup.add(rbNombre);
 			rbNombre.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
@@ -606,6 +650,7 @@ public class VentanaUsuario extends JDialog {
 	private JRadioButton getRdbtnCorreo() {
 		if (rdbtnCorreo == null) {
 			rdbtnCorreo = new JRadioButton("Correo");
+			rdbtnCorreo.setBackground(SystemColor.info);
 			buttonGroup.add(rdbtnCorreo);
 			rdbtnCorreo.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
@@ -614,13 +659,14 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLblBuscarPor() {
 		if (lblBuscarPor == null) {
 			lblBuscarPor = new JLabel("Buscar por:");
-			lblBuscarPor.setFont(new Font("Tahoma", Font.ITALIC, 13));
+			lblBuscarPor.setFont(new Font("Tahoma", Font.BOLD, 13));
 		}
 		return lblBuscarPor;
 	}
 	private JTextField getTxtDatos() {
 		if (txtDatos == null) {
 			txtDatos = new JTextField();
+			txtDatos.setBackground(SystemColor.info);
 			txtDatos.setColumns(10);
 		}
 		return txtDatos;
@@ -628,6 +674,7 @@ public class VentanaUsuario extends JDialog {
 	private JList<Usuario> getListaUsuarios() {
 		if (listaUsuarios == null) {
 			listaUsuarios = new JList<Usuario>();
+			listaUsuarios.setBackground(SystemColor.info);
 			modelList();
 			listaUsuarios.setModel(modeloLista);
 		    listaUsuarios.addListSelectionListener(new ListSelectionListener() {
