@@ -389,6 +389,12 @@ public class GestorDB {
 	}
 	
 	
+	/**
+	 * Método que actualiza el tiempo en un corredor determinado
+	 * @param c, corredor
+	 * @param tiempo
+	 * @throws SQLException
+	 */
 	public static void updateTiempo(Corredor c,String tiempo) throws SQLException{
 		conectar();
 		PreparedStatement ps = conexion
