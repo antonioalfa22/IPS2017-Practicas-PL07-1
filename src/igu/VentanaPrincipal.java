@@ -13,7 +13,7 @@ import com.toedter.calendar.JCalendar;
 import entities.Carrera;
 import logic.Date;
 import logic.GestorApp;
-import logic.LecturaCSV;
+
 
 import java.awt.Font;
 import java.awt.Color;
