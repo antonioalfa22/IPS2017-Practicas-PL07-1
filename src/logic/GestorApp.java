@@ -253,9 +253,13 @@ public class GestorApp {
 	}
 	
 	
-	//LecturaCSV.actualizarTiempos("buenosTiempos.csv", carreras.get(0));
 	
 	
+	/**
+	 * Se le pasa un fichero con tiempos,la carrera a la que corresponde y actualiza los tiempos en la base de datos
+	 * @param ruta, ruta del fichero
+	 * @param carrera carr
+	 */
 	public static void actualizarTiempos(String ruta, Carrera carrera) {
 		File archivo = null;
 		FileReader fr = null;
