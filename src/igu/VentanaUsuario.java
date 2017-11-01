@@ -289,15 +289,15 @@ public class VentanaUsuario extends JDialog {
 			pnLabelsCarreras = new JPanel();
 			pnLabelsCarreras.setBackground(new Color(210, 180, 140));
 			pnLabelsCarreras.setLayout(new GridLayout(0, 3, 0, 0));
-			pnLabelsCarreras.add(getLblCarrerasDisponibles());
+			pnLabelsCarreras.add(getLblCarrerasInscritas());
 			pnLabelsCarreras.add(getLblEstadoInscripcion());
 			pnLabelsCarreras.add(getLblAccesoClasificacin());
 		}
 		return pnLabelsCarreras;
 	}
-	private JLabel getLblCarrerasDisponibles() {
+	private JLabel getLblCarrerasInscritas() {
 		if (lblCarrerasDisponibles == null) {
-			lblCarrerasDisponibles = new JLabel("Carreras disponibles");
+			lblCarrerasDisponibles = new JLabel("Carreras inscritas");
 			lblCarrerasDisponibles.setFont(new Font("Tahoma", Font.BOLD, 19));
 		}
 		return lblCarrerasDisponibles;
@@ -505,7 +505,9 @@ public class VentanaUsuario extends JDialog {
 		updateLayout(filas);
 		for(Carrera c:carreras) {
 			c.setFinalizada(true);
-			pnSelectCarrera.add(new JLabel(" "+c.getNombre()));
+			JLabel l = new JLabel(" "+c.getNombre());
+			l.setHorizontalAlignment(SwingConstants.CENTER);
+			pnSelectCarrera.add(l);
 			pnSelectCarrera.doLayout();
 			if(user.isInscrito(c)) {
 				pnEstadoInscripcion.add(new JLabel("Pagada"));
@@ -513,7 +515,9 @@ public class VentanaUsuario extends JDialog {
 				
 			}else {
 				JLabel pago = new JLabel("Pendiente de pago");
+				pago.setHorizontalAlignment(SwingConstants.CENTER);
 				JButton btn = new JButton("Pagar");
+				btn.setBackground(SystemColor.window);
 				for (Corredor u : gestor.getTodosLosCorredores(c)) {
 					if(u.getDni().equals(user.getDni())) {
 						btn.setEnabled(false);
@@ -521,8 +525,8 @@ public class VentanaUsuario extends JDialog {
 					}
 						
 				}
-				pnEstadoInscripcion.add(btn);
 				pnEstadoInscripcion.add(pago);
+				pnEstadoInscripcion.add(btn);
 				btn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						VentanaPago vp = new VentanaPago(c,user);
@@ -532,6 +536,7 @@ public class VentanaUsuario extends JDialog {
 				});
 			}
 			JButton btn = new JButton("Ver clasificación");
+			btn.setBackground(SystemColor.window);
 			pnAccederClasificacion.add(btn);
 			if(c.isFinalizada()) {
 				pnAccederClasificacion.setEnabled(true);

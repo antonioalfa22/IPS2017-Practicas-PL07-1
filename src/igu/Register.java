@@ -223,7 +223,7 @@ public class Register extends JDialog {
 			cbYear = new JComboBox<Integer>();
 			cbYear.setBounds(383, 146, 85, 24);
 			int[] years = new int[150];
-			for(int i=0; i<150 ;i++) { years[i] = 2017-i;cbYear.addItem(years[i]);}
+			for(int i=0; i<118 ;i++) { years[i] = 2017-i;cbYear.addItem(years[i]);}
 			cbYear.setSelectedItem(1999);
 			cbYear.addItemListener(new ItemListener() {
 				public void itemStateChanged(ItemEvent arg0) {
@@ -530,52 +530,46 @@ public class Register extends JDialog {
 	}
 
 	/**
-	 * Comprueba si ese DNI ya está en uso y en caso afirmativo
-	 * da la opción al usuario de registrarse con los datos de dicho DNI
+	 * Comprueba si ese DNI ya está en uso y en caso afirmativo da la opción al
+	 * usuario de registrarse con los datos de dicho DNI
 	 */
 	private void comprobarUsuarioRegistrado() {
 		for (Usuario p : gestor.getUsuarios()) {
-			if(p.getDni().equals(dni)) {
-				int seleccion = JOptionPane.showOptionDialog(null, "Ese DNI ya está registrado en la aplicación,"
-						+ "¿Deseas usar sus datos?","DNI Ya registrado",
-						   JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE,null,
-						   new Object[] { "Usar los datos de ese DNI", "Cancelar"},
-						   "opcion 1");
+			if (p.getDni().equals(dni)) {
+				int seleccion = JOptionPane.showOptionDialog(null,
+						"Ese DNI ya está registrado en la aplicación,"
+								+ "¿Deseas usar sus datos?",
+						"DNI Ya registrado", JOptionPane.YES_NO_CANCEL_OPTION,
+						JOptionPane.PLAIN_MESSAGE, null, new Object[] {
+								"Usar los datos de ese DNI", "Cancelar" },
+						"opcion 1");
 
 				if (seleccion == 0) {
 					ArrayList<Usuario> users = gestor.getUsuarios();
-					Usuario u = users.stream().filter(x -> x.getDni().equals(p.getDni())).findFirst().get();
-					if(gestor.isUsuarioRegistradoInCarrera(u, c)) {
-						JOptionPane.showMessageDialog(null,"El DNI especificado ya está registrado",
-								"El Usuario ya se ha registrado", JOptionPane.ERROR_MESSAGE);
-						dispose();
-						return;
+					Usuario u = users.stream()
+							.filter(x -> x.getDni().equals(p.getDni()))
+							.findFirst().get();
+					txtDni.setText(u.getDni());
+					txtNombre.setText(u.getNombre());
+					cbDia.setSelectedItem(31 - Integer.parseInt(u
+							.getFecha_nacimiento().split("/")[0]));
+					cbMes.setSelectedIndex(12 - Integer.parseInt(u
+							.getFecha_nacimiento().split("/")[1]));
+					cbYear.setSelectedItem(2017 - Integer.parseInt(u
+							.getFecha_nacimiento().split("/")[2]));
+					txtDir.setText(u.getDireccion());
+					txtTelefono.setText(String.valueOf(u.getTelefono()));
+					txtLocalidad.setText(u.getLocalidad());
+					txtCP.setText(u.getCodigo_postal());
+					txtCorreo.setText(u.getCorreo());
+					txtContra.setText(u.getContra());
+					int gen = u.getGenero();
+					if (gen == 0) {
+						cbGenero.setSelectedItem("Masculino");
+					} else {
+						cbGenero.setSelectedItem("Femenino");
 					}
-					dni = u.getDni();
-					correo = u.getCorreo();
-					nombre = u.getNombre();
-					Calendar f = new GregorianCalendar();
-					String fecha_insc = f.get(Calendar.DAY_OF_MONTH)+"/"+(f.get(Calendar.MONTH)+1)+"/"+f.get(Calendar.YEAR);
-					try {
-						VentanaPrincipal.gestorCarreras.addPreeinscrito(u, c, fecha_insc);
-						int seleccion2 = JOptionPane.showOptionDialog(null,"Registrado con Exito", "Registrado con Exito",
-								   JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE,null,
-								   new Object[] { "Obtener justificante", "Cerrar"},
-								   "opcion 1");
 
-						if (seleccion2 == 0) {
-							try {
-								generarJustificante();
-							} catch (IOException e1) {
-								System.out.println("Error al generar el justificante");
-								e1.printStackTrace();
-							}
-						}
-						dispose();
-					} catch (Exception e) {
-						JOptionPane.showMessageDialog(null, "Ha ocurrido un error",
-								"Error", JOptionPane.ERROR_MESSAGE);
-					}
 				}
 			}
 		}
