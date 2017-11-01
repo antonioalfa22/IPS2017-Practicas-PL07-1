@@ -135,6 +135,7 @@ public class GestorDB {
 		return dnis;
 	}
 	
+	//----------------------------HISTORIA 4--------------------------------
 	/**
 	 * Metodo que saca un ArrayList de los Corredores(con dorsal, es decir ya pagaron)
 	 * de una carrera 
@@ -146,48 +147,20 @@ public class GestorDB {
 			ArrayList<Corredor> corredores = new ArrayList<Corredor>();
 		
 			conectar();
-			PreparedStatement pst = conexion.prepareStatement("SELECT * FROM Corredores WHERE Id_Carrera = ? ");
+			PreparedStatement pst = conexion.prepareStatement("SELECT * FROM Corredores, Club, Pertenece "+
+					"WHERE  Corredores.DNI = Pertenece.DNI and Pertenece.Id_club = Club.Id_club and Corredores.Id_Carrera = ?");
 			pst.setInt(1, idCarrera);
 			ResultSet rs=pst.executeQuery();
 			while (rs.next()){
-				corredores.add(new Corredor(rs.getString("DNI"), rs.getInt("Id_Carrera"), rs.getInt("Tiempo"),
+				corredores.add(new Corredor(rs.getString("DNI"), rs.getInt("Id_Carrera"), rs.getString("Tiempo"),
 						rs.getInt("Dorsal"), rs.getString("Categoria"), rs.getString("Genero"), rs.getString("Nombre"),
-						rs.getString("Fecha_Inscripcion")));
+						rs.getString("Fecha_Inscripcion"),rs.getString("NombreClub")));
 			}
 			rs.close();
 			pst.close();
 			cerrar();
 			return corredores;
 		}
-	
-	
-	/**
-	 * Metodo que saca un ArrayList de los Corredores del genero pasado 
-	 * por parametro ordenados por tiempo(con dorsal, es decir ya pagaron)
-	 * de una carrera 
-	 * @param idCarrera, genero
-	 * @return
-	 * @throws SQLException
-	 */
-	public static ArrayList<Corredor> findCorredoresByIdCarreraOrderByTiempoByGenero(Integer idCarrera, String genero) throws SQLException{
-			ArrayList<Corredor> corredores = new ArrayList<Corredor>();
-		
-			conectar();
-			PreparedStatement pst = conexion.prepareStatement("SELECT * FROM Corredores WHERE Id_Carrera = ? and Genero = ? ORDER BY Tiempo ASC ");
-			pst.setInt(1, idCarrera);
-			pst.setString(2, genero);
-			ResultSet rs=pst.executeQuery();
-			while (rs.next()){
-				corredores.add(new Corredor(rs.getString("DNI"), rs.getInt("Id_Carrera"), rs.getInt("Tiempo"),
-						rs.getInt("Dorsal"), rs.getString("Categoria"), rs.getString("Genero"), rs.getString("Nombre"),
-						rs.getString("Fecha_Inscripcion")));
-			}
-			rs.close();
-			pst.close();
-			cerrar();
-			return corredores;
-		}
-	
 	
 	/**
 	 * Metodo que devuelve un ArrayList de Preinscritos(no pagaron aun) de una carrera
@@ -195,11 +168,11 @@ public class GestorDB {
 	 * @return
 	 * @throws SQLException
 	 */
-	public static ArrayList<Preinscrito> findInscritosByIdCarrera(Integer idCarrera) throws SQLException {
+	public static ArrayList<Preinscrito> findPreinscritosByIdCarrera(Integer idCarrera) throws SQLException {
 		ArrayList<Preinscrito> preinscritos = new ArrayList<Preinscrito>();
 	
 		conectar();
-		PreparedStatement pst = conexion.prepareStatement("SELECT * FROM Preinscritos WHERE Id_Carrera = ? ORDER BY Fecha_Inscripcion ASC");
+		PreparedStatement pst = conexion.prepareStatement("SELECT * FROM Preinscritos WHERE Id_Carrera = ?");
 		pst.setInt(1, idCarrera);
 		ResultSet rs=pst.executeQuery();
 		
@@ -214,6 +187,135 @@ public class GestorDB {
 		cerrar();
 		return preinscritos;
 	}
+	
+	//----------------------------------HISTORIA 3------------------------------------------------------
+	
+	/**
+	 * Metodo que saca un ArrayList de los Corredores del genero pasado 
+	 * por parametro ordenados por tiempo(con dorsal, es decir ya pagaron)
+	 * de una carrera 
+	 * @param idCarrera, genero
+	 * @return
+	 * @throws SQLException
+	 */
+	public static ArrayList<Corredor> findCorredoresByIdCarreraOrderByTiempoByGenero(Integer idCarrera, String genero) throws SQLException{
+			ArrayList<Corredor> corredores = new ArrayList<Corredor>();
+		
+			conectar();
+			PreparedStatement pst = conexion.prepareStatement("SELECT * FROM Corredores, Club, Pertenece "+
+					"WHERE  Corredores.DNI = Pertenece.DNI and Pertenece.Id_club = Club.Id_club and Corredores.Id_Carrera = ? and Genero = ?"+
+					"ORDER BY Tiempo ASC");
+			pst.setInt(1, idCarrera);
+			pst.setString(2, genero);
+			ResultSet rs=pst.executeQuery();
+			while (rs.next()){
+				corredores.add(new Corredor(rs.getString("DNI"), rs.getInt("Id_Carrera"), rs.getString("Tiempo"),
+						rs.getInt("Dorsal"), rs.getString("Categoria"), rs.getString("Genero"), rs.getString("Nombre"),
+						rs.getString("Fecha_Inscripcion"),rs.getString("NombreClub")));
+			}
+			rs.close();
+			pst.close();
+			cerrar();
+			return corredores;
+		}
+	
+	/**
+	 * Metodo que saca un ArrayList de los Corredores del genero y de la categoria pasados
+	 * por parametro ordenados por tiempo(con dorsal, es decir ya pagaron)
+	 * de una carrera 
+	 * @param idCarrera, genero, categoria
+	 * @return
+	 * @throws SQLException
+	 */
+	public static ArrayList<Corredor> findCorredoresByIdCarreraOrderByTiempoByGeneroByCategoria(Integer idCarrera, String genero, String categoria) throws SQLException{
+			ArrayList<Corredor> corredores = new ArrayList<Corredor>();
+		
+			conectar();
+			PreparedStatement pst = conexion.prepareStatement("SELECT * FROM Corredores, Club, Pertenece "+
+					"WHERE  Corredores.DNI = Pertenece.DNI and Pertenece.Id_club = Club.Id_club and Corredores.Id_Carrera = ? and Genero = ? and Categoria = ?"+
+					"ORDER BY Tiempo ASC");
+			pst.setInt(1, idCarrera);
+			pst.setString(2, genero);
+			pst.setString(3, categoria);
+			ResultSet rs=pst.executeQuery();
+			while (rs.next()){
+				corredores.add(new Corredor(rs.getString("DNI"), rs.getInt("Id_Carrera"), rs.getString("Tiempo"),
+						rs.getInt("Dorsal"), rs.getString("Categoria"), rs.getString("Genero"), rs.getString("Nombre"),
+						rs.getString("Fecha_Inscripcion"),rs.getString("NombreClub")));
+			}
+			rs.close();
+			pst.close();
+			cerrar();
+			return corredores;
+		}
+	
+	
+	/**
+	 * Metodo que saca un ArrayList de los Corredores(con dorsal, es decir ya pagaron)
+	 * de una carrera 
+	 * @param idCarrera
+	 * @return
+	 * @throws SQLException
+	 */
+	public static ArrayList<Corredor> findCorredoresByIdCarreraOrderByTiempo(Integer idCarrera) throws SQLException{
+			ArrayList<Corredor> corredores = new ArrayList<Corredor>();
+		
+			conectar();
+			PreparedStatement pst = conexion.prepareStatement("SELECT * FROM Corredores, Club, Pertenece "
+					+ "WHERE  Corredores.DNI = Pertenece.DNI and Pertenece.Id_club = Club.Id_club"
+					+ " and Corredores.Id_Carrera = ? ORDER BY Tiempo ASC");
+			pst.setInt(1, idCarrera);
+			ResultSet rs=pst.executeQuery();
+			while (rs.next()){
+				corredores.add(new Corredor(rs.getString("DNI"), rs.getInt("Id_Carrera"), rs.getString("Tiempo"),
+						rs.getInt("Dorsal"), rs.getString("Categoria"), rs.getString("Genero"), rs.getString("Nombre"),
+						rs.getString("Fecha_Inscripcion"), rs.getString("NombreClub")));
+			}
+			rs.close();
+			pst.close();
+			cerrar();
+			return corredores;
+		}
+	
+	
+	/**
+	 * Metodo que saca una carrera pasandole por parametro su id
+	 * de una carrera 
+	 * @param idCarrera
+	 * @return
+	 * @throws SQLException
+	 */
+	public static Carrera findCarreraById(Integer idCarrera) throws SQLException{
+			conectar();
+			Carrera c = null;
+			PreparedStatement pst = conexion.prepareStatement("select * from Carrera where Carrera.Id_Carrera = ?");
+			pst.setInt(1, idCarrera);
+			ResultSet rs=pst.executeQuery();
+			while (rs.next()){
+				int id = rs.getInt("Id_Carrera");
+				String nombre = rs.getString("Nombre");
+				String lugar = rs.getString("Lugar");
+				String fecha = rs.getString("Fecha");
+				int num_max = rs.getInt("Num_max_part");
+				int precio = rs.getInt("Precio");
+				String fecha_insc = rs.getString("Fecha_inscripcion");
+				int km = rs.getInt("Numero_km");
+				String dureza = rs.getString("Dureza");
+				int edad = rs.getInt("Edad_minima");
+				String tipo = rs.getString("Tipo");
+				String ncuenta = rs.getString("Numero_cuenta");
+				int dni = rs.getInt("DNI");
+				c = new Carrera(id,nombre,lugar,fecha,num_max,precio,fecha_insc,km,dureza,edad,tipo,ncuenta,dni);
+			}
+			rs.close();
+			pst.close();
+			cerrar();
+			return c;
+		}
+	
+	
+	
+	//--------------------------------------------------------------------------------------------------
 	
 	/**
 	 * Metodo que devuelve un ArrayList con todas las carreras en las que

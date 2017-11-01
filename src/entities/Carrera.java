@@ -12,7 +12,7 @@ import logic.Date;
  * @author Antonio Paya Gonzalez , Pablo Menendez y Sara Grimaldos
  *
  */
-public class Carrera {
+public class Carrera implements Comparable<Carrera>{
 	
 	private String nombre,lugar,dureza,tipo,num_cuenta,fecha,fecha_inscripcion;
 	private int id,num_max_part,precio,distancia,edad_minima,dni_creador;
@@ -287,7 +287,38 @@ public class Carrera {
 	 */
 	@Override
 	public String toString() {
-		return nombre+"  Lugar:"+lugar;
+		return nombre+" - "+lugar;
+	}
+
+	@Override
+	public int compareTo(Carrera o) {
+		Carrera a2 = o;
+		
+		int dia = Integer.parseInt(this.getFecha().split("/")[0]);
+		int mes = Integer.parseInt(this.getFecha().split("/")[1]);
+		int año = Integer.parseInt(this.getFecha().split("/")[2]);
+		
+		int diaA2 = Integer.parseInt(a2.getFecha().split("/")[0]);
+		int mesA2 = Integer.parseInt(a2.getFecha().split("/")[1]);
+		int añoA2 = Integer.parseInt(a2.getFecha().split("/")[2]);
+		
+		if (año < añoA2) {
+			return -1;
+		} else if (año > añoA2) {
+			return 1;
+		} else {
+			if (mes < mesA2) {
+				return -1;
+			} else if (mes > mesA2) {
+				return 1;
+			} else {
+				if (dia < diaA2) {
+					return -1;
+				} else {
+					return 1;
+				}
+			}
+		}
 	}
 	
 	

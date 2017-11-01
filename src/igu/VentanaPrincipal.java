@@ -149,9 +149,9 @@ public class VentanaPrincipal extends JFrame {
 			mntmGestionarcarreras.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.CTRL_MASK));
 			mntmGestionarcarreras.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					VentanaSeleccionCarrera dialog;
+					VentanaSeleccionCarreraInscritos dialog;
 					try {
-						dialog = new VentanaSeleccionCarrera();
+						dialog = new VentanaSeleccionCarreraInscritos();
 						dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 						dialog.setVisible(true);
 						dialog.setLocationRelativeTo(null);

@@ -5,6 +5,7 @@ package logic;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import entities.Carrera;
@@ -22,6 +23,9 @@ public class GestorApp {
 	
 	public ArrayList<Carrera> carreras;
 	public ArrayList<Usuario> usuarios;
+	public ArrayList<Corredor> corredores;
+	public ArrayList<Preinscrito> preinscritos;
+	public Carrera carrera;
 	private Usuario usuarioActivo;
 
 	/**
@@ -190,7 +194,7 @@ public class GestorApp {
 	 */
 	public List<Preinscrito> getTodosLosPreinscritos(Carrera c){
 		try {
-			return GestorDB.findInscritosByIdCarrera(c.getId());
+			return GestorDB.findPreinscritosByIdCarrera(c.getId());
 		} catch (SQLException e) {
 			System.out.println("Error al sacar los preinscritos");
 			e.printStackTrace();
@@ -248,4 +252,88 @@ public class GestorApp {
 			}
 		}
 	}
+	
+	/**
+	 * @return the carreras ordenados por fecha de inscripcion
+	 * @throws SQLException 
+	 */
+	public ArrayList<Carrera> getCarrerasOrderByFecha() throws SQLException {
+		carreras = GestorDB.sacarTodasLasCarreras();
+		Collections.sort(carreras);
+		return carreras;
+	}
+	
+	
+	//----------------HISTORIA 3-----------------------------------------
+	
+	public ArrayList<Corredor> getCorredores(Integer idCarrera){
+		try {
+			corredores = GestorDB.findCorredoresByIdCarreraOrderByTiempo(idCarrera);
+			
+		} catch (SQLException e) {
+			System.out.println("Error al sacar los corredores de la base de datos");
+			e.printStackTrace();
+		}
+		
+		return corredores;
+	}
+	
+	
+	public ArrayList<Corredor> getCorredoresByGenero(Integer idCarrera, String genero){
+		try {
+			corredores = GestorDB.findCorredoresByIdCarreraOrderByTiempoByGenero(idCarrera, genero);
+			
+		} catch (SQLException e) {
+			System.out.println("Error al sacar los corredores de la base de datos");
+			e.printStackTrace();
+		}
+		
+		return corredores;
+	}
+	
+	
+	public ArrayList<Corredor> getCorredoresByGeneroByCategoria(Integer idCarrera, String genero, String categoria){
+		try {
+			corredores = GestorDB.findCorredoresByIdCarreraOrderByTiempoByGeneroByCategoria(idCarrera, genero, categoria);
+			
+		} catch (SQLException e) {
+			System.out.println("Error al sacar los corredores de la base de datos");
+			e.printStackTrace();
+		}
+		
+		return corredores;
+	}
+	
+	public Carrera getCarreraById(Integer idCarrera){
+		try {
+			carrera = GestorDB.findCarreraById(idCarrera);
+		} catch (SQLException e) {
+			System.out.println("Error al sacar la carrera de la base de datos");
+			e.printStackTrace();
+		}
+		return carrera;
+	}
+	
+	//-----------------------HISTORIA 4-----------------------
+	
+	/**
+	 * @return the corredores ordenados por fecha de inscripcion
+	 * @throws SQLException 
+	 */
+	public ArrayList<Corredor> getCorredoresOrderByFecha(Integer idCarrera) throws SQLException {
+		corredores = GestorDB.findCorredoresByIdCarrera(idCarrera);
+		Collections.sort(corredores);
+		return corredores;
+	}
+	
+	/**
+	 * @return the preinscritos ordenados por fecha de inscripcion
+	 * @throws SQLException 
+	 */
+	public ArrayList<Preinscrito> getPreinscritosOrderByFecha(Integer idCarrera) throws SQLException {
+		preinscritos = GestorDB.findPreinscritosByIdCarrera(idCarrera);
+		Collections.sort(preinscritos);
+		return preinscritos;
+	}
+	
 }

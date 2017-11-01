@@ -14,7 +14,9 @@ public class Corredor implements Comparable<Corredor>{
 	private String categoria;
 	private String fechaInscripcion;
 	private String genero;
-	private int dorsal,tiempo,idCarrera;
+	private String club;
+	private String tiempo;
+	private int dorsal,idCarrera;
 	//Posiciones 
 	private String posicionAbsoluta;
 	private String posicionCategoria;
@@ -30,9 +32,9 @@ public class Corredor implements Comparable<Corredor>{
 	 * @param nombre
 	 * @param fechaInscripcion
 	 */
-	public Corredor(String dni, Integer idCarrera, Integer tiempo,
+	public Corredor(String dni, Integer idCarrera, String tiempo,
 			Integer dorsal, String categoria, String genero, String nombre,
-			String fechaInscripcion) {
+			String fechaInscripcion, String club) {
 		super();
 		this.dni = dni;
 		this.idCarrera = idCarrera;
@@ -42,6 +44,7 @@ public class Corredor implements Comparable<Corredor>{
 		this.genero = genero;
 		this.nombre = nombre;
 		this.fechaInscripcion = fechaInscripcion;
+		this.club = club;
 		posicionAbsoluta="-";
 		posicionCategoria="-";
 	}
@@ -103,13 +106,13 @@ public class Corredor implements Comparable<Corredor>{
 	/**
 	 * @return the tiempo
 	 */
-	public int getTiempo() {
+	public String getTiempo() {
 		return tiempo;
 	}
 	/**
 	 * @param tiempo the tiempo to set
 	 */
-	public void setTiempo(int tiempo) {
+	public void setTiempo(String tiempo) {
 		this.tiempo = tiempo;
 	}
 
@@ -163,9 +166,24 @@ public class Corredor implements Comparable<Corredor>{
 		this.dorsal = dorsal;
 	}
 	
+	/**
+	 * @return the club
+	 */
+	public String getClub() {
+		return club;
+	}
+
+
+	/**
+	 * @param club the club to set
+	 */
+	public void setClub(String club) {
+		this.club = club;
+	}
+	
 	
 	public String toString() {
-		return dni+" "+nombre+" "+categoria+" "+fechaInscripcion+" "+dorsal;
+		return dni+" "+nombre+" "+categoria+" "+fechaInscripcion+" "+dorsal+ " "+ this.club;
 	}
 	
 

@@ -15,9 +15,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
+import logic.GestorApp;
 import entities.Corredor;
 import entities.Preinscrito;
-import gestorBBDD.GestorDB;
 
 /**
  * 
@@ -35,14 +35,16 @@ public class VentanaInscritos extends JDialog {
 	private JTable tablaInscritos;
 	private DefaultTableModel modeloTabla;
 	
-	private VentanaSeleccionCarrera ventanaPrincipal;
+	private VentanaSeleccionCarreraInscritos ventanaPrincipal;
+	private GestorApp g;
 
 
 	/**
 	 * Create the dialog.
 	 * @throws SQLException 
 	 */
-	public VentanaInscritos(VentanaSeleccionCarrera ventanaPrincipal, Integer idCarrera) throws SQLException {
+	public VentanaInscritos(VentanaSeleccionCarreraInscritos ventanaPrincipal, Integer idCarrera) throws SQLException {
+		g = new GestorApp();
 		setBounds(100, 100, 731, 441);
 		this.setVentanaPrincipal(ventanaPrincipal);
 		
@@ -82,8 +84,8 @@ public class VentanaInscritos extends JDialog {
 	
 	private void añadirFilas(Integer idCarrera) throws SQLException{
 		Object[] nuevaFila = new Object[5];
-		List<Preinscrito> preinscritos = GestorDB.findInscritosByIdCarrera(idCarrera);
-		List<Corredor> inscritos = GestorDB.findCorredoresByIdCarrera(idCarrera);
+		List<Preinscrito> preinscritos = g.getPreinscritosOrderByFecha(idCarrera);
+		List<Corredor> corredores = g.getCorredoresOrderByFecha(idCarrera);
 		for (int i=0; i<preinscritos.size();i++){
 			nuevaFila[0] = preinscritos.get(i).getDni();
 			nuevaFila[1] = preinscritos.get(i).getNombre();
@@ -92,11 +94,11 @@ public class VentanaInscritos extends JDialog {
 			nuevaFila[4] = "No";
 			modeloTabla.addRow(nuevaFila);
 		}
-		for (int i=0; i<inscritos.size();i++){
-			nuevaFila[0] = inscritos.get(i).getDni();
-			nuevaFila[1] = inscritos.get(i).getNombre();
-			nuevaFila[2] = inscritos.get(i).getCategoria();
-			nuevaFila[3] = inscritos.get(i).getFechaInscripcion();
+		for (int i=0; i<corredores.size();i++){
+			nuevaFila[0] = corredores.get(i).getDni();
+			nuevaFila[1] = corredores.get(i).getNombre();
+			nuevaFila[2] = corredores.get(i).getCategoria();
+			nuevaFila[3] = corredores.get(i).getFechaInscripcion();
 			nuevaFila[4] = "Si";
 			modeloTabla.addRow(nuevaFila);
 		}
@@ -104,13 +106,13 @@ public class VentanaInscritos extends JDialog {
 	/**
 	 * @return the ventanaPrincipal
 	 */
-	public VentanaSeleccionCarrera getVentanaPrincipal() {
+	public VentanaSeleccionCarreraInscritos getVentanaPrincipal() {
 		return ventanaPrincipal;
 	}
 	/**
 	 * @param ventanaPrincipal the ventanaPrincipal to set
 	 */
-	public void setVentanaPrincipal(VentanaSeleccionCarrera ventanaPrincipal) {
+	public void setVentanaPrincipal(VentanaSeleccionCarreraInscritos ventanaPrincipal) {
 		this.ventanaPrincipal = ventanaPrincipal;
 	}
 	

@@ -30,13 +30,15 @@ import javax.swing.JButton;
  * @author Sara Grimaldos
  *
  */
-public class VentanaSeleccionCarrera extends JFrame {
+public class VentanaSeleccionCarreraInscritos extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 	private JLabel lblCarreras;
 	private JComboBox<Carrera> cbCarreras;
 	private JButton btnAceptar;
+	
+	private GestorApp g;
 	
 
 	/**
@@ -50,7 +52,7 @@ public class VentanaSeleccionCarrera extends JFrame {
 					props.put("logoString", "");
 					AluminiumLookAndFeel.setCurrentTheme(props);
 					UIManager.setLookAndFeel("com.jtattoo.plaf.fast.FastLookAndFeel");
-					VentanaSeleccionCarrera frame = new VentanaSeleccionCarrera();
+					VentanaSeleccionCarreraInscritos frame = new VentanaSeleccionCarreraInscritos();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -63,8 +65,8 @@ public class VentanaSeleccionCarrera extends JFrame {
 	 * Create the frame.
 	 * @throws SQLException 
 	 */
-	public VentanaSeleccionCarrera() throws SQLException {
-		
+	public VentanaSeleccionCarreraInscritos() throws SQLException {
+		g= new GestorApp();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 432, 333);
 		contentPane = new JPanel();
@@ -87,8 +89,7 @@ public class VentanaSeleccionCarrera extends JFrame {
 	private JComboBox<Carrera> getCbCarreras() throws SQLException {
 		if (cbCarreras == null) {
 			cbCarreras = new JComboBox<Carrera>();
-			GestorApp ga = new GestorApp();
-			for (Carrera carrera : ga.getCarreras()){
+			for (Carrera carrera : g.getCarrerasOrderByFecha()){
 				cbCarreras.addItem(carrera);
 			}
 			cbCarreras.setFont(new Font("Tahoma", Font.PLAIN, 12));
