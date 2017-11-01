@@ -387,6 +387,21 @@ public class GestorDB {
 		ps.close();
 		cerrar();
 	}
+	
+	
+	public static void updateTiempo(Corredor c,String tiempo) throws SQLException{
+		conectar();
+		PreparedStatement ps = conexion
+				.prepareStatement("UPDATE Corredores SET Tiempo = ? WHERE Dorsal = ? AND DNI = ?");
+		ps.setString(1,tiempo);
+		ps.setInt(2,c.getDorsal());
+		ps.setString(3,c.getDni());
+		ps.executeUpdate();
+		ps.close();
+		cerrar();
+	}
+	
+	
 
 	/**
 	 * Método auxiliar que maneja las excepciones de tipo SQLException en las
@@ -404,5 +419,7 @@ public class GestorDB {
 			System.out.println(" ");
 		}
 	}
+	
+
 	
 }

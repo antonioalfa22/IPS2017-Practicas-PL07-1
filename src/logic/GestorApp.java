@@ -203,7 +203,7 @@ public class GestorApp {
 	 * @param c
 	 * @return
 	 */
-	public List<Corredor> getTodosLosCorredores(Carrera c){
+	public static List<Corredor> getTodosLosCorredores(Carrera c){
 		try {
 			return GestorDB.findCorredoresByIdCarrera(c.getId());
 		} catch (SQLException e) {
