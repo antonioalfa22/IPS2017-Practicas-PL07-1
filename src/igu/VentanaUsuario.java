@@ -9,7 +9,12 @@ import javax.swing.border.EmptyBorder;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 import javax.swing.JLabel;
 import java.awt.Font;
@@ -21,6 +26,7 @@ import javax.swing.event.ListSelectionListener;
 import entities.Carrera;
 import entities.Corredor;
 import entities.Usuario;
+import gestorBBDD.GestorDB;
 import logic.GestorApp;
 
 import java.awt.CardLayout;
@@ -32,10 +38,11 @@ import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.JTextField;
 import javax.swing.JList;
+import javax.swing.JScrollPane;
 
 /**
  * 
- * @author UO252406
+ * @author Pablo Menendez y Antonio Paya
  *
  */
 public class VentanaUsuario extends JDialog {
@@ -48,7 +55,7 @@ public class VentanaUsuario extends JDialog {
 	private JPanel pnSubInfo;
 	private JLabel lblNombre;
 	private JLabel lblDNI;
-	private JLabel lblCategoria;
+	private JLabel lblEdad;
 	private JPanel pnCard;
 	private JPanel pnClasificaciones;
 	private JPanel pnSubClasis;
@@ -97,12 +104,16 @@ public class VentanaUsuario extends JDialog {
 	private JList<Usuario> listaUsuarios;
 	private DefaultListModel<Usuario> modeloLista;
 	private GestorApp gestor;
-	
+	private final static int DNI = 1,NOMBRE = 2,CORREO = 3;
+	private int rbSeleccionado;
+	private JScrollPane scrollPane;
+	private String txtmemoria;
 	
 	/**
 	 * Create the frame.
 	 */
 	public VentanaUsuario(GestorApp g) {
+		rbSeleccionado = DNI;
 		this.gestor = g;
 		setTitle("Ventana Usuario");
 		setBounds(100, 100, 1017, 526);
@@ -153,7 +164,7 @@ public class VentanaUsuario extends JDialog {
 			pnSubInfo.add(getLbDatosNombre());
 			pnSubInfo.add(getLblDNI());
 			pnSubInfo.add(getLbDatosDNI());
-			pnSubInfo.add(getLblCategoria());
+			pnSubInfo.add(getLbEdad());
 			pnSubInfo.add(getLbDatosCategoria());
 			pnSubInfo.add(getLblFecha());
 			pnSubInfo.add(getLbDatosFecha());
@@ -182,12 +193,12 @@ public class VentanaUsuario extends JDialog {
 		}
 		return lblDNI;
 	}
-	private JLabel getLblCategoria() {
-		if (lblCategoria == null) {
-			lblCategoria = new JLabel("  Categoria:");
-			lblCategoria.setFont(new Font("Tahoma", Font.ITALIC, 13));
+	private JLabel getLbEdad() {
+		if (lblEdad == null) {
+			lblEdad = new JLabel("  Edad:");
+			lblEdad.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
-		return lblCategoria;
+		return lblEdad;
 	}
 	private JPanel getPanel_2() {
 		if (pnCard == null) {
@@ -460,48 +471,74 @@ public class VentanaUsuario extends JDialog {
 		pnSelectCarrera.removeAll();
 		pnEstadoInscripcion.removeAll();
 		pnAccederClasificacion.removeAll();
-		
+
 		ArrayList<Carrera> carreras = user.getCarreras();
 		int filas = carreras.size();
 		updateLayout(filas);
-		for(Carrera c:carreras) {
+		for (Carrera c : carreras) {
 			c.setFinalizada(true);
-			pnSelectCarrera.add(new JLabel(" "+c.getNombre()));
+			pnSelectCarrera.add(new JLabel(" " + c.getNombre()));
 			pnSelectCarrera.doLayout();
-			if(user.isInscrito(c)) {
+			if (user.isInscrito(c)) {
 				pnEstadoInscripcion.add(new JLabel("Pagada"));
 				pnEstadoInscripcion.doLayout();
-				
-			}else {
+
+			} else {
+
 				JLabel pago = new JLabel("Pendiente de pago");
-				JButton btn = new JButton("Pagar");
 				for (Corredor u : gestor.getTodosLosCorredores(c)) {
-					if(u.getDni().equals(user.getDni())) {
-						btn.setEnabled(false);
+					if (u.getDni().equals(user.getDni())) {
 						pago.setText("Pagada");
 					}
-						
 				}
-				pnEstadoInscripcion.add(btn);
-				pnEstadoInscripcion.add(pago);
-				btn.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						VentanaPago vp = new VentanaPago(c,user);
-						vp.setVisible(true);
-						dispose();
+
+				if (pago.getText() != "Pagada") {
+					String date = null;
+					try {
+						date = GestorDB.getFechaPago(user.getDni());
+					} catch (SQLException ex) {
+						GestorDB.handleSQLException(ex);
 					}
-				});
+
+					if (date != null) {
+						String[] fecha_pago = date.split("/");
+						Calendar fecha_actual = Calendar.getInstance();
+						GregorianCalendar auxDate = new GregorianCalendar(Integer.parseInt(fecha_pago[0]),
+								Integer.parseInt(fecha_pago[1]), Integer.parseInt(fecha_pago[2]));
+
+						// CASOS: Año actual mayor que el de pago / Mismo año, y mes actual al menos 2
+						// unidades mayor que el de pago / Mismo año y mes, y día actual más de 2
+						// unidades mayor que el de pago / Mismo año, y mes actual posterior al de pago,
+						// y día actual más de 2 unidades mayor que el de pago
+						if (fecha_actual.get(Calendar.YEAR) > Integer.parseInt(fecha_pago[2])
+								|| (fecha_actual.get(Calendar.YEAR) == Integer.parseInt(fecha_pago[2])
+										&& fecha_actual.get(Calendar.MONTH) + 1 - Integer.parseInt(fecha_pago[1]) >= 2)
+								|| (fecha_actual.get(Calendar.YEAR) == Integer.parseInt(fecha_pago[2])
+										&& fecha_actual.get(Calendar.MONTH) + 1 == Integer.parseInt(fecha_pago[1])
+										&& fecha_actual.get(Calendar.DAY_OF_MONTH)
+												- Integer.parseInt(fecha_pago[0]) > 2)
+								|| (fecha_actual.get(Calendar.YEAR) == Integer.parseInt(fecha_pago[2])
+										&& fecha_actual.get(Calendar.MONTH) + 1 - Integer.parseInt(fecha_pago[1]) == 1
+										&& fecha_actual.get(Calendar.DAY_OF_MONTH)
+												+ (auxDate.getActualMaximum(GregorianCalendar.DAY_OF_MONTH)
+														- Integer.parseInt(fecha_pago[0])) > 2)) {
+							pago.setText("Cancelada - Límite de 48h superado");
+						}
+					}
+				}
+
+				pnEstadoInscripcion.add(pago);
 			}
 			JButton btn = new JButton("Ver clasificación");
 			pnAccederClasificacion.add(btn);
-			if(c.isFinalizada()) {
+			if (c.isFinalizada()) {
 				pnAccederClasificacion.setEnabled(true);
 				btn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						mostrarClasificacion(c);
 					}
 				});
-			}else {
+			} else {
 				btn.setEnabled(false);
 			}
 		}
@@ -520,9 +557,9 @@ public class VentanaUsuario extends JDialog {
 		CardLayout cl = (CardLayout) pnCard.getLayout();
 		cl.show(pnCard, "clasificacion");
 		lblClasificacion.setText("Clasificación " + c.getNombre() + ":");
+		Corredor corredor = user.getCorredor(c);
 		if(user!=null) {
-			Corredor corredor = user.getCorredor(c);
-			lbDatosTiempo.setText(String.valueOf(corredor.getTiempo()));
+			lbDatosTiempo.setText(corredor.getTiempo()==null?"DNR":corredor.getTiempo()+"");
 			lbDatosPosAbsoluta.setText(corredor.getPosicionAbsoluta());
 			lbDatosPosCategoria.setText(corredor.getPosicionCategoria());
 		}
@@ -532,7 +569,7 @@ public class VentanaUsuario extends JDialog {
 	private void updateInfoUsuario() {
 		lbDatosNombre.setText(user.getNombre());
 		lbDatosDNI.setText(user.getDni());
-		lbDatosCategoria.setText(user.getCategoria());
+		lbDatosCategoria.setText(user.getEdad()+"");
 		lbDatosCodigo.setText(user.getCodigo_postal());
 		lbDatosCorreo.setText(user.getCorreo());
 		lbDatosFecha.setText(user.getFecha_nacimiento());
@@ -546,9 +583,9 @@ public class VentanaUsuario extends JDialog {
 			panelBusqueda = new JPanel();
 			GridBagLayout gbl_panelBusqueda = new GridBagLayout();
 			gbl_panelBusqueda.columnWidths = new int[]{137, 86, 114, 136, 0, 0};
-			gbl_panelBusqueda.rowHeights = new int[]{24, 17, 31, 0, 0};
-			gbl_panelBusqueda.columnWeights = new double[]{0.0, 1.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
-			gbl_panelBusqueda.rowWeights = new double[]{0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+			gbl_panelBusqueda.rowHeights = new int[]{24, 17, 31, 69, 0};
+			gbl_panelBusqueda.columnWeights = new double[]{1.0, 1.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+			gbl_panelBusqueda.rowWeights = new double[]{0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
 			panelBusqueda.setLayout(gbl_panelBusqueda);
 			GridBagConstraints gbc_lblBuscarPor = new GridBagConstraints();
 			gbc_lblBuscarPor.insets = new Insets(0, 0, 5, 5);
@@ -577,13 +614,13 @@ public class VentanaUsuario extends JDialog {
 			gbc_txtDatos.gridx = 1;
 			gbc_txtDatos.gridy = 2;
 			panelBusqueda.add(getTxtDatos(), gbc_txtDatos);
-			GridBagConstraints gbc_listaUsuarios = new GridBagConstraints();
-			gbc_listaUsuarios.gridwidth = 3;
-			gbc_listaUsuarios.insets = new Insets(0, 0, 0, 5);
-			gbc_listaUsuarios.fill = GridBagConstraints.BOTH;
-			gbc_listaUsuarios.gridx = 1;
-			gbc_listaUsuarios.gridy = 3;
-			panelBusqueda.add(getListaUsuarios(), gbc_listaUsuarios);
+			GridBagConstraints gbc_scrollPane = new GridBagConstraints();
+			gbc_scrollPane.gridwidth = 3;
+			gbc_scrollPane.insets = new Insets(0, 0, 0, 5);
+			gbc_scrollPane.fill = GridBagConstraints.BOTH;
+			gbc_scrollPane.gridx = 1;
+			gbc_scrollPane.gridy = 3;
+			panelBusqueda.add(getScrollPane(), gbc_scrollPane);
 		}
 		return panelBusqueda;
 	}
@@ -592,6 +629,15 @@ public class VentanaUsuario extends JDialog {
 			rbDNI = new JRadioButton("DNI");
 			buttonGroup.add(rbDNI);
 			rbDNI.setFont(new Font("Tahoma", Font.ITALIC, 13));
+			rbDNI.setSelected(true);
+			rbDNI.addItemListener(new ItemListener() {
+				public void itemStateChanged(ItemEvent e) {
+					if(e.getStateChange()==ItemEvent.SELECTED){
+						rbSeleccionado = DNI;
+						txtDatos.setText("");
+					}
+				}
+			});
 		}
 		return rbDNI;
 	}
@@ -600,6 +646,14 @@ public class VentanaUsuario extends JDialog {
 			rbNombre = new JRadioButton("Nombre");
 			buttonGroup.add(rbNombre);
 			rbNombre.setFont(new Font("Tahoma", Font.ITALIC, 13));
+			rbNombre.addItemListener(new ItemListener() {
+				public void itemStateChanged(ItemEvent e) {
+					if(e.getStateChange()==ItemEvent.SELECTED){
+						rbSeleccionado = NOMBRE;
+						txtDatos.setText("");
+					}
+				}
+			});
 		}
 		return rbNombre;
 	}
@@ -608,6 +662,14 @@ public class VentanaUsuario extends JDialog {
 			rdbtnCorreo = new JRadioButton("Correo");
 			buttonGroup.add(rdbtnCorreo);
 			rdbtnCorreo.setFont(new Font("Tahoma", Font.ITALIC, 13));
+			rdbtnCorreo.addItemListener(new ItemListener() {
+				public void itemStateChanged(ItemEvent e) {
+					if(e.getStateChange()==ItemEvent.SELECTED){
+						rbSeleccionado = CORREO;
+						txtDatos.setText("");
+					}
+				}
+			});
 		}
 		return rdbtnCorreo;
 	}
@@ -621,7 +683,17 @@ public class VentanaUsuario extends JDialog {
 	private JTextField getTxtDatos() {
 		if (txtDatos == null) {
 			txtDatos = new JTextField();
+			txtDatos.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					if(!txtmemoria.toLowerCase().equals(txtDatos.getText().toLowerCase())) {
+						txtmemoria = txtDatos.getText();
+						actualizarLista();
+					}
+				}
+			});
 			txtDatos.setColumns(10);
+			txtmemoria = "";
+			
 		}
 		return txtDatos;
 	}
@@ -651,5 +723,28 @@ public class VentanaUsuario extends JDialog {
 			   modeloLista.addElement(usuario);
 		   }
 		   return modeloLista;
+	}
+	private JScrollPane getScrollPane() {
+		if (scrollPane == null) {
+			scrollPane = new JScrollPane();
+			scrollPane.setViewportView(getListaUsuarios());
+		}
+		return scrollPane;
+	}
+	
+	private void actualizarLista() {
+		modeloLista = new DefaultListModel<>();
+	    ArrayList<Usuario> usuarios = gestor.getUsuarios();
+	    for (Usuario usuario : usuarios) {
+	    	if(rbSeleccionado == DNI) {
+	    		if(usuario.getDni().contains(txtmemoria))modeloLista.addElement(usuario);
+	    	}else if(rbSeleccionado == NOMBRE) {
+	    		if(usuario.getNombre().contains(txtmemoria))modeloLista.addElement(usuario);
+	    	}else if(rbSeleccionado == CORREO) {
+	    		if(usuario.getCorreo().contains(txtmemoria))modeloLista.addElement(usuario);
+	    	}
+	    	
+	    }
+	    listaUsuarios.setModel(modeloLista);
 	}
 }
