@@ -316,6 +316,7 @@ public class GestorDB {
 	}
 	
 	/**
+	 * 
 	 * Metodo que añade un Usuario a la base de datos
 	 * @param U, Usuario
 	 * @throws SQLException
