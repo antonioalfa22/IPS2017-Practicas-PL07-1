@@ -14,7 +14,7 @@ public class Corredor implements Comparable<Corredor>{
 	private String categoria;
 	private String fechaInscripcion;
 	private String genero;
-	private int dorsal,tiempo,idCarrera;
+	private Integer dorsal,tiempo,idCarrera;
 	//Posiciones 
 	private String posicionAbsoluta;
 	private String posicionCategoria;
@@ -91,25 +91,25 @@ public class Corredor implements Comparable<Corredor>{
 	/**
 	 * @return the idCarrera
 	 */
-	public int getIdCarrera() {
+	public Integer getIdCarrera() {
 		return idCarrera;
 	}
 	/**
 	 * @param idCarrera the idCarrera to set
 	 */
-	public void setIdCarrera(int idCarrera) {
+	public void setIdCarrera(Integer idCarrera) {
 		this.idCarrera = idCarrera;
 	}
 	/**
 	 * @return the tiempo
 	 */
-	public int getTiempo() {
+	public Integer getTiempo() {
 		return tiempo;
 	}
 	/**
 	 * @param tiempo the tiempo to set
 	 */
-	public void setTiempo(int tiempo) {
+	public void setTiempo(Integer tiempo) {
 		this.tiempo = tiempo;
 	}
 
@@ -154,12 +154,12 @@ public class Corredor implements Comparable<Corredor>{
 
 	
 
-	public int getDorsal() {
+	public Integer getDorsal() {
 		return dorsal;
 	}
 
 
-	public void setDorsal(int dorsal) {
+	public void setDorsal(Integer dorsal) {
 		this.dorsal = dorsal;
 	}
 	

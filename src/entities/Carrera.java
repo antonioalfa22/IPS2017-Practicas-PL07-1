@@ -4,19 +4,26 @@
 package entities;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.GregorianCalendar;
+
+import logic.Categoria;
 import logic.Date;
+import logic.FechaInscripcion;
 
 /**
  * Clase que representa una carrera
  * @author Antonio Paya Gonzalez , Pablo Menendez y Sara Grimaldos
  *
  */
-public class Carrera {
+public class Carrera implements Comparable<Carrera>{
 	
-	private String nombre,lugar,dureza,tipo,num_cuenta,fecha,fecha_inscripcion;
-	private int id,num_max_part,precio,distancia,edad_minima,dni_creador;
+	private String nombre,lugar,dureza,tipo,num_cuenta,fecha,dni_creador;
+	private int id,num_max_part,distancia,edad_minima;
 	private ArrayList<Corredor> atletas;
+	private ArrayList<FechaInscripcion> fechas_inscripcion;
+	private ArrayList<Categoria> categorias;
 	//Para saber si la carrera está finalizada o no
 	private boolean finalizada;
 	
@@ -35,24 +42,66 @@ public class Carrera {
 	 * @param num_cuenta
 	 * @param dni_creador
 	 */
-	public Carrera(int id,String nombre,String lugar,String fecha,int num_max_part,int precio,String fecha_inscripcion,
-			int distancia,String dureza,int edad_minima,String tipo,String num_cuenta,int dni_creador) {
+	public Carrera(int id,String nombre,String lugar,String fecha,int num_max_part,
+			int distancia,String dureza,int edad_minima,String tipo,String num_cuenta,String dni_creador,
+			ArrayList<FechaInscripcion> fechas,ArrayList<Categoria> cats) {
 		setId(id);
 		setNombre(nombre);
 		setLugar(lugar);
 		setFecha(fecha);
 		setNum_max_part(num_max_part);
-		setPrecio(precio);
-		setFecha_inscripcion(fecha_inscripcion);
 		setDistancia(distancia);
 		setDureza(dureza);
 		setEdad_minima(edad_minima);
 		setTipo(tipo);
 		setNum_cuenta(num_cuenta);
 		setDni_creador(dni_creador);
+		setFechas_inscripcion(fechas);
+		setCategorias(cats);
 		atletas = new ArrayList<Corredor>();
 	}
 	
+	
+	
+	
+	/**
+	 * @return the categorias
+	 */
+	public ArrayList<Categoria> getCategorias() {
+		return categorias;
+	}
+
+
+
+
+	/**
+	 * @param categorias the categorias to set
+	 */
+	public void setCategorias(ArrayList<Categoria> categorias) {
+		this.categorias = categorias;
+	}
+
+
+
+
+	/**
+	 * @return the fechas_inscripcion
+	 */
+	public ArrayList<FechaInscripcion> getFechas_inscripcion() {
+		return fechas_inscripcion;
+	}
+
+
+
+	/**
+	 * @param fechas_inscripcion the fechas_inscripcion to set
+	 */
+	public void setFechas_inscripcion(ArrayList<FechaInscripcion> fechas_inscripcion) {
+		this.fechas_inscripcion = fechas_inscripcion;
+	}
+
+
+
 	/**
 	 * 
 	 * @return
@@ -168,20 +217,6 @@ public class Carrera {
 	}
 
 	/**
-	 * @return the precio
-	 */
-	public int getPrecio() {
-		return precio;
-	}
-
-	/**
-	 * @param precio the precio to set
-	 */
-	public void setPrecio(int precio) {
-		this.precio = precio;
-	}
-
-	/**
 	 * @return the distancia
 	 */
 	public int getDistancia() {
@@ -212,14 +247,14 @@ public class Carrera {
 	/**
 	 * @return the dni_creador
 	 */
-	public int getDni_creador() {
+	public String getDni_creador() {
 		return dni_creador;
 	}
 
 	/**
 	 * @param dni_creador the dni_creador to set
 	 */
-	public void setDni_creador(int dni_creador) {
+	public void setDni_creador(String dni_creador) {
 		this.dni_creador = dni_creador;
 	}
 
@@ -235,20 +270,6 @@ public class Carrera {
 	 */
 	public void setFecha(String fecha) {
 		this.fecha = fecha;
-	}
-
-	/**
-	 * @return the fecha_inscripcion
-	 */
-	public String getFecha_inscripcion() {
-		return fecha_inscripcion;
-	}
-
-	/**
-	 * @param fecha_inscripcion the fecha_inscripcion to set
-	 */
-	public void setFecha_inscripcion(String fecha_inscripcion) {
-		this.fecha_inscripcion = fecha_inscripcion;
 	}
 	
 	public Date getFechaFormateada() {
@@ -281,6 +302,33 @@ public class Carrera {
 			System.out.println(a.toString());
 		}
 	}
+	
+	public double getPrecio() {
+		return getFechaInscripcionActual().getPrecio();
+	}
+	
+	public FechaInscripcion getFechaInscripcionActual() {
+		Calendar fecha = new GregorianCalendar();
+		String ffaa = fecha.get(Calendar.DAY_OF_MONTH)+"/"+(fecha.get(Calendar.MONTH)+1)+"/"+fecha.get(Calendar.YEAR);
+		Date fActual = new Date(ffaa);
+		Collections.sort(fechas_inscripcion);
+		for (FechaInscripcion f : fechas_inscripcion) {
+			Date fPrueba = new Date(f.getFecha());
+			Date fPruebaFinal = new Date(f.getFechaFin());
+			if(fActual.compareTo(fPrueba) >= 0 && fActual.compareTo(fPruebaFinal) <= 0)
+				return f;
+		}
+		return fechas_inscripcion.get(fechas_inscripcion.size()-1);
+	}
+	
+	public String getCategoriaParaUsuario(int edad) {
+		for (Categoria cat : categorias) {
+			if(edad >= cat.getEdadMin() && edad < cat.getEdadMax()) {
+				return cat.getNombre();
+			}
+		}
+		return "Sin categoria";
+	}
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
@@ -288,6 +336,34 @@ public class Carrera {
 	@Override
 	public String toString() {
 		return nombre+"  Lugar:"+lugar;
+	}
+
+	@Override
+	public int compareTo(Carrera a2) {
+		int dia = Integer.parseInt(this.getFecha().split("/")[0]);
+		int mes = Integer.parseInt(this.getFecha().split("/")[1]);
+		int año = Integer.parseInt(this.getFecha().split("/")[2]);
+		
+		int diaA2 = Integer.parseInt(a2.getFecha().split("/")[0]);
+		int mesA2 = Integer.parseInt(a2.getFecha().split("/")[1]);
+		int añoA2 = Integer.parseInt(a2.getFecha().split("/")[2]);
+		if (año < añoA2) {
+			return -1;
+		} else if (año > añoA2) {
+			return 1;
+		} else {
+			if (mes < mesA2) {
+				return -1;
+			} else if (mes > mesA2) {
+				return 1;
+			} else {
+				if (dia < diaA2) {
+					return -1;
+				} else {
+					return 1;
+				}
+			}
+		}
 	}
 	
 	

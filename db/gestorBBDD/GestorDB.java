@@ -12,6 +12,8 @@ import entities.Carrera;
 import entities.Corredor;
 import entities.Preinscrito;
 import entities.Usuario;
+import logic.Categoria;
+import logic.FechaInscripcion;
 
 /**
  * Clase que accede a la base de datos
@@ -58,24 +60,46 @@ public class GestorDB {
 	public static ArrayList<Carrera> sacarTodasLasCarreras() throws SQLException {
 		conectar();
 		ArrayList<Carrera> carreras = new ArrayList<Carrera>();
-		Statement st = conexion.createStatement();
-		ResultSet rs = st.executeQuery("SELECT * FROM Carrera order by Fecha ASC");
+		PreparedStatement st = conexion.prepareStatement("SELECT * FROM Carrera order by Fecha ASC");
+		ResultSet rs = st.executeQuery();
 		while (rs.next()){
+			ArrayList<Categoria> categorias = new ArrayList<Categoria>();
+			ArrayList<FechaInscripcion> fechas = new ArrayList<FechaInscripcion>();
 			int id = rs.getInt("Id_Carrera");
 			String nombre = rs.getString("Nombre");
 			String lugar = rs.getString("Lugar");
 			String fecha = rs.getString("Fecha");
 			int num_max = rs.getInt("Num_max_part");
-			int precio = rs.getInt("Precio");
-			String fecha_insc = rs.getString("Fecha_inscripcion");
 			int km = rs.getInt("Numero_km");
 			String dureza = rs.getString("Dureza");
 			int edad = rs.getInt("Edad_minima");
 			String tipo = rs.getString("Tipo");
 			String ncuenta = rs.getString("Numero_cuenta");
-			int dni = rs.getInt("DNI");
-			Carrera c = new Carrera(id,nombre,lugar,fecha,num_max,precio,fecha_insc,km,dureza,edad,tipo,ncuenta,dni);
+			String dni = rs.getString("DNI");
+			PreparedStatement st2 = conexion.prepareStatement("SELECT * FROM CATEGORIA WHERE Id_Carrera = ?");
+			st2.setInt(1, id);
+			ResultSet rs2 = st2.executeQuery();
+			while(rs2.next()) {
+				String ncat = rs2.getString("Nombre");
+				int nemin = rs2.getInt("Edad_minima");
+				int nemax = rs2.getInt("Edad_maxima");
+				categorias.add(new Categoria(nemin,nemax,ncat));
+			}
+			PreparedStatement st3 = conexion.prepareStatement("SELECT * FROM FECHA_INSCRIPCION WHERE Id_Carrera = ?");
+			st3.setInt(1, id);
+			ResultSet rs3 = st3.executeQuery();
+			while(rs3.next()) {
+				String fi = rs3.getString("Fecha_inicio");
+				String ff = rs3.getString("Fecha_fin");
+				int precio = rs3.getInt("Precio");
+				fechas.add(new FechaInscripcion(fi,ff,precio));
+			}
+			Carrera c = new Carrera(id,nombre,lugar,fecha,num_max,km,dureza,edad,tipo,ncuenta,dni,fechas,categorias);
 			carreras.add(c);
+			rs2.close();
+			rs3.close();
+			st2.close();
+			st3.close();
 		}
 		rs.close();
 		st.close();
@@ -103,7 +127,7 @@ public class GestorDB {
 			String cp = rs.getString("Codigo_postal");
 			String correo = rs.getString("Correo");
 			String contra = rs.getString("Contraseña");
-			int genero = rs.getInt("Genero");
+			String genero = rs.getString("Genero");
 			Usuario u = new Usuario(dni,nombre,fecha_nacimiento,dir,tel,localidad,cp,correo,contra,genero);
 			usuarios.add(u);
 		}
@@ -224,44 +248,24 @@ public class GestorDB {
 	 */
 	public static ArrayList<Carrera> findCarrerasDeUnUsuario(Usuario u) throws SQLException{
 		ArrayList<Carrera> carreras = new ArrayList<Carrera>();
-		ArrayList<String> ids_carreras = new ArrayList<String>();
+		ArrayList<Integer> ids_carreras = new ArrayList<Integer>();
 		conectar();
-		PreparedStatement pst1 = conexion.prepareStatement("SELECT p.Id_Carrera FROM Preinscritos p WHERE p.DNI = ?" + 
+		PreparedStatement pst = conexion.prepareStatement("SELECT p.Id_Carrera FROM Preinscritos p WHERE p.DNI = ?" + 
 				"union " + 
 				"select c.Id_Carrera FROM Corredores c WHERE c.DNI = ?");
-		pst1.setString(1, u.getDni());
-		pst1.setString(2, u.getDni());
-		ResultSet rs1=pst1.executeQuery();
-		int i = 0;
-		while(rs1.next()) {
-			PreparedStatement pst = conexion.prepareStatement("SELECT * FROM Carrera WHERE Id_Carrera = ?");
-			ids_carreras.add(rs1.getString("Id_Carrera"));
-			pst.setString(1,ids_carreras.get(i));
-			ResultSet rs=pst.executeQuery();
-			while (rs.next()){
-				int id = rs.getInt("Id_Carrera");
-				String nombre = rs.getString("Nombre");
-				String lugar = rs.getString("Lugar");
-				String fecha = rs.getString("Fecha");
-				int num_max = rs.getInt("Num_max_part");
-				int precio = rs.getInt("Precio");
-				String fecha_insc = rs.getString("Fecha_inscripcion");
-				int km = rs.getInt("Numero_km");
-				String dureza = rs.getString("Dureza");
-				int edad = rs.getInt("Edad_minima");
-				String tipo = rs.getString("Tipo");
-				String ncuenta = rs.getString("Numero_cuenta");
-				int dni = rs.getInt("DNI");
-				Carrera c = new Carrera(id,nombre,lugar,fecha,num_max,precio,fecha_insc,km,dureza,edad,tipo,ncuenta,dni);
-				carreras.add(c);
-			}
+		pst.setString(1, u.getDni());
+		pst.setString(2, u.getDni());
+		ResultSet rs=pst.executeQuery();
+		while(rs.next()) {
+			ids_carreras.add(rs.getInt("Id_Carrera"));	
 			rs.close();
 			pst.close();
-			i++;
 		}
-		rs1.close();
-		pst1.close();
+		rs.close();
+		pst.close();
 		cerrar();
+		ArrayList<Carrera> todas = sacarTodasLasCarreras();
+		for(Carrera crr:todas)if(ids_carreras.contains(crr.getId()))carreras.add(crr);
 		return carreras;
 	}
 	
@@ -274,26 +278,45 @@ public class GestorDB {
 	public static void addCarrera(Carrera c) throws SQLException {
 		conectar();
 		PreparedStatement addCarrera = conexion.prepareStatement("INSERT INTO CARRERA "
-				+ "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
+				+ "VALUES (?,?,?,?,?,?,?,?,?,?,?)");
 		addCarrera.setInt(1,c.getId());
 		addCarrera.setString(2, c.getNombre());
 		addCarrera.setString(3, c.getLugar());
 		addCarrera.setString(4, c.getFecha());
 		addCarrera.setInt(5, c.getNum_max_part());
-		addCarrera.setInt(6, c.getPrecio());
-		addCarrera.setString(7, c.getFecha_inscripcion());
-		addCarrera.setInt(8, c.getDistancia());
-		addCarrera.setString(9, c.getDureza());
-		addCarrera.setInt(10, c.getEdad_minima());
-		addCarrera.setString(11, c.getTipo());
-		addCarrera.setString(12, c.getNum_cuenta());
-		addCarrera.setInt(13, c.getDni_creador());
+		addCarrera.setInt(6, c.getDistancia());
+		addCarrera.setString(7, c.getDureza());
+		addCarrera.setInt(8, c.getEdad_minima());
+		addCarrera.setString(9, c.getTipo());
+		addCarrera.setString(10, c.getNum_cuenta());
+		addCarrera.setString(11, c.getDni_creador());
 		addCarrera.executeUpdate();
 		addCarrera.close();
+		for (Categoria cat : c.getCategorias()) {
+			PreparedStatement addCategorias = conexion.prepareStatement("INSERT INTO CATEGORIA "
+					+ "VALUES (?,?,?,?)");
+			addCategorias.setString(1,cat.getNombre());
+			addCategorias.setInt(2, cat.getEdadMin());
+			addCategorias.setInt(3, cat.getEdadMax());
+			addCategorias.setInt(4, c.getId());
+			addCategorias.executeUpdate();
+			addCategorias.close();
+		}
+		for (FechaInscripcion fi : c.getFechas_inscripcion()) {
+			PreparedStatement addFechas = conexion.prepareStatement("INSERT INTO FECHA_INSCRIPCION "
+					+ "VALUES (?,?,?,?)");
+			addFechas.setString(1,fi.getFecha());
+			addFechas.setString(2, fi.getFechaFin());
+			addFechas.setDouble(3, fi.getPrecio());
+			addFechas.setInt(4, c.getId());
+			addFechas.executeUpdate();
+			addFechas.close();
+		}
 		cerrar();
 	}
 	
 	/**
+	 * 
 	 * Metodo que añade un Usuario a la base de datos
 	 * @param U, Usuario
 	 * @throws SQLException
@@ -311,7 +334,7 @@ public class GestorDB {
 		addUsuario.setString(7, u.getCodigo_postal());
 		addUsuario.setString(8, u.getCorreo());
 		addUsuario.setString(9, u.getContra());
-		addUsuario.setString(10, u.getGenero() == 1? "Masculino":"Femenino");
+		addUsuario.setString(10, u.getGenero());
 		addUsuario.executeUpdate();
 		addUsuario.close();
 		cerrar();
@@ -340,17 +363,19 @@ public class GestorDB {
 	public static void addPreeinscrito(Usuario u,Carrera c,String fecha) throws SQLException {
 		conectar();
 		PreparedStatement addPreinscrito = conexion.prepareStatement("INSERT INTO Preinscritos "
-				+ "VALUES (?,?,'No',?,?,?,?)");
+				+ "VALUES (?,?,'No',?,?,?,?,?)");
 		addPreinscrito.setString(1, u.getDni());
 		addPreinscrito.setInt(2, c.getId());
-		addPreinscrito.setString(3, u.getCategoria());
-		addPreinscrito.setString(4, u.getGenero() == 1? "Masculino":"Femenino");
+		addPreinscrito.setString(3, c.getCategoriaParaUsuario(u.getEdad()));
+		addPreinscrito.setString(4, u.getGenero());
 		addPreinscrito.setString(5, u.getNombre());
 		addPreinscrito.setString(6, fecha);
+		addPreinscrito.setString(7, fecha);
 		addPreinscrito.executeUpdate();
 		addPreinscrito.close();
 		cerrar();
 	}
+	
 	
 	/**
 	 * Metodo que borra un usuario de la base de datos
@@ -376,7 +401,7 @@ public class GestorDB {
 	 * @param DNI
 	 * @throws SQLException
 	 */
-	public static void pagoPorTransferencia(int idCarrera, String DNI) throws SQLException {
+	public static void pagoPorTarjeta(int idCarrera, String DNI) throws SQLException {
 		conectar();
 		PreparedStatement ps = conexion
 				.prepareStatement("UPDATE Preinscritos SET Pagado = ? WHERE Id_carrera = ? AND DNI = ?");
@@ -405,4 +430,48 @@ public class GestorDB {
 		}
 	}
 	
+	
+	/**
+	 * Método que guarda la fecha en la que un determinado usuario escogió pagar por
+	 * transferencia, de manera que disponga de un máximo de 48 horas para confirmar
+	 * dicho pago
+	 * 
+	 * @param DNI
+	 *            dni del usuario
+	 * @param fecha
+	 *            fecha de pago
+	 * @throws SQLException
+	 */
+	public static void setFechaPago(String DNI, String fecha) throws SQLException {
+		conectar();
+		PreparedStatement ps = conexion.prepareStatement("UPDATE Preinscritos SET Fecha_pago = ? WHERE DNI = ?");
+		ps.setString(1, fecha);
+		ps.setString(2, DNI);
+		ps.executeUpdate();
+		ps.close();
+		cerrar();
+	}
+
+	/**
+	 * Método que devuelve la fecha en la que un determinado usuario escogió pagar
+	 * por transferencia, de manera que si se ha superado el límite de 48 horas su
+	 * inscripción quede cancelada
+	 * 
+	 * @param DNI
+	 *            dni del usuario
+	 * @return fecha de pago
+	 * @throws SQLException
+	 */
+	public static String getFechaPago(String DNI) throws SQLException {
+		String fecha = "";
+		conectar();
+		PreparedStatement ps = conexion.prepareStatement("SELECT Fecha_pago FROM Preinscritos WHERE DNI = ?");
+		ps.setString(1, DNI);
+		ResultSet rs = ps.executeQuery();
+		fecha = rs.getString("Fecha_pago");
+		ps.close();
+		rs.close();
+		cerrar();
+		return fecha;
+	}
 }
