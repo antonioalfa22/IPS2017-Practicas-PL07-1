@@ -264,6 +264,7 @@ public class GestorApp {
 		File archivo = null;
 		FileReader fr = null;
 		BufferedReader br = null;
+		boolean asignado = false;
 
 		try {
 			// Apertura del fichero y creacion de BufferedReader para poder
@@ -306,15 +307,13 @@ public class GestorApp {
 							}
 
 							if (!crono[1].matches(".*[a-zA-Z].*")) {
-								if (Integer.parseInt(crono[1]) > 0
-										&& Integer.parseInt(crono[1]) < 60) {
+								if (Integer.parseInt(crono[1]) > 0 && Integer.parseInt(crono[1]) < 60) {
 									minutos = Integer.parseInt(crono[1]);
 								}
 							}
 
 							if (!crono[2].matches(".*[a-zA-Z].*")) {
-								if (Integer.parseInt(crono[2]) > 0
-										&& Integer.parseInt(crono[2]) < 60) {
+								if (Integer.parseInt(crono[2]) > 0 && Integer.parseInt(crono[2]) < 60) {
 									segundos = Integer.parseInt(crono[2]);
 								}
 							}
@@ -328,7 +327,8 @@ public class GestorApp {
 
 					if (dorsal != -1 && tInicio != -1 && tFin != null) {
 						asignaTiempo(carrera, dorsal, tFin);
-					} 
+						asignado = true;
+					}
 
 				} else if (l.length == 2) {
 					if (!linea.split(",")[0].matches(".*[a-zA-Z].*")) {
@@ -345,9 +345,10 @@ public class GestorApp {
 					}
 
 					if (dorsal != -1 && tInicio == 0) {
-						tFin="DNF";
+						tFin = "DNF";
 						asignaTiempo(carrera, dorsal, tFin);
-					} 
+						asignado = true;
+					}
 
 				} else if (l.length == 1) {
 					if (!linea.split(",")[0].matches(".*[a-zA-Z].*")) {
@@ -359,11 +360,17 @@ public class GestorApp {
 					}
 
 					if (dorsal != -1) {
-						tFin="DNS";
+						tFin = "DNS";
 						asignaTiempo(carrera, dorsal, tFin);
-					} 
+						asignado = true;
+					}
 
 				}
+				
+				if(!asignado) {
+					asignaTiempo(carrera, dorsal, "Datos erroneos");
+				}
+				
 
 			}
 
@@ -384,8 +391,16 @@ public class GestorApp {
 		}
 	}
 
-	private static void asignaTiempo(Carrera carrera, int dorsal, String tiempo)
-			throws SQLException {
+	/**
+	 * Actualiza el dato tiempos en el corredor que tenga el dorsal que se le pasa
+	 * por parámetro
+	 * 
+	 * @param carrera
+	 * @param dorsal
+	 * @param tiempo
+	 * @throws SQLException
+	 */
+	private static void asignaTiempo(Carrera carrera, int dorsal, String tiempo) throws SQLException {
 		List<Corredor> corredores;
 		corredores = getTodosLosCorredores(carrera);
 		for (Corredor c : corredores) {
