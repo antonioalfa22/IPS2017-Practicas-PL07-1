@@ -48,7 +48,7 @@ import javax.swing.JCheckBox;
 /**
  * Ventana que representa todas las carreras en las que un usuario puede inscribirse
  * 
- * @author Antonio PayÃ¡ GonzÃ¡lez
+ * @author Antonio Payá González
  *
  */
 public class VentanaPrincipal extends JFrame {
@@ -414,7 +414,7 @@ public class VentanaPrincipal extends JFrame {
 
 	private JCheckBox getChcbxMontain() {
 		if (chcbxMontain == null) {
-			chcbxMontain = new JCheckBox("Monta\u00F1a");
+			chcbxMontain = new JCheckBox("Montaña");
 			chcbxMontain.setForeground(Color.DARK_GRAY);
 			chcbxMontain.setFont(new Font("Source Sans Pro Semibold", Font.BOLD, 12));
 			chcbxMontain.setBounds(196, 115, 165, 24);
@@ -633,7 +633,7 @@ public class VentanaPrincipal extends JFrame {
 	
 	private JLabel getLblFechaLimiteInscripcion(JLabel lblFechaLimiteInscripcion,FechaInscripcion fecha) {
 		if (lblFechaLimiteInscripcion == null) {
-			lblFechaLimiteInscripcion = new JLabel("InscripciÃ³n-> De: "+fecha.getFecha()+" a "+fecha.getFechaFin());
+			lblFechaLimiteInscripcion = new JLabel("Inscripción-> De: "+fecha.getFecha()+" a "+fecha.getFechaFin());
 			lblFechaLimiteInscripcion.setForeground(new Color(47, 79, 79));
 			lblFechaLimiteInscripcion.setFont(new Font("Segoe WP Semibold", Font.PLAIN, 11));
 		}
@@ -641,12 +641,13 @@ public class VentanaPrincipal extends JFrame {
 	}
 	private JLabel getLbPrecio(JLabel lbPrecio,double precio) {
 		if (lbPrecio == null) {
-			lbPrecio = new JLabel(precio+ "â‚¬");
+			lbPrecio = new JLabel(precio+ "€");
 			lbPrecio.setForeground(Color.DARK_GRAY);
 			lbPrecio.setFont(new Font("Segoe UI Semibold", Font.BOLD | Font.ITALIC, 16));
 		}
 		return lbPrecio;
 	}
+	
 	
 	//==========================================================================================
 	//										LOGICA: 

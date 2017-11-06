@@ -9,6 +9,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 import entities.Carrera;
+import entities.Club;
 import entities.Corredor;
 import entities.Preinscrito;
 import entities.Usuario;
@@ -135,6 +136,29 @@ public class GestorDB {
 		st.close();
 		cerrar();
 		return usuarios;
+	}
+	
+	/**
+	 * Metodo que devuelve un ArrayList con todos los clubs
+	 * @return
+	 * @throws SQLException
+	 */
+	public static ArrayList<Club> sacaTodosLosClubs() throws SQLException{
+		conectar();
+		ArrayList<Club> clubs = new ArrayList<Club>();
+		Statement st = conexion.createStatement();
+		ResultSet rs = st.executeQuery("SELECT * FROM Club");
+		while (rs.next()){
+			int id = rs.getInt("Id_club");
+			String nombre = rs.getString("Nombre");
+			String dir = rs.getString("Direccion");
+			Club u = new Club(id,nombre,dir);
+			clubs.add(u);
+		}
+		rs.close();
+		st.close();
+		cerrar();
+		return clubs;
 	}
 	
 	/**
@@ -339,6 +363,42 @@ public class GestorDB {
 		addUsuario.close();
 		cerrar();
 	}
+	
+	/**
+	 * 
+	 * Metodo que añade un Usuario a la base de datos
+	 * @param u, Usuario
+	 * @param c, Clun
+	 * @throws SQLException
+	 */
+	public static void addUsuario_a_Club(Usuario u,Club c) throws SQLException {
+		conectar();
+		PreparedStatement addUsuario = conexion.prepareStatement("INSERT INTO Pertenece "
+				+ "VALUES (?,?)");
+		addUsuario.setInt(1, c.getId());
+		addUsuario.setString(2, u.getDni());
+		addUsuario.executeUpdate();
+		addUsuario.close();
+		cerrar();
+	}
+	
+	/**
+	 * 
+	 * Metodo que añade un Club a la base de datos
+	 * @param U, Club
+	 * @throws SQLException
+	 */
+	public static void addClub(Club u) throws SQLException {
+		conectar();
+		PreparedStatement addClub = conexion.prepareStatement("INSERT INTO Club "
+				+ "VALUES (?,?,?)");
+		addClub.setInt(1, u.getId());
+		addClub.setString(2, u.getNombre());
+		addClub.setString(3, u.getDir());
+		addClub.executeUpdate();
+		addClub.close();
+		cerrar();
+	}
 
 	/**
 	 * Metodo que borra una carrera de la base de datos
@@ -353,6 +413,21 @@ public class GestorDB {
 		deleteCarrera.close();
 		cerrar();
 	}
+	
+	/**
+	 * Metodo que borra un club de la base de datos
+	 * @param c
+	 * @throws SQLException
+	 */
+	public static void deleteClub(int id) throws SQLException {
+		conectar();
+		PreparedStatement deleteClub = conexion.prepareStatement("DELETE FROM CLUB WHERE Id_club = ?");
+		deleteClub.setInt(1, id);
+		deleteClub.executeUpdate();
+		deleteClub.close();
+		cerrar();
+	}
+	
 	
 	/**
 	 * Metodo que preeinscribe a un usuario en una carrera
