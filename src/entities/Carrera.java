@@ -3,18 +3,21 @@
  */
 package entities;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 
+import gestorBBDD.GestorDB;
 import logic.Categoria;
 import logic.Date;
 import logic.FechaInscripcion;
+import logic.GestorApp;
 
 /**
  * Clase que representa una carrera
- * @author Antonio Paya Gonzalez , Pablo Menendez y Sara Grimaldos
+ * @author Antonio Paya Gonzalez
  *
  */
 public class Carrera implements Comparable<Carrera>{
@@ -24,8 +27,6 @@ public class Carrera implements Comparable<Carrera>{
 	private ArrayList<Corredor> atletas;
 	private ArrayList<FechaInscripcion> fechas_inscripcion;
 	private ArrayList<Categoria> categorias;
-	//Para saber si la carrera está finalizada o no
-	private boolean finalizada;
 	
 	/**
 	 * Constructor con parametros de la clase
@@ -107,17 +108,15 @@ public class Carrera implements Comparable<Carrera>{
 	 * @return
 	 */
 	public boolean isFinalizada() {
-		return finalizada;
+		Calendar f = new GregorianCalendar();
+		String fecha_a = f.get(Calendar.DAY_OF_MONTH) + "/" + (f.get(Calendar.MONTH) + 1) + "/"
+				+ f.get(Calendar.YEAR);
+		Date fecha_actual = new Date(fecha_a);
+		Date fecha_fin = new Date(fecha);
+		fecha_fin.day = fecha_fin.day+1;
+		return fecha_actual.compareTo(fecha_fin) > 0 ? true: false;
 	}
-
-	/**
-	 * 
-	 * @param finalizada
-	 */
-	public void setFinalizada(boolean finalizada) {
-		this.finalizada = finalizada;
-	}
-
+	
 	/**
 	 * @return the id
 	 */
@@ -366,7 +365,25 @@ public class Carrera implements Comparable<Carrera>{
 		}
 	}
 	
-	
+	public void actualizaAtletas() {
+		atletas = (ArrayList<Corredor>) GestorApp.getTodosLosCorredores(this);
+	}
+	/**
+	 * Asigna un dorsal a cada atleta en función de la fecha de inscripción.Esta 
+	 * asignación de número de dorsal se realiza en orden creciente respecto a la fecha de inscripción, 
+	 * y se dejan los diez primeros números sin asignar para atender a posibles compromisos.
+	 * @throws SQLException 
+	 */
+	public void asignaDorsales() throws SQLException {
+		ordenarAtletas();
+		int cont = 10;
+		for (Corredor c : atletas) {
+			c.setDorsal(cont);
+			GestorDB.updateDorsal(c,cont);
+			cont++;
+		}
+		
+	}
 	
 
 }

@@ -8,7 +8,7 @@ Proyecto de la asignatura de Ingeniería del Proceso Software
 * Antonio Payá González UO251065
 * Mirza Ojeda Veira UO251443
 * Pablo Menéndez Suarez UO252406
-* Sara Grimaldos Rodríguez UO251443
+* Sara Grimaldos Rodríguez UO251782
 
 ### Detalles del Proyecto ###
 
