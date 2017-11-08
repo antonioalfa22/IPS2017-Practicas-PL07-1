@@ -1,11 +1,14 @@
-package igu;
+package iguPago;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
+import java.util.Calendar;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -22,6 +25,7 @@ import gestorBBDD.GestorDB;
 public class VentanaPago extends JDialog {
 
 	private static final long serialVersionUID = 1L;
+
 	private Carrera carrera;
 	private Usuario usuario;
 
@@ -32,6 +36,8 @@ public class VentanaPago extends JDialog {
 	private JPanel pnCentro;
 	private JLabel lblSeleccionFormaPago;
 	private JRadioButton rdbtnTransferenciaBancaria;
+	private JRadioButton rdbtnTarjetaDeCredito;
+	private final ButtonGroup buttonGroup = new ButtonGroup();
 
 	/**
 	 * Create the frame.
@@ -75,20 +81,34 @@ public class VentanaPago extends JDialog {
 			btnAceptar = new JButton("Aceptar");
 			btnAceptar.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					mostrarInfoPago();
+					if (rdbtnTarjetaDeCredito.isSelected()) {
+						mostrarVentanaTarjeta();
+					} else {
+						mostrarInfoPagoPorTransferencia();
+					}
 				}
 			});
-			btnAceptar.setEnabled(false);
+			btnAceptar.setEnabled(true);
 			btnAceptar.setActionCommand("OK");
 		}
 		return btnAceptar;
 	}
 
+	/**
+	 * Método privado auxiliar que muestra la ventana para rellenar los datos de la
+	 * tarjeta de crédito
+	 */
+	private void mostrarVentanaTarjeta() {
+		VentanaTarjeta vt = new VentanaTarjeta(usuario, carrera, this);
+		vt.setVisible(true);
+	}
+
 	private JPanel getPnCentro() {
 		if (pnCentro == null) {
 			pnCentro = new JPanel();
-			pnCentro.setLayout(new BorderLayout(0, 0));
-			pnCentro.add(getRdbtnTransferenciaBancaria(), BorderLayout.CENTER);
+			pnCentro.setLayout(new GridLayout(0, 1, 0, 0));
+			pnCentro.add(getRdbtnTransferenciaBancaria());
+			pnCentro.add(getRdbtnTarjetaDeCredito());
 		}
 		return pnCentro;
 	}
@@ -104,38 +124,46 @@ public class VentanaPago extends JDialog {
 	private JRadioButton getRdbtnTransferenciaBancaria() {
 		if (rdbtnTransferenciaBancaria == null) {
 			rdbtnTransferenciaBancaria = new JRadioButton("Transferencia Bancaria");
-			rdbtnTransferenciaBancaria.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					if (btnAceptar.isEnabled())
-						btnAceptar.setEnabled(false);
-					else
-						btnAceptar.setEnabled(true);
-				}
-			});
+			rdbtnTransferenciaBancaria.setSelected(true);
+			buttonGroup.add(rdbtnTransferenciaBancaria);
 			rdbtnTransferenciaBancaria.setHorizontalAlignment(SwingConstants.CENTER);
 		}
 		return rdbtnTransferenciaBancaria;
 	}
 
 	/**
-	 * Método que muestra en un diálogo el número de cuenta donde hay que depositar
-	 * la transferencia y el montante de la operación para que el usuario confirme
-	 * el pago el pago
+	 * Método que muestra un mensaje con la información de pago al usuario para que
+	 * confirme el pago por transferencia
 	 */
-	private void mostrarInfoPago() {
+	private void mostrarInfoPagoPorTransferencia() {
 		int option = JOptionPane.showConfirmDialog(this,
 				"Número de cuenta: " + carrera.getNum_cuenta() + "\nCantidad a pagar: " + carrera.getPrecio()
-						+" €\n¿Está conforme con el pago?",
-				"Información de pago", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+						+ " €\n¿Está conforme con el pago?",
+				"Información de pago", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
 		if (option == JOptionPane.YES_OPTION) {
 			try {
-				GestorDB.pagoPorTransferencia(carrera.getId(), usuario.getDni());
-				JOptionPane.showMessageDialog(this, "¡El pago por transferencia se ha realizado con éxito!",
-						"Transferencia completada", JOptionPane.INFORMATION_MESSAGE);
+				Calendar date = Calendar.getInstance();
+				String fecha_actual = date.get(Calendar.DAY_OF_MONTH) + "/" + (date.get(Calendar.MONTH) + 1) + "/"
+						+ date.get(Calendar.YEAR);
+				GestorDB.setFechaPago(usuario.getDni(), fecha_actual);
+				GestorDB.setNotasPago("Pendiente de confirmación", usuario.getDni(),carrera);
+				JOptionPane.showMessageDialog(this,
+						"Pago por transferencia escogido.\nDispone de 48 horas para confirmar la transferencia",
+						"Pago pendiente de confirmación", JOptionPane.INFORMATION_MESSAGE);
 				dispose();
 			} catch (SQLException ex) {
 				GestorDB.handleSQLException(ex);
 			}
 		}
 	}
+
+	private JRadioButton getRdbtnTarjetaDeCredito() {
+		if (rdbtnTarjetaDeCredito == null) {
+			rdbtnTarjetaDeCredito = new JRadioButton("Tarjeta de Cr\u00E9dito");
+			buttonGroup.add(rdbtnTarjetaDeCredito);
+			rdbtnTarjetaDeCredito.setHorizontalAlignment(SwingConstants.CENTER);
+		}
+		return rdbtnTarjetaDeCredito;
+	}
+
 }

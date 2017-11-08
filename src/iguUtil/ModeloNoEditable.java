@@ -1,4 +1,4 @@
-package igu;
+package iguUtil;
 
 import javax.swing.table.DefaultTableModel;
 

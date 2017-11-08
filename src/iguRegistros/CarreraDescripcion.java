@@ -1,4 +1,4 @@
-package igu;
+package iguRegistros;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -11,6 +11,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import entities.Carrera;
+import igu.VentanaPrincipal;
 import logic.GestorApp;
 
 import java.awt.event.ActionEvent;
@@ -40,7 +41,7 @@ public class CarreraDescripcion extends JDialog {
 	public CarreraDescripcion(Carrera c,GestorApp gestor) {
 		this.c = c;
 		setTitle(c.getNombre());
-		setBounds(100, 100, 527, 373);
+		setBounds(100, 100, 611, 373);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBackground(Color.LIGHT_GRAY);
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -89,10 +90,10 @@ public class CarreraDescripcion extends JDialog {
 			contentPanel.add(label);
 		}
 		{
-			JLabel label = new JLabel("Fecha inscripción: "+c.getFecha_inscripcion());
+			JLabel label = new JLabel("Fecha inscripción: De"+c.getFechaInscripcionActual().getFecha()+" a "+c.getFechaInscripcionActual().getFechaFin());
 			label.setForeground(Color.DARK_GRAY);
 			label.setFont(new Font("Source Sans Pro Semibold", Font.PLAIN, 12));
-			label.setBounds(311, 105, 166, 27);
+			label.setBounds(311, 105, 274, 27);
 			contentPanel.add(label);
 		}
 		{
@@ -166,14 +167,14 @@ public class CarreraDescripcion extends JDialog {
 			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
 			{
-				JButton btInscribirme = new JButton("Inscribirme");
+				JButton btInscribirme = new JButton(" Inscribirme como Usuario");
 				btInscribirme.setForeground(new Color(255, 255, 255));
 				btInscribirme.setFont(new Font("Century Gothic", Font.BOLD, 11));
 				btInscribirme.setBackground(new Color(60, 179, 113));
 				if(VentanaPrincipal.gestorCarreras.getNumPreinscritos(c) < c.getNum_max_part()) {
 					btInscribirme.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent arg0) {
-							Register dialog = new Register(c,gestor);
+							RegistroUsuario dialog = new RegistroUsuario(c,gestor);
 							dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 							dialog.setVisible(true);
 							dialog.setLocationRelativeTo(null);
@@ -186,6 +187,23 @@ public class CarreraDescripcion extends JDialog {
 					JOptionPane.showMessageDialog(null, "Ya se ha llenado el numero maximo de participantes",
 							"Carrera completa", JOptionPane.ERROR_MESSAGE);
 					btInscribirme.setEnabled(false);
+				}
+				{
+					JButton btnInscribirUnEquipo = new JButton(" Inscribir un Equipo");
+					btnInscribirUnEquipo.setForeground(Color.WHITE);
+					btnInscribirUnEquipo.setFont(new Font("Century Gothic", Font.BOLD, 11));
+					btnInscribirUnEquipo.setBackground(new Color(60, 179, 113));
+					btnInscribirUnEquipo.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent arg0) {
+							RegistroClub dialog = new RegistroClub(c,gestor);
+							dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+							dialog.setVisible(true);
+							dialog.setLocationRelativeTo(null);
+							dialog.setResizable(false);
+							
+						}
+					});
+					buttonPane.add(btnInscribirUnEquipo);
 				}
 				
 				buttonPane.add(btInscribirme);

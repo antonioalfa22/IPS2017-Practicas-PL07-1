@@ -2,24 +2,29 @@ package igu;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
+import org.joda.time.DateTime;
+import org.joda.time.Interval;
+
 import com.jtattoo.plaf.aluminium.AluminiumLookAndFeel;
 import com.toedter.calendar.JCalendar;
-
 import entities.Carrera;
+import gestorBBDD.GestorDB;
+import iguRegistros.CarreraDescripcion;
+import iguRegistros.RegistroCarrera;
 import logic.Date;
+import logic.FechaInscripcion;
 import logic.GestorApp;
-
 import java.awt.Font;
 import java.awt.Color;
 import javax.swing.JLabel;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -38,13 +43,17 @@ import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import javax.swing.JLayeredPane;
-
 import java.awt.CardLayout;
 import java.awt.SystemColor;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.SQLException;
+import javax.swing.JTextField;
+import javax.swing.JCheckBox;
 
 
 /**
@@ -75,6 +84,16 @@ public class VentanaPrincipal extends JFrame {
 	private JMenu mnUsuario;
 	private JMenuItem mntmVerCarreras;
 	private JMenuItem mntmClasificaciones;
+	private JLabel lbNombreCarreraFiltro;
+	private JTextField txtNombreCarrera;
+	private JLabel lbTipoCarreraFiltro;
+	private JCheckBox chckbxUrbana;
+	private JCheckBox chcbxMontain;
+	private String txtmemoria;
+	private JMenuItem mntmCrearCarrera;
+	private JMenuItem mntmSolicitarExtractoBancario;
+	
+	public final static String FICHERO_EXTRACTOS = "extractos.csv";
 
 
 	/**
@@ -101,8 +120,9 @@ public class VentanaPrincipal extends JFrame {
 
 	/**
 	 * Create the frame.
+	 * @throws SQLException 
 	 */
-	public VentanaPrincipal() {
+	public VentanaPrincipal() throws SQLException {
 		gestorCarreras = new GestorApp();
 		this.carreras = gestorCarreras.carreras;
 		setBackground(new Color(153, 153, 204));
@@ -118,6 +138,7 @@ public class VentanaPrincipal extends JFrame {
 		contentPane.setLayout(new BorderLayout(0, 0));
 		contentPane.add(getPanelSuperior(), BorderLayout.NORTH);
 		contentPane.add(getPanelCentro(), BorderLayout.CENTER);
+		actualizaDorsales();
 	}
 	
 	//==========================================================================================
@@ -138,20 +159,53 @@ public class VentanaPrincipal extends JFrame {
 	private JMenu getMnOrganizador() {
 		if (mnOrganizador == null) {
 			mnOrganizador = new JMenu("Organizador");
+			mnOrganizador.add(getMntmCrearCarrera());
 			mnOrganizador.add(getMntmGestionarcarreras());
 			mnOrganizador.add(getMntmClasificaciones());
+			mnOrganizador.add(getMntmSolicitarExtractoBancario());
 		}
 		return mnOrganizador;
 	}
+	
+	private JMenuItem getMntmSolicitarExtractoBancario() {
+		if (mntmSolicitarExtractoBancario == null) {
+			mntmSolicitarExtractoBancario = new JMenuItem("Solicitar extracto bancario");
+			mntmSolicitarExtractoBancario.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					mostrarInformeBancario();
+				}
+			});
+		}
+		return mntmSolicitarExtractoBancario;
+	}
+	
+	private JMenuItem getMntmCrearCarrera() {
+		if (mntmCrearCarrera == null) {
+			mntmCrearCarrera = new JMenuItem("Crear Carrera");
+			mntmCrearCarrera.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					RegistroCarrera dialog;
+					dialog = new RegistroCarrera();
+					dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+					dialog.setVisible(true);
+					dialog.setLocationRelativeTo(null);
+					dialog.setResizable(false);		
+				}
+			});
+			mntmCrearCarrera.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_K, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK));
+		}
+		return mntmCrearCarrera;
+	}
+	
 	private JMenuItem getMntmGestionarcarreras() {
 		if (mntmGestionarcarreras == null) {
 			mntmGestionarcarreras = new JMenuItem("GestionarCarreras");
 			mntmGestionarcarreras.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.CTRL_MASK));
 			mntmGestionarcarreras.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					VentanaSeleccionCarrera dialog;
+					VentanaInscritos dialog;
 					try {
-						dialog = new VentanaSeleccionCarrera();
+						dialog = new VentanaInscritos();
 						dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 						dialog.setVisible(true);
 						dialog.setLocationRelativeTo(null);
@@ -170,9 +224,9 @@ public class VentanaPrincipal extends JFrame {
 			mntmClasificaciones = new JMenuItem("Clasificaciones");
 			mntmClasificaciones.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					VentanaSeleccionCarreraClasificacion dialog;
+					VentanaClasificacion dialog;
 					try {
-						dialog = new VentanaSeleccionCarreraClasificacion();
+						dialog = new VentanaClasificacion();
 						dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 						dialog.setVisible(true);
 						dialog.setLocationRelativeTo(null);
@@ -307,7 +361,12 @@ public class VentanaPrincipal extends JFrame {
 					actualizarCarreras();
 				}
 			});
+			panelFiltros.add(getLbNombreCarreraFiltro());
+			panelFiltros.add(getLbTipoCarreraFiltro());
 			panelFiltros.add(calendar);
+			panelFiltros.add(getTxtNombreCarrera());
+			panelFiltros.add(getChckbxUrbana());
+			panelFiltros.add(getChcbxMontain());
 		}
 		return panelFiltros;
 	}
@@ -317,9 +376,84 @@ public class VentanaPrincipal extends JFrame {
 			lbFiltros = new JLabel("FILTROS:");
 			lbFiltros.setForeground(UIManager.getColor("Button.light"));
 			lbFiltros.setFont(new Font("Showcard Gothic", Font.BOLD | Font.ITALIC, 26));
-			lbFiltros.setBounds(23, 22, 140, 41);
+			lbFiltros.setBounds(10, 11, 140, 41);
 		}
 		return lbFiltros;
+	}
+	
+	private JLabel getLbNombreCarreraFiltro() {
+		if (lbNombreCarreraFiltro == null) {
+			lbNombreCarreraFiltro = new JLabel("Nombre Carrera:");
+			lbNombreCarreraFiltro.setForeground(SystemColor.controlHighlight);
+			lbNombreCarreraFiltro.setFont(new Font("Source Sans Pro Semibold", Font.PLAIN, 12));
+			lbNombreCarreraFiltro.setBounds(10, 57, 110, 19);
+		}
+		return lbNombreCarreraFiltro;
+	}
+	private JTextField getTxtNombreCarrera() {
+		if (txtNombreCarrera == null) {
+			txtNombreCarrera = new JTextField();
+			txtmemoria = "";
+			txtNombreCarrera.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					if(!txtmemoria.equals(txtNombreCarrera.getText())) {
+						txtmemoria = txtNombreCarrera.getText();
+						gestorCarreras = new GestorApp();
+						carreras = gestorCarreras.carreras;
+						ArrayList<Carrera> aeliminar = new ArrayList<Carrera>();
+						for (Carrera carrera : carreras) {
+							if(!carrera.getNombre().toLowerCase().contains(txtmemoria.toLowerCase()))aeliminar.add(carrera);
+						}
+						for (Carrera carrera : aeliminar) {
+							carreras.remove(carrera);
+						}
+						actualizarCarreras();
+					}
+				}
+			});
+			txtNombreCarrera.setFont(new Font("Source Sans Pro Semibold", Font.PLAIN, 11));
+			txtNombreCarrera.setBounds(122, 51, 239, 20);
+			txtNombreCarrera.setColumns(10);
+		}
+		return txtNombreCarrera;
+	}
+	private JLabel getLbTipoCarreraFiltro() {
+		if (lbTipoCarreraFiltro == null) {
+			lbTipoCarreraFiltro = new JLabel("Tipo Carrera:");
+			lbTipoCarreraFiltro.setForeground(SystemColor.controlHighlight);
+			lbTipoCarreraFiltro.setFont(new Font("Source Sans Pro Semibold", Font.PLAIN, 12));
+			lbTipoCarreraFiltro.setBounds(10, 88, 110, 19);
+		}
+		return lbTipoCarreraFiltro;
+	}
+	private JCheckBox getChckbxUrbana() {
+		if (chckbxUrbana == null) {
+			chckbxUrbana = new JCheckBox("Urbana");
+			chckbxUrbana.setForeground(Color.DARK_GRAY);
+			chckbxUrbana.setFont(new Font("Source Sans Pro Semibold", Font.BOLD, 12));
+			chckbxUrbana.setBounds(10, 116, 153, 23);
+			chckbxUrbana.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					comprobarCHC();		
+				}
+			});
+		}
+		return chckbxUrbana;
+	}
+
+	private JCheckBox getChcbxMontain() {
+		if (chcbxMontain == null) {
+			chcbxMontain = new JCheckBox("Montaña");
+			chcbxMontain.setForeground(Color.DARK_GRAY);
+			chcbxMontain.setFont(new Font("Source Sans Pro Semibold", Font.BOLD, 12));
+			chcbxMontain.setBounds(196, 115, 165, 24);
+			chcbxMontain.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					comprobarCHC();			
+				}
+			});
+		}
+		return chcbxMontain;
 	}
 	
 	//==========================================================================================
@@ -398,7 +532,7 @@ public class VentanaPrincipal extends JFrame {
 				gbc_lblFechaLimiteInscripcion.gridx = 3;
 				gbc_lblFechaLimiteInscripcion.gridy = ++fila;
 				if(numCarreras < carreras.size())
-					panel.add(getLblFechaLimiteInscripcion(null,carreras.get(numCarreras).getFecha_inscripcion()), 
+					panel.add(getLblFechaLimiteInscripcion(null,carreras.get(numCarreras).getFechaInscripcionActual()), 
 							gbc_lblFechaLimiteInscripcion);
 				fila++;
 				numCarreras++;
@@ -507,7 +641,7 @@ public class VentanaPrincipal extends JFrame {
 			btInscribirme.setFont(new Font("Segoe WP Semibold", Font.BOLD, 15));
 			Calendar fecha = new GregorianCalendar();
 			String fecha_actual = fecha.get(Calendar.DAY_OF_MONTH)+"/"+(fecha.get(Calendar.MONTH)+1)+"/"+fecha.get(Calendar.YEAR);
-			if(new Date(c.getFecha_inscripcion()).compareTo(new Date(fecha_actual)) < 0)
+			if(new Date(c.getFechaInscripcionActual().getFechaFin()).compareTo(new Date(fecha_actual)) < 0)
 					btInscribirme.setEnabled(false);
 			else {
 				btInscribirme.addMouseListener(new MouseAdapter() {
@@ -526,22 +660,23 @@ public class VentanaPrincipal extends JFrame {
 		return btInscribirme;
 	}
 	
-	private JLabel getLblFechaLimiteInscripcion(JLabel lblFechaLimiteInscripcion,String fecha) {
+	private JLabel getLblFechaLimiteInscripcion(JLabel lblFechaLimiteInscripcion,FechaInscripcion fecha) {
 		if (lblFechaLimiteInscripcion == null) {
-			lblFechaLimiteInscripcion = new JLabel("Fecha limite inscripcion: "+fecha);
+			lblFechaLimiteInscripcion = new JLabel("Inscripción-> De: "+fecha.getFecha()+" a "+fecha.getFechaFin());
 			lblFechaLimiteInscripcion.setForeground(new Color(47, 79, 79));
 			lblFechaLimiteInscripcion.setFont(new Font("Segoe WP Semibold", Font.PLAIN, 11));
 		}
 		return lblFechaLimiteInscripcion;
 	}
-	private JLabel getLbPrecio(JLabel lbPrecio,int precio) {
+	private JLabel getLbPrecio(JLabel lbPrecio,double precio) {
 		if (lbPrecio == null) {
-			lbPrecio = new JLabel(precio+ " €");
+			lbPrecio = new JLabel(precio+ "€");
 			lbPrecio.setForeground(Color.DARK_GRAY);
 			lbPrecio.setFont(new Font("Segoe UI Semibold", Font.BOLD | Font.ITALIC, 16));
 		}
 		return lbPrecio;
 	}
+	
 	
 	//==========================================================================================
 	//										LOGICA: 
@@ -561,6 +696,150 @@ public class VentanaPrincipal extends JFrame {
 		panelCentro.add(getPanelCarreras(), gbc_panelCarreras);
 		panelCentro.updateUI();
 		panelCarreras.updateUI();
+	}
+	
+	/**
+	 * Metodo que comprueba si se ha pulsado el checkbox de 
+	 * carrera de montaña o urbana
+	 */
+	protected void comprobarCHC() {
+		gestorCarreras = new GestorApp();
+		carreras = new ArrayList<Carrera>();
+		if(chcbxMontain.isSelected() && chckbxUrbana.isSelected()) {
+			carreras = gestorCarreras.carreras;
+		}else if(chcbxMontain.isSelected() && !chckbxUrbana.isSelected()) {
+			for (Carrera carrera : gestorCarreras.carreras) {
+				if(carrera.getTipo().equals("Montaña"))carreras.add(carrera);
+			}
+		}else if(!chcbxMontain.isSelected() && chckbxUrbana.isSelected()) {
+			for (Carrera carrera : gestorCarreras.carreras) {
+				if(carrera.getTipo().equals("Urbana"))carreras.add(carrera);
+			}
+		}
+		else {
+			carreras = gestorCarreras.carreras;
+		}
+		actualizarCarreras();		
+	}
+	
+	/**
+	 * Metodo que lee el fichero de extractos bancarios por peticion de un
+	 * organizador para mostrar un informe en pantalla con los datos leidos
+	 */
+	private void mostrarInformeBancario() {
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new FileReader(FICHERO_EXTRACTOS));
+			StringBuilder sb = new StringBuilder();
+			String linea = reader.readLine();
+			while (linea != null) {
+				String[] datos = linea.split(";");
+				actualizarPagos(datos);
+				sb.append("Nombre: " + datos[0] + " \n\tDNI: " + datos[1] + " \n\tCantidad pagada: " + datos[2]
+						+ "€\n\tFecha de pago: " + datos[3] + "\n\tID Carrera: " + datos[4] + "\n\n");
+				linea = reader.readLine();
+			}
+			JOptionPane.showMessageDialog(this, sb.toString().substring(0, sb.length() - 2), "Informe Bancario",
+					JOptionPane.INFORMATION_MESSAGE);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (reader != null) {
+				try {
+					reader.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Metodo que actualiza los pagos de los preinscritos por transferencia bancaria
+	 * en funcion de los datos proporcionados por el informe bancario
+	 * 
+	 * @param datos
+	 */
+	private void actualizarPagos(String[] datos) {
+
+		String DNI = datos[1];
+		int cantidad_pagada = Integer.parseInt(datos[2]);
+		String id_carrera = datos[4];
+
+		// Fecha de pago
+		String pago[] = datos[3].split("/");
+		DateTime fecha_pago = new DateTime(pago[2] + "-" + pago[1] + "-" + pago[0]);
+
+		try {
+
+			double cantidad_pagar = GestorDB.getPrecio(Integer.parseInt(id_carrera));
+
+			// Fecha de inicio
+			String[] inicio = GestorDB.getFechaInicio(Integer.parseInt(id_carrera)).split("/");
+			DateTime fecha_inicio = new DateTime(inicio[2] + "-" + inicio[1] + "-" + inicio[0]);
+			// Fecha de fin
+			String[] fin = GestorDB.getFechaFin(Integer.parseInt(id_carrera)).split("/");
+			DateTime fecha_fin = new DateTime(fin[2] + "-" + fin[1] + "-" + fin[0]);
+
+			Interval interval = new Interval(fecha_inicio, fecha_fin);
+			if (interval.contains(fecha_pago)) {
+				// Pagado de menos
+				if (cantidad_pagada < cantidad_pagar) {
+					try {
+						GestorDB.setNotasPago("Pagado de menos - Faltan " + (cantidad_pagar - cantidad_pagada) + "€",
+								DNI,gestorCarreras.getCarreras().stream().filter(x -> x.getId() == Integer.parseInt(id_carrera))
+								.findFirst().get());
+					} catch (SQLException ex) {
+						GestorDB.handleSQLException(ex);
+					}
+				}
+				// Pagado de mas
+				else if (cantidad_pagada > cantidad_pagar) {
+					try {
+						GestorDB.setNotasPago("Pagado de mas - Sobran " + (cantidad_pagada - cantidad_pagar) + "€",
+								DNI,gestorCarreras.getCarreras().stream().filter(x -> x.getId() == Integer.parseInt(id_carrera))
+								.findFirst().get());
+						GestorDB.pagar(Integer.parseInt(id_carrera), DNI);
+					} catch (SQLException ex) {
+						GestorDB.handleSQLException(ex);
+					}
+				}
+				// Pago correcto
+				else {
+					try {
+						GestorDB.setNotasPago("Pagado", DNI,gestorCarreras.getCarreras().stream().filter(x -> x.getId() == Integer.parseInt(id_carrera))
+								.findFirst().get());
+						GestorDB.pagar(Integer.parseInt(id_carrera), DNI);
+					} catch (SQLException ex) {
+						GestorDB.handleSQLException(ex);
+					}
+				}
+			}
+
+		} catch (SQLException ex) {
+			GestorDB.handleSQLException(ex);
+		}
+	}
+	
+	/**
+	 * Metodo que actualiza los dorsales cada vez que se
+	 * inicia la aplicación
+	 * @throws SQLException
+	 */
+	private void actualizaDorsales() throws SQLException {
+		Calendar fecha = new GregorianCalendar();
+		String ffaa = fecha.get(Calendar.DAY_OF_MONTH)+"/"+(fecha.get(Calendar.MONTH)+1)+"/"+fecha.get(Calendar.YEAR);
+		Date fActual = new Date(ffaa);
+		for(Carrera c:carreras) {
+			ArrayList<FechaInscripcion> fechas = c.getFechas_inscripcion();
+			Date d = new Date(fechas.get(fechas.size()-1).getFechaFin());//Coge la fecha fin de la ultima fecha de inscripcion posible
+			d.setDay(d.getDay()+2);//Le suma dos dias por posibles preinscritos
+			if(fActual.compareTo(d)>0) {
+				c.actualizaAtletas();
+				c.asignaDorsales();
+				
+			}
+		}
 	}
 	
 }

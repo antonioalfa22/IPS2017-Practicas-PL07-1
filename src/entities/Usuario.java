@@ -16,15 +16,12 @@ public class Usuario{
 
 	// Atributos del atleta
 	private String dni,nombre,fecha_nacimiento,direccion,localidad,codigo_postal,correo,contra;
-	private int genero,telefono;
-
-	// Constantes para el género del atleta
-	public final static int MASCULINO = 1;
-	public final static int FEMENINO = 0;
+	private String genero;
+	private int telefono;
 
 	
 	public Usuario(String dni,String nombre,String fecha,String dir,int telefono,String localidad,String cp,
-			String correo,String contra,int genero) {
+			String correo,String contra,String genero) {
 		setDni(dni);
 		setNombre(nombre);
 		setFecha_nacimiento(fecha);
@@ -34,6 +31,19 @@ public class Usuario{
 		setTelefono(telefono);
 		setCorreo(correo);
 		setContra(contra);
+		setGenero(genero);
+	}
+	
+	public Usuario(String dni,String nombre,String fecha,int telefono,String correo,String genero) {
+		setDni(dni);
+		setNombre(nombre);
+		setFecha_nacimiento(fecha);
+		setDireccion("");
+		setLocalidad("");
+		setCodigo_postal("");
+		setTelefono(telefono);
+		setCorreo(correo);
+		setContra("");
 		setGenero(genero);
 	}
 	
@@ -185,7 +195,7 @@ public class Usuario{
 	/**
 	 * @return the genero
 	 */
-	public int getGenero() {
+	public String getGenero() {
 		return genero;
 	}
 
@@ -194,7 +204,7 @@ public class Usuario{
 	/**
 	 * @param genero the genero to set
 	 */
-	public void setGenero(int genero) {
+	public void setGenero(String genero) {
 		this.genero = genero;
 	}
 
@@ -216,51 +226,6 @@ public class Usuario{
 		this.telefono = telefono;
 	}
 
-
-
-	/**
-	 * Método que devuelve la categoría asignada para el atleta en función de su
-	 * género y fecha de nacimiento. El género es un entero que puede tener dos
-	 * valores constantes: MASCULINO o FEMENINO.
-	 * 
-	 * @return categoria asignada al atleta, de entre las siguientes: Senior (18 a
-	 *         34 años), Veterano A (35 a 39 años), Veterano B (40 a 44 años),
-	 *         Veterano C (45 a 49 años), Veterano D (50 a 54 años), Veterano E (55
-	 *         a 59 años) y Veterano F (60 años o más). Todas ellas se hallan
-	 *         divididas por género. El resultado final es un String con formato:
-	 *         "Categoría - Género"
-	 */
-	public String getCategoria() {
-		// Cálculo auxiliar de la edad
-		
-		int edad = getEdad();
-		// Variable para contener la categoría
-		String categoria;
-		// DIVISIÓN POR EDAD
-		if (edad >= 18 && edad < 35) {
-			categoria = "Senior";
-		} else if (edad >= 35 && edad < 40) {
-			categoria = "Veterano A";
-		} else if (edad >= 40 && edad < 45) {
-			categoria = "Veterano B";
-		} else if (edad >= 45 && edad < 50) {
-			categoria = "Veterano C";
-		} else if (edad >= 50 && edad < 55) {
-			categoria = "Veterano D";
-		} else if (edad >= 55 && edad < 60) {
-			categoria = "Veterano E";
-		} else {
-			categoria = "Veterano F";
-		}
-		// DIVISIÓN POR GÉNERO
-		if (genero == MASCULINO) {
-			categoria += " - Masculino";
-		} else {
-			categoria += " - Femenino";
-		}
-		return categoria;
-	}
-
 	/**
 	 * Método privado auxiliar destinado al cálculo de la edad del atleta en función
 	 * de la fecha actual y su fecha de nacimiento. La fecha actual es un objeto
@@ -269,28 +234,13 @@ public class Usuario{
 	 * 
 	 * @return edad del atleta
 	 */
-	private int getEdad() {
+	public int getEdad() {
 		// Fecha actual
 		Calendar fecha_actual = Calendar.getInstance();
 		// Fecha de nacimiento del atleta, en un array con formato ["dd","mm","aaaa"]
 		String[] fecha = fecha_nacimiento.split("/");
-		// Variable para contener la edad
-		int edad;
-		if (fecha_actual.get(Calendar.MONTH) > (Integer.parseInt(fecha[1]))) {
-			// Si el mes actual es mayor que el de nacimiento
-			edad = fecha_actual.get(Calendar.YEAR) - Integer.parseInt(fecha[2]);
-		} else if (fecha_actual.get(Calendar.MONTH) == (Integer.parseInt(fecha[1]))) {
-			// Si el mes actual es el mismo que el de nacimiento
-			edad = fecha_actual.get(Calendar.YEAR) - Integer.parseInt(fecha[2]);
-			if (fecha_actual.get(Calendar.DAY_OF_MONTH) < (Integer.parseInt(fecha[0]))) {
-				// Si el día actual es menor que el de nacimiento
-				edad = edad - 1;
-			}
-		} else {
-			// Si el mes actual es menor que el de nacimiento
-			edad = fecha_actual.get(Calendar.YEAR) - Integer.parseInt(fecha[2]) - 1;
-		}
-		return edad;
+
+		return fecha_actual.get(Calendar.YEAR) - Integer.parseInt(fecha[2]);
 	}
 	
 	
@@ -309,8 +259,10 @@ public class Usuario{
 
 	
 	/**
-	 * Comprueba que el usuario esté inscrito o preinscrito en una determinada carrera
-	 * @param c carrera
+	 * Comprueba que el usuario esté inscrito o preinscrito en una determinada
+	 * carrera
+	 * 
+	 * @param c ,carrera
 	 * @return true si está inscrito,false si está preinscrito
 	 */
 	public boolean isInscrito(Carrera c) {
@@ -320,8 +272,8 @@ public class Usuario{
 		} catch (SQLException e) {
 			GestorDB.handleSQLException(e);
 		}
-		for(Corredor co:corredores) {
-			if(this.getDni()==co.getDni()) {
+		for (Corredor co : corredores) {
+			if (getDni().equals(co.getDni())) {
 				return true;
 			}
 		}
