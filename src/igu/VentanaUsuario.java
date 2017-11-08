@@ -9,7 +9,12 @@ import javax.swing.border.EmptyBorder;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 import javax.swing.JLabel;
 import java.awt.Font;
@@ -21,25 +26,19 @@ import javax.swing.event.ListSelectionListener;
 import entities.Carrera;
 import entities.Corredor;
 import entities.Usuario;
+import gestorBBDD.GestorDB;
 import logic.GestorApp;
 
 import java.awt.CardLayout;
 import java.awt.GridBagLayout;
 import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.JTextField;
 import javax.swing.JList;
-import java.awt.SystemColor;
-import javax.swing.border.LineBorder;
-import javax.swing.SwingConstants;
-
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import javax.swing.JScrollPane;
 
 /**
  * 
@@ -56,6 +55,7 @@ public class VentanaUsuario extends JDialog {
 	private JPanel pnSubInfo;
 	private JLabel lblNombre;
 	private JLabel lblDNI;
+	private JLabel lblEdad;
 	private JPanel pnCard;
 	private JPanel pnClasificaciones;
 	private JPanel pnSubClasis;
@@ -71,6 +71,7 @@ public class VentanaUsuario extends JDialog {
 	private JLabel lblAccesoClasificacin;
 	private JLabel lbDatosNombre;
 	private JLabel lbDatosDNI;
+	private JLabel lbDatosCategoria;
 	private JLabel lblFecha;
 	private JLabel lbDatosFecha;
 	private JLabel lblDireccion;
@@ -79,10 +80,8 @@ public class VentanaUsuario extends JDialog {
 	private JLabel lbDatosCodigo;
 	private JLabel lblCorreo;
 	private JLabel lbDatosCorreo;
-	private JLabel lbDatosEdad;
 	private JLabel lblLocalidad;
 	private JLabel lbDatosLocalidad;
-	private JLabel lblEdad;
 	
 	
 	private Usuario user;
@@ -105,19 +104,15 @@ public class VentanaUsuario extends JDialog {
 	private JList<Usuario> listaUsuarios;
 	private DefaultListModel<Usuario> modeloLista;
 	private GestorApp gestor;
-	
 	private final static int DNI = 1,NOMBRE = 2,CORREO = 3;
 	private int rbSeleccionado;
 	private JScrollPane scrollPane;
 	private String txtmemoria;
 	
-	
 	/**
 	 * Create the frame.
 	 */
 	public VentanaUsuario(GestorApp g) {
-		setModal(true);
-		setResizable(false);
 		rbSeleccionado = DNI;
 		this.gestor = g;
 		setTitle("Ventana Usuario");
@@ -126,7 +121,7 @@ public class VentanaUsuario extends JDialog {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
 		setContentPane(contentPane);
-		contentPane.add(getPanelBusqueda(), BorderLayout.SOUTH);
+		contentPane.add(getPanelBusqueda(), BorderLayout.NORTH);
 		contentPane.add(getPnInfoPersonal(), BorderLayout.WEST);
 		contentPane.add(getPanel_2(), BorderLayout.CENTER);
 		if(user!=null) {
@@ -139,7 +134,6 @@ public class VentanaUsuario extends JDialog {
 	private JPanel getPnInfoPersonal() {
 		if (pnInfoPersonal == null) {
 			pnInfoPersonal = new JPanel();
-			pnInfoPersonal.setBackground(SystemColor.activeCaption);
 			pnInfoPersonal.setLayout(new GridLayout(1, 1, 0, 0));
 			pnInfoPersonal.add(getPnInfo());
 		}
@@ -148,8 +142,7 @@ public class VentanaUsuario extends JDialog {
 	private JPanel getPnInfo() {
 		if (pnInfo == null) {
 			pnInfo = new JPanel();
-			pnInfo.setBackground(new Color(210, 180, 140));
-			pnInfo.setBorder(new MatteBorder(3, 3, 2, 2, (Color) new Color(0, 0, 0)));
+			pnInfo.setBorder(new MatteBorder(2, 2, 2, 2, (Color) new Color(0, 0, 0)));
 			pnInfo.setLayout(new BorderLayout(0, 0));
 			pnInfo.add(getLbInfo(), BorderLayout.NORTH);
 			pnInfo.add(getPnSubInfo(), BorderLayout.CENTER);
@@ -159,23 +152,20 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLbInfo() {
 		if (lbInfo == null) {
 			lbInfo = new JLabel("Informaci\u00F3n personal");
-			lbInfo.setBackground(SystemColor.desktop);
-			lbInfo.setFont(new Font("Tahoma", Font.BOLD, 19));
+			lbInfo.setFont(new Font("Tahoma", Font.PLAIN, 19));
 		}
 		return lbInfo;
 	}
 	private JPanel getPnSubInfo() {
 		if (pnSubInfo == null) {
 			pnSubInfo = new JPanel();
-			pnSubInfo.setBorder(new MatteBorder(2, 0, 0, 0, (Color) new Color(0, 0, 0)));
-			pnSubInfo.setBackground(SystemColor.info);
-			pnSubInfo.setLayout(new GridLayout(0, 2, 0, 0));
+			pnSubInfo.setLayout(new GridLayout(8, 2, 0, 0));
 			pnSubInfo.add(getLblNombre());
 			pnSubInfo.add(getLbDatosNombre());
 			pnSubInfo.add(getLblDNI());
 			pnSubInfo.add(getLbDatosDNI());
 			pnSubInfo.add(getLbEdad());
-			pnSubInfo.add(getLbDatosEdad());
+			pnSubInfo.add(getLbDatosCategoria());
 			pnSubInfo.add(getLblFecha());
 			pnSubInfo.add(getLbDatosFecha());
 			pnSubInfo.add(getLblDireccion());
@@ -192,7 +182,6 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLblNombre() {
 		if (lblNombre == null) {
 			lblNombre = new JLabel("  Nombre:");
-			lblNombre.setForeground(new Color(255, 0, 0));
 			lblNombre.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lblNombre;
@@ -200,25 +189,21 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLblDNI() {
 		if (lblDNI == null) {
 			lblDNI = new JLabel("  DNI:");
-			lblDNI.setForeground(new Color(255, 0, 0));
 			lblDNI.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lblDNI;
 	}
-	
 	private JLabel getLbEdad() {
 		if (lblEdad == null) {
 			lblEdad = new JLabel("  Edad:");
-			lblEdad.setForeground(Color.RED);
 			lblEdad.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lblEdad;
 	}
-	
 	private JPanel getPanel_2() {
 		if (pnCard == null) {
 			pnCard = new JPanel();
-			pnCard.setBorder(new MatteBorder(3, 2, 2, 3, (Color) new Color(0, 0, 0)));
+			pnCard.setBorder(new MatteBorder(2, 2, 2, 2, (Color) new Color(0, 0, 0)));
 			pnCard.setLayout(new CardLayout(0, 0));
 			pnCard.add(getPanel_1_1(), "carreras");
 			pnCard.add(getPnClasificaciones(), "clasificacion");
@@ -228,22 +213,12 @@ public class VentanaUsuario extends JDialog {
 	private JPanel getPnClasificaciones() {
 		if (pnClasificaciones == null) {
 			pnClasificaciones = new JPanel();
-			pnClasificaciones.setBackground(new Color(210, 180, 140));
 			pnClasificaciones.setLayout(new BorderLayout(0, 0));
 			pnClasificaciones.add(getPnSubClasis(), BorderLayout.CENTER);
 			pnClasificaciones.add(getLblClasificacion(), BorderLayout.NORTH);
 		}
 		return pnClasificaciones;
 	}
-	
-	private JLabel getLbDatosEdad() {
-		if (lbDatosEdad == null) {
-			lbDatosEdad = new JLabel("");
-			lbDatosEdad.setHorizontalAlignment(SwingConstants.CENTER);
-		}
-		return lbDatosEdad;
-	}
-	
 	private JPanel getPnSubClasis() {
 		if (pnSubClasis == null) {
 			pnSubClasis = new JPanel();
@@ -282,8 +257,6 @@ public class VentanaUsuario extends JDialog {
 	private JPanel getPanel_1_3() {
 		if (pnSelectCarrera == null) {
 			pnSelectCarrera = new JPanel();
-			pnSelectCarrera.setBorder(new MatteBorder(2, 0, 0, 0, (Color) new Color(0, 0, 0)));
-			pnSelectCarrera.setBackground(SystemColor.info);
 			pnSelectCarrera.setLayout(new GridLayout(2,0,0,0));
 		}
 		return pnSelectCarrera;
@@ -291,8 +264,6 @@ public class VentanaUsuario extends JDialog {
 	private JPanel getPanel_1_4() {
 		if (pnEstadoInscripcion == null) {
 			pnEstadoInscripcion = new JPanel();
-			pnEstadoInscripcion.setBorder(new MatteBorder(2, 2, 0, 0, (Color) new Color(0, 0, 0)));
-			pnEstadoInscripcion.setBackground(SystemColor.info);
 			pnEstadoInscripcion.setLayout(new GridLayout(1, 0, 0, 0));
 		}
 		return pnEstadoInscripcion;
@@ -300,8 +271,6 @@ public class VentanaUsuario extends JDialog {
 	private JPanel getPanel_1_5() {
 		if (pnAccederClasificacion == null) {
 			pnAccederClasificacion = new JPanel();
-			pnAccederClasificacion.setBorder(new MatteBorder(2, 2, 0, 0, (Color) new Color(0, 0, 0)));
-			pnAccederClasificacion.setBackground(SystemColor.info);
 			pnAccederClasificacion.setLayout(new GridLayout(1, 0, 0, 0));
 		}
 		return pnAccederClasificacion;
@@ -309,53 +278,55 @@ public class VentanaUsuario extends JDialog {
 	private JPanel getPnLabelsCarreras() {
 		if (pnLabelsCarreras == null) {
 			pnLabelsCarreras = new JPanel();
-			pnLabelsCarreras.setBackground(new Color(210, 180, 140));
 			pnLabelsCarreras.setLayout(new GridLayout(0, 3, 0, 0));
-			pnLabelsCarreras.add(getLblCarrerasInscritas());
+			pnLabelsCarreras.add(getLblCarrerasDisponibles());
 			pnLabelsCarreras.add(getLblEstadoInscripcion());
 			pnLabelsCarreras.add(getLblAccesoClasificacin());
 		}
 		return pnLabelsCarreras;
 	}
-	private JLabel getLblCarrerasInscritas() {
+	private JLabel getLblCarrerasDisponibles() {
 		if (lblCarrerasDisponibles == null) {
-			lblCarrerasDisponibles = new JLabel("Carreras inscritas");
-			lblCarrerasDisponibles.setFont(new Font("Tahoma", Font.BOLD, 19));
+			lblCarrerasDisponibles = new JLabel("Carreras disponibles");
+			lblCarrerasDisponibles.setFont(new Font("Tahoma", Font.PLAIN, 19));
 		}
 		return lblCarrerasDisponibles;
 	}
 	private JLabel getLblEstadoInscripcion() {
 		if (lblEstadoInscripcion == null) {
 			lblEstadoInscripcion = new JLabel(" Estado inscripci\u00F3n");
-			lblEstadoInscripcion.setFont(new Font("Tahoma", Font.BOLD, 19));
+			lblEstadoInscripcion.setFont(new Font("Tahoma", Font.PLAIN, 19));
 		}
 		return lblEstadoInscripcion;
 	}
 	private JLabel getLblAccesoClasificacin() {
 		if (lblAccesoClasificacin == null) {
 			lblAccesoClasificacin = new JLabel("Acceso clasificaci\u00F3n");
-			lblAccesoClasificacin.setFont(new Font("Tahoma", Font.BOLD, 19));
+			lblAccesoClasificacin.setFont(new Font("Tahoma", Font.PLAIN, 19));
 		}
 		return lblAccesoClasificacin;
 	}
 	private JLabel getLbDatosNombre() {
 		if (lbDatosNombre == null) {
 			lbDatosNombre = new JLabel("");
-			lbDatosNombre.setHorizontalAlignment(SwingConstants.CENTER);
 		}
 		return lbDatosNombre;
 	}
 	private JLabel getLbDatosDNI() {
 		if (lbDatosDNI == null) {
 			lbDatosDNI = new JLabel("");
-			lbDatosDNI.setHorizontalAlignment(SwingConstants.CENTER);
 		}
 		return lbDatosDNI;
+	}
+	private JLabel getLbDatosCategoria() {
+		if (lbDatosCategoria == null) {
+			lbDatosCategoria = new JLabel("");
+		}
+		return lbDatosCategoria;
 	}
 	private JLabel getLblFecha() {
 		if (lblFecha == null) {
 			lblFecha = new JLabel("  Fecha de nacimiento:");
-			lblFecha.setForeground(new Color(255, 0, 0));
 			lblFecha.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lblFecha;
@@ -363,14 +334,12 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLbDatosFecha() {
 		if (lbDatosFecha == null) {
 			lbDatosFecha = new JLabel("");
-			lbDatosFecha.setHorizontalAlignment(SwingConstants.CENTER);
 		}
 		return lbDatosFecha;
 	}
 	private JLabel getLblDireccion() {
 		if (lblDireccion == null) {
 			lblDireccion = new JLabel("  Direcci\u00F3n:");
-			lblDireccion.setForeground(new Color(255, 0, 0));
 			lblDireccion.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lblDireccion;
@@ -378,14 +347,12 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLbDatosDireccion() {
 		if (lbDatosDireccion == null) {
 			lbDatosDireccion = new JLabel("");
-			lbDatosDireccion.setHorizontalAlignment(SwingConstants.CENTER);
 		}
 		return lbDatosDireccion;
 	}
 	private JLabel getLblCodigoPostal() {
 		if (lblCodigoPostal == null) {
 			lblCodigoPostal = new JLabel("  Codigo Postal:");
-			lblCodigoPostal.setForeground(new Color(255, 0, 0));
 			lblCodigoPostal.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lblCodigoPostal;
@@ -393,14 +360,12 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLbDatosCodigo() {
 		if (lbDatosCodigo == null) {
 			lbDatosCodigo = new JLabel("");
-			lbDatosCodigo.setHorizontalAlignment(SwingConstants.CENTER);
 		}
 		return lbDatosCodigo;
 	}
 	private JLabel getLblCorreo() {
 		if (lblCorreo == null) {
 			lblCorreo = new JLabel("  Correo:");
-			lblCorreo.setForeground(new Color(255, 0, 0));
 			lblCorreo.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lblCorreo;
@@ -408,14 +373,12 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLbDatosCorreo() {
 		if (lbDatosCorreo == null) {
 			lbDatosCorreo = new JLabel("");
-			lbDatosCorreo.setHorizontalAlignment(SwingConstants.CENTER);
 		}
 		return lbDatosCorreo;
 	}
 	private JLabel getLblLocalidad() {
 		if (lblLocalidad == null) {
 			lblLocalidad = new JLabel("  Localidad");
-			lblLocalidad.setForeground(new Color(255, 0, 0));
 			lblLocalidad.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lblLocalidad;
@@ -423,7 +386,6 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLbDatosLocalidad() {
 		if (lbDatosLocalidad == null) {
 			lbDatosLocalidad = new JLabel("");
-			lbDatosLocalidad.setHorizontalAlignment(SwingConstants.CENTER);
 		}
 		return lbDatosLocalidad;
 	}
@@ -432,7 +394,6 @@ public class VentanaUsuario extends JDialog {
 	private JPanel getPnAtras() {
 		if (pnAtras == null) {
 			pnAtras = new JPanel();
-			pnAtras.setBackground(SystemColor.info);
 			pnAtras.setLayout(new BorderLayout(0, 0));
 			pnAtras.add(getBtnAtrs(), BorderLayout.SOUTH);
 		}
@@ -453,7 +414,6 @@ public class VentanaUsuario extends JDialog {
 	private JPanel getPanel_1() {
 		if (pnResultados == null) {
 			pnResultados = new JPanel();
-			pnResultados.setBackground(SystemColor.info);
 			pnResultados.setLayout(new GridLayout(3, 3, 0, 0));
 			pnResultados.add(getLbTiempo());
 			pnResultados.add(getLbDatosTiempo());
@@ -467,7 +427,6 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLbTiempo() {
 		if (lbTiempo == null) {
 			lbTiempo = new JLabel("  Tiempo:");
-			lbTiempo.setForeground(new Color(255, 0, 0));
 			lbTiempo.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lbTiempo;
@@ -481,7 +440,6 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLbPosAbsoluta() {
 		if (lbPosAbsoluta == null) {
 			lbPosAbsoluta = new JLabel("  Posicion Absoluta:");
-			lbPosAbsoluta.setForeground(new Color(255, 0, 0));
 			lbPosAbsoluta.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lbPosAbsoluta;
@@ -495,7 +453,6 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLbPosCategoria() {
 		if (lbPosCategoria == null) {
 			lbPosCategoria = new JLabel("  Posicion en Categor\u00EDa:");
-			lbPosCategoria.setForeground(new Color(255, 0, 0));
 			lbPosCategoria.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lbPosCategoria;
@@ -514,53 +471,76 @@ public class VentanaUsuario extends JDialog {
 		pnSelectCarrera.removeAll();
 		pnEstadoInscripcion.removeAll();
 		pnAccederClasificacion.removeAll();
-		
+
 		ArrayList<Carrera> carreras = user.getCarreras();
 		int filas = carreras.size();
 		updateLayout(filas);
-		for(Carrera c:carreras) {
+		for (Carrera c : carreras) {
 			c.setFinalizada(true);
-			JLabel l = new JLabel(" "+c.getNombre());
-			l.setHorizontalAlignment(SwingConstants.CENTER);
-			pnSelectCarrera.add(l);
+			pnSelectCarrera.add(new JLabel(" " + c.getNombre()));
 			pnSelectCarrera.doLayout();
-			if(user.isInscrito(c)) {
-				pnEstadoInscripcion.add(new JLabel("Pagada"));
-				pnEstadoInscripcion.doLayout();
-				
-			}else {
-				JLabel pago = new JLabel("Pendiente de pago");
-				pago.setHorizontalAlignment(SwingConstants.CENTER);
-				JButton btn = new JButton("Pagar");
-				btn.setBackground(SystemColor.window);
-				for (Corredor u : gestor.getTodosLosCorredores(c)) {
-					if(u.getDni().equals(user.getDni())) {
-						btn.setEnabled(false);
-						pago.setText("Pagada");
-					}
-						
+
+			if (user.isInscrito(c)) {
+				try {
+					pnEstadoInscripcion.add(new JLabel(GestorDB.getNotasPagoInscrito(user.getDni(),c)));
+				} catch (SQLException ex) {
+					GestorDB.handleSQLException(ex);
 				}
-				pnEstadoInscripcion.add(pago);
-				pnEstadoInscripcion.add(btn);
-				btn.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						VentanaPago vp = new VentanaPago(c,user);
-						vp.setVisible(true);
-						dispose();
-					}
-				});
 			}
+
+			String date = null;
+			try {
+				date = GestorDB.getFechaPago(user.getDni());
+			} catch (SQLException ex) {
+				GestorDB.handleSQLException(ex);
+			}
+
+			if (date != null) {
+				String[] fecha_pago = date.split("/");
+				Calendar fecha_actual = Calendar.getInstance();
+				GregorianCalendar auxDate = new GregorianCalendar(Integer.parseInt(fecha_pago[0]),
+						Integer.parseInt(fecha_pago[1]), Integer.parseInt(fecha_pago[2]));
+
+				// CASOS: Año actual mayor que el de pago / Mismo año, y mes actual al menos 2
+				// unidades mayor que el de pago / Mismo año y mes, y día actual más de 2
+				// unidades mayor que el de pago / Mismo año, y mes actual posterior al de pago,
+				// y día actual más de 2 unidades mayor que el de pago
+				if (fecha_actual.get(Calendar.YEAR) > Integer.parseInt(fecha_pago[2])
+						|| (fecha_actual.get(Calendar.YEAR) == Integer.parseInt(fecha_pago[2])
+								&& fecha_actual.get(Calendar.MONTH) + 1 - Integer.parseInt(fecha_pago[1]) >= 2)
+						|| (fecha_actual.get(Calendar.YEAR) == Integer.parseInt(fecha_pago[2])
+								&& fecha_actual.get(Calendar.MONTH) + 1 == Integer.parseInt(fecha_pago[1])
+								&& fecha_actual.get(Calendar.DAY_OF_MONTH) - Integer.parseInt(fecha_pago[0]) > 2)
+						|| (fecha_actual.get(Calendar.YEAR) == Integer.parseInt(fecha_pago[2])
+								&& fecha_actual.get(Calendar.MONTH) + 1 - Integer.parseInt(fecha_pago[1]) == 1
+								&& fecha_actual.get(Calendar.DAY_OF_MONTH)
+										+ (auxDate.getActualMaximum(GregorianCalendar.DAY_OF_MONTH)
+												- Integer.parseInt(fecha_pago[0])) > 2)) {
+					pnEstadoInscripcion.add(new JLabel("Cancelada - Límite de 48h superado"));
+					try {
+						GestorDB.setNotasPago("Cancelada - Límite de 48h superado", user.getDni(),c);
+					} catch (SQLException ex) {
+						GestorDB.handleSQLException(ex);
+					}
+				} else {
+					try {
+						pnEstadoInscripcion.add(new JLabel(GestorDB.getNotasPagoPreinscrito(user.getDni(),c)));
+					} catch (SQLException ex) {
+						GestorDB.handleSQLException(ex);
+					}
+				}
+			}
+
 			JButton btn = new JButton("Ver clasificación");
-			btn.setBackground(SystemColor.window);
 			pnAccederClasificacion.add(btn);
-			if(c.isFinalizada()) {
+			if (c.isFinalizada()) {
 				pnAccederClasificacion.setEnabled(true);
 				btn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						mostrarClasificacion(c);
 					}
 				});
-			}else {
+			} else {
 				btn.setEnabled(false);
 			}
 		}
@@ -574,18 +554,16 @@ public class VentanaUsuario extends JDialog {
 
 	}
 
+
 	private void mostrarClasificacion(Carrera c) {
 		CardLayout cl = (CardLayout) pnCard.getLayout();
 		cl.show(pnCard, "clasificacion");
 		lblClasificacion.setText("Clasificación " + c.getNombre() + ":");
-		if (user != null) {
-
-			Corredor corredor = user.getCorredor(c);
-
-			lbDatosTiempo.setText(corredor.getTiempo());
+		Corredor corredor = user.getCorredor(c);
+		if(user!=null) {
+			lbDatosTiempo.setText(corredor.getTiempo()==null?"DNR":corredor.getTiempo()+"");
 			lbDatosPosAbsoluta.setText(corredor.getPosicionAbsoluta());
 			lbDatosPosCategoria.setText(corredor.getPosicionCategoria());
-
 		}
 
 	}
@@ -593,26 +571,23 @@ public class VentanaUsuario extends JDialog {
 	private void updateInfoUsuario() {
 		lbDatosNombre.setText(user.getNombre());
 		lbDatosDNI.setText(user.getDni());
+		lbDatosCategoria.setText(user.getEdad()+"");
 		lbDatosCodigo.setText(user.getCodigo_postal());
 		lbDatosCorreo.setText(user.getCorreo());
 		lbDatosFecha.setText(user.getFecha_nacimiento());
 		lbDatosDireccion.setText(user.getDireccion());
 		lbDatosLocalidad.setText(user.getLocalidad());
-		lbDatosEdad.setText(user.getEdad()+"");
 	}
 	
 	
 	private JPanel getPanelBusqueda() {
 		if (panelBusqueda == null) {
 			panelBusqueda = new JPanel();
-			panelBusqueda.setForeground(new Color(210, 180, 140));
-			panelBusqueda.setBorder(new MatteBorder(0, 2, 2, 2, (Color) new Color(0, 0, 0)));
-			panelBusqueda.setBackground(new Color(210, 180, 140));
 			GridBagLayout gbl_panelBusqueda = new GridBagLayout();
 			gbl_panelBusqueda.columnWidths = new int[]{137, 86, 114, 136, 0, 0};
-			gbl_panelBusqueda.rowHeights = new int[]{24, 17, 31, 0, 0};
-			gbl_panelBusqueda.columnWeights = new double[]{0.0, 1.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
-			gbl_panelBusqueda.rowWeights = new double[]{0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+			gbl_panelBusqueda.rowHeights = new int[]{24, 17, 31, 69, 0};
+			gbl_panelBusqueda.columnWeights = new double[]{1.0, 1.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+			gbl_panelBusqueda.rowWeights = new double[]{0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
 			panelBusqueda.setLayout(gbl_panelBusqueda);
 			GridBagConstraints gbc_lblBuscarPor = new GridBagConstraints();
 			gbc_lblBuscarPor.insets = new Insets(0, 0, 5, 5);
@@ -654,14 +629,14 @@ public class VentanaUsuario extends JDialog {
 	private JRadioButton getRbDNI() {
 		if (rbDNI == null) {
 			rbDNI = new JRadioButton("DNI");
-			rbDNI.setBackground(SystemColor.info);
 			buttonGroup.add(rbDNI);
 			rbDNI.setFont(new Font("Tahoma", Font.ITALIC, 13));
+			rbDNI.setSelected(true);
 			rbDNI.addItemListener(new ItemListener() {
 				public void itemStateChanged(ItemEvent e) {
 					if(e.getStateChange()==ItemEvent.SELECTED){
 						rbSeleccionado = DNI;
-					//	txtDatos.setText("");
+						txtDatos.setText("");
 					}
 				}
 			});
@@ -671,10 +646,8 @@ public class VentanaUsuario extends JDialog {
 	private JRadioButton getRbNombre() {
 		if (rbNombre == null) {
 			rbNombre = new JRadioButton("Nombre");
-			rbNombre.setBackground(SystemColor.info);
 			buttonGroup.add(rbNombre);
 			rbNombre.setFont(new Font("Tahoma", Font.ITALIC, 13));
-			rbDNI.setSelected(true);
 			rbNombre.addItemListener(new ItemListener() {
 				public void itemStateChanged(ItemEvent e) {
 					if(e.getStateChange()==ItemEvent.SELECTED){
@@ -683,14 +656,12 @@ public class VentanaUsuario extends JDialog {
 					}
 				}
 			});
-			
 		}
 		return rbNombre;
 	}
 	private JRadioButton getRdbtnCorreo() {
 		if (rdbtnCorreo == null) {
 			rdbtnCorreo = new JRadioButton("Correo");
-			rdbtnCorreo.setBackground(SystemColor.info);
 			buttonGroup.add(rdbtnCorreo);
 			rdbtnCorreo.setFont(new Font("Tahoma", Font.ITALIC, 13));
 			rdbtnCorreo.addItemListener(new ItemListener() {
@@ -701,55 +672,16 @@ public class VentanaUsuario extends JDialog {
 					}
 				}
 			});
-			
 		}
 		return rdbtnCorreo;
 	}
 	private JLabel getLblBuscarPor() {
 		if (lblBuscarPor == null) {
 			lblBuscarPor = new JLabel("Buscar por:");
-			lblBuscarPor.setFont(new Font("Tahoma", Font.BOLD, 13));
-			
+			lblBuscarPor.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lblBuscarPor;
 	}
-	
-	private JList<Usuario> getListaUsuarios() {
-		if (listaUsuarios == null) {
-			listaUsuarios = new JList<Usuario>();
-			listaUsuarios.setBackground(SystemColor.info);
-			modelList();
-			listaUsuarios.setModel(modeloLista);
-		    listaUsuarios.addListSelectionListener(new ListSelectionListener() {
-		        public void valueChanged(ListSelectionEvent lse) {
-		            if (lse.getValueIsAdjusting()) {
-		            	muestraPnCarreras();
-		            	user = listaUsuarios.getSelectedValue();
-		            	updateInfoCarreras();
-		            	updateInfoUsuario();
-		            	contentPane.updateUI();
-		            }
-		        }
-		    });
-		}
-		return listaUsuarios;
-	}
-	
-	private void muestraPnCarreras() {
-		CardLayout cl = (CardLayout) pnCard.getLayout();
-		cl.show(pnCard,"carreras");
-	}
-	
-	
-	private DefaultListModel<Usuario> modelList(){
-		   modeloLista = new DefaultListModel<>();
-		   ArrayList<Usuario> usuarios = gestor.getUsuarios();
-		   for (Usuario usuario : usuarios) {
-			   modeloLista.addElement(usuario);
-		   }
-		   return modeloLista;
-	}
-	
 	private JTextField getTxtDatos() {
 		if (txtDatos == null) {
 			txtDatos = new JTextField();
@@ -767,7 +699,40 @@ public class VentanaUsuario extends JDialog {
 		}
 		return txtDatos;
 	}
+	private JList<Usuario> getListaUsuarios() {
+		if (listaUsuarios == null) {
+			listaUsuarios = new JList<Usuario>();
+			modelList();
+			listaUsuarios.setModel(modeloLista);
+		    listaUsuarios.addListSelectionListener(new ListSelectionListener() {
+		        public void valueChanged(ListSelectionEvent lse) {
+		            if (lse.getValueIsAdjusting()) {
+		            	user = listaUsuarios.getSelectedValue();
+		            	updateInfoCarreras();
+		            	updateInfoUsuario();
+		            	contentPane.updateUI();
+		            }
+		        }
+		    });
+		}
+		return listaUsuarios;
+	}
 	
+	private DefaultListModel<Usuario> modelList(){
+		   modeloLista = new DefaultListModel<>();
+		   ArrayList<Usuario> usuarios = gestor.getUsuarios();
+		   for (Usuario usuario : usuarios) {
+			   modeloLista.addElement(usuario);
+		   }
+		   return modeloLista;
+	}
+	private JScrollPane getScrollPane() {
+		if (scrollPane == null) {
+			scrollPane = new JScrollPane();
+			scrollPane.setViewportView(getListaUsuarios());
+		}
+		return scrollPane;
+	}
 	
 	private void actualizarLista() {
 		modeloLista = new DefaultListModel<>();
@@ -783,16 +748,5 @@ public class VentanaUsuario extends JDialog {
 	    	
 	    }
 	    listaUsuarios.setModel(modeloLista);
-	}
-	
-	
-	private JScrollPane getScrollPane() {
-		if (scrollPane == null) {
-			scrollPane = new JScrollPane();
-			scrollPane.setViewportView(getListaUsuarios());
-
-		}
-		return scrollPane;
-
 	}
 }

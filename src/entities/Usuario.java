@@ -239,23 +239,8 @@ public class Usuario{
 		Calendar fecha_actual = Calendar.getInstance();
 		// Fecha de nacimiento del atleta, en un array con formato ["dd","mm","aaaa"]
 		String[] fecha = fecha_nacimiento.split("/");
-		// Variable para contener la edad
-		int edad;
-		if (fecha_actual.get(Calendar.MONTH) > (Integer.parseInt(fecha[1]))) {
-			// Si el mes actual es mayor que el de nacimiento
-			edad = fecha_actual.get(Calendar.YEAR) - Integer.parseInt(fecha[2]);
-		} else if (fecha_actual.get(Calendar.MONTH) == (Integer.parseInt(fecha[1]))) {
-			// Si el mes actual es el mismo que el de nacimiento
-			edad = fecha_actual.get(Calendar.YEAR) - Integer.parseInt(fecha[2]);
-			if (fecha_actual.get(Calendar.DAY_OF_MONTH) < (Integer.parseInt(fecha[0]))) {
-				// Si el día actual es menor que el de nacimiento
-				edad = edad - 1;
-			}
-		} else {
-			// Si el mes actual es menor que el de nacimiento
-			edad = fecha_actual.get(Calendar.YEAR) - Integer.parseInt(fecha[2]) - 1;
-		}
-		return edad;
+
+		return fecha_actual.get(Calendar.YEAR) - Integer.parseInt(fecha[2]);
 	}
 	
 	
@@ -274,8 +259,10 @@ public class Usuario{
 
 	
 	/**
-	 * Comprueba que el usuario esté inscrito o preinscrito en una determinada carrera
-	 * @param c carrera
+	 * Comprueba que el usuario esté inscrito o preinscrito en una determinada
+	 * carrera
+	 * 
+	 * @param c ,carrera
 	 * @return true si está inscrito,false si está preinscrito
 	 */
 	public boolean isInscrito(Carrera c) {
@@ -285,8 +272,8 @@ public class Usuario{
 		} catch (SQLException e) {
 			GestorDB.handleSQLException(e);
 		}
-		for(Corredor co:corredores) {
-			if(this.getDni()==co.getDni()) {
+		for (Corredor co : corredores) {
+			if (getDni().equals(co.getDni())) {
 				return true;
 			}
 		}

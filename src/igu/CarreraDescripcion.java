@@ -194,11 +194,11 @@ public class CarreraDescripcion extends JDialog {
 					btnInscribirUnEquipo.setBackground(new Color(60, 179, 113));
 					btnInscribirUnEquipo.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent arg0) {
-//							Register dialog = new Register(c,gestor);
-//							dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-//							dialog.setVisible(true);
-//							dialog.setLocationRelativeTo(null);
-//							dialog.setResizable(false);
+							RegistroClub dialog = new RegistroClub(c,gestor);
+							dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+							dialog.setVisible(true);
+							dialog.setLocationRelativeTo(null);
+							dialog.setResizable(false);
 							
 						}
 					});

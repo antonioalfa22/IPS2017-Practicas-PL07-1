@@ -14,9 +14,7 @@ public class Corredor implements Comparable<Corredor>{
 	private String categoria;
 	private String fechaInscripcion;
 	private String genero;
-	private String club;
-	private String tiempo;
-	private Integer dorsal,idCarrera;
+	private Integer dorsal,tiempo,idCarrera;
 	//Posiciones 
 	private String posicionAbsoluta;
 	private String posicionCategoria;
@@ -32,7 +30,7 @@ public class Corredor implements Comparable<Corredor>{
 	 * @param nombre
 	 * @param fechaInscripcion
 	 */
-	public Corredor(String dni, Integer idCarrera, String tiempo,
+	public Corredor(String dni, Integer idCarrera, Integer tiempo,
 			Integer dorsal, String categoria, String genero, String nombre,
 			String fechaInscripcion) {
 		super();
@@ -48,26 +46,7 @@ public class Corredor implements Comparable<Corredor>{
 		posicionCategoria="-";
 	}
 
-	public Corredor(String dni, Integer idCarrera, String tiempo,
-			Integer dorsal, String categoria, String genero, String nombre,
-			String fechaInscripcion,String club) {
-		super();
-		this.dni = dni;
-		this.idCarrera = idCarrera;
-		this.tiempo = tiempo;
-		this.dorsal = dorsal;
-		this.categoria = categoria;
-		this.genero = genero;
-		this.nombre = nombre;
-		this.fechaInscripcion = fechaInscripcion;
-		this.club=club;
-		posicionAbsoluta="-";
-		posicionCategoria="-";
-	}
 	
-	
-
-
 	/**
 	 * @return the posicionAbsoluta
 	 */
@@ -124,13 +103,13 @@ public class Corredor implements Comparable<Corredor>{
 	/**
 	 * @return the tiempo
 	 */
-	public String getTiempo() {
+	public Integer getTiempo() {
 		return tiempo;
 	}
 	/**
 	 * @param tiempo the tiempo to set
 	 */
-	public void setTiempo(String tiempo) {
+	public void setTiempo(Integer tiempo) {
 		this.tiempo = tiempo;
 	}
 
@@ -183,22 +162,6 @@ public class Corredor implements Comparable<Corredor>{
 	public void setDorsal(Integer dorsal) {
 		this.dorsal = dorsal;
 	}
-	
-	/**
-	 * @return the club
-	 */
-	public String getClub() {
-		return club;
-	}
-
-
-	/**
-	 * @param club the club to set
-	 */
-	public void setClub(String club) {
-		this.club = club;
-	}
-	
 	
 	
 	public String toString() {

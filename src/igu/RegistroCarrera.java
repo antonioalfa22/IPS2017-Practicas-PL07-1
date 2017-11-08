@@ -559,7 +559,7 @@ public class RegistroCarrera extends JDialog {
 	private void calcularDiasFecha() {
 		cbDiaFecha.removeAll();
 		if(mesFecha == 1|| mesFecha == 3 || mesFecha == 5 || mesFecha == 7 || mesFecha == 8 || mesFecha == 10 || mesFecha == 12)
-			for(int i = 1;i <=31 ; i++) cbDiaFin.addItem(i);
+			for(int i = 1;i <=31 ; i++) cbDiaFecha.addItem(i);
 		else if(mesFecha == 2)
 			for(int i = 1;i <=28 ; i++) cbDiaFecha.addItem(i);
 		else
@@ -809,14 +809,16 @@ public class RegistroCarrera extends JDialog {
 
 	protected void addCarrera() {
 		Carrera c = createCarrera();
-		try {
-			GestorDB.addCarrera(c);
-		} catch (SQLException e) {
-			System.out.println("Error al añadir la carrera");
-			e.printStackTrace();
+		if(c!= null) {
+			try {
+				GestorDB.addCarrera(c);
+			} catch (SQLException e) {
+				System.out.println("Error al añadir la carrera");
+				e.printStackTrace();
+			}
+			JOptionPane.showMessageDialog(null, "Se ha creado la carrera",
+					"Creada con exito", JOptionPane.INFORMATION_MESSAGE);
 		}
-		JOptionPane.showMessageDialog(null, "Se ha creado la carrera",
-				"Creada con exito", JOptionPane.INFORMATION_MESSAGE);
 	}
 
 	private Carrera createCarrera() {
@@ -845,12 +847,14 @@ public class RegistroCarrera extends JDialog {
 			e.printStackTrace();
 		}
 		Carrera c = null;
-		if(nombre != "" && lugar != "" && fecha != null && dureza != null && tipo!= null && numCuenta != "" && dni!="") {
+		if(!nombre.equals("") && !lugar.equals("") && fecha != null && dureza != null && tipo!= null && !numCuenta.equals("") && !dni.equals("")
+				&& fechas.size()!=0 && categorias.size()!=0) {
 			c = new Carrera(id+1,nombre,lugar,fecha,participantes,distancia,dureza,edad,tipo,numCuenta,dni,fechas,categorias);
 		}
 		else {
 			JOptionPane.showMessageDialog(null, "Tienes algun campo sin rellenar o mal rellenado",
 					"Error", JOptionPane.ERROR_MESSAGE);
+			return null;
 		}
 		return c;
 	}

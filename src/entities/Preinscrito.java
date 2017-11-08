@@ -7,7 +7,7 @@ package entities;
  * @author Sara Grimaldos
  *
  */
-public class Preinscrito implements Comparable<Preinscrito>{
+public class Preinscrito {
 	
 	private String dni;
 	private Integer idCarrera;
@@ -135,36 +135,6 @@ public class Preinscrito implements Comparable<Preinscrito>{
 		return "Preinscrito [dni=" + dni + ", idCarrera=" + idCarrera
 				+ ", categoria=" + categoria + ", genero=" + genero
 				+ ", pagado=" + pagado + "]";
-	}
-	@Override
-	public int compareTo(Preinscrito arg0) {
-Preinscrito a2 = arg0;
-		
-		int dia = Integer.parseInt(this.getFechaInscripcion().split("/")[0]);
-		int mes = Integer.parseInt(this.getFechaInscripcion().split("/")[1]);
-		int año = Integer.parseInt(this.getFechaInscripcion().split("/")[2]);
-		
-		int diaA2 = Integer.parseInt(a2.getFechaInscripcion().split("/")[0]);
-		int mesA2 = Integer.parseInt(a2.getFechaInscripcion().split("/")[1]);
-		int añoA2 = Integer.parseInt(a2.getFechaInscripcion().split("/")[2]);
-		
-		if (año < añoA2) {
-			return -1;
-		} else if (año > añoA2) {
-			return 1;
-		} else {
-			if (mes < mesA2) {
-				return -1;
-			} else if (mes > mesA2) {
-				return 1;
-			} else {
-				if (dia < diaA2) {
-					return -1;
-				} else {
-					return 1;
-				}
-			}
-		}
 	}
 
 

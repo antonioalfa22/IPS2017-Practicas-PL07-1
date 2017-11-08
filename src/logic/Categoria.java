@@ -71,7 +71,7 @@ public class Categoria implements Comparable<Categoria>{
 	 */
 	@Override
 	public String toString() {
-		return nombre + " [ "+edadMin+", "+edadMax+" )";
+		return nombre + "["+edadMin+","+edadMax+")";
 	}
 
 
@@ -80,5 +80,8 @@ public class Categoria implements Comparable<Categoria>{
 	public int compareTo(Categoria o) {
 		return this.edadMin - o.edadMin;
 	}
+	
+	
+	
 
 }

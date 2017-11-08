@@ -3,17 +3,14 @@
  */
 package entities;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 
-import gestorBBDD.GestorDB;
 import logic.Categoria;
 import logic.Date;
 import logic.FechaInscripcion;
-import logic.GestorApp;
 
 /**
  * Clase que representa una carrera
@@ -67,38 +64,6 @@ public class Carrera implements Comparable<Carrera>{
 	
 	
 	
-	/**
-	 * Constructor con parametros de la clase
-	 * @param nombre
-	 * @param lugar
-	 * @param fecha
-	 * @param num_max_part
-	 * @param precio
-	 * @param fecha_inscripcion
-	 * @param distancia
-	 * @param dureza
-	 * @param edad_minima
-	 * @param tipo
-	 * @param num_cuenta
-	 * @param dni_creador
-	 */
-	public Carrera(int id,String nombre,String lugar,String fecha,int num_max_part,
-			int distancia,String dureza,int edad_minima,String tipo,String num_cuenta) {
-		setId(id);
-		setNombre(nombre);
-		setLugar(lugar);
-		setFecha(fecha);
-		setNum_max_part(num_max_part);
-		setDistancia(distancia);
-		setDureza(dureza);
-		setEdad_minima(edad_minima);
-		setTipo(tipo);
-		setNum_cuenta(num_cuenta);
-		atletas = new ArrayList<Corredor>();
-	}
-
-
-
 	/**
 	 * @return the categorias
 	 */
@@ -322,17 +287,14 @@ public class Carrera implements Comparable<Carrera>{
 	 * Asigna un dorsal a cada atleta en función de la fecha de inscripción.Esta 
 	 * asignación de número de dorsal se realiza en orden creciente respecto a la fecha de inscripción, 
 	 * y se dejan los diez primeros números sin asignar para atender a posibles compromisos.
-	 * @throws SQLException 
 	 */
-	public void asignaDorsales() throws SQLException {
+	public void asignaDorsal() {
 		ordenarAtletas();
 		int cont = 10;
-		for (Corredor c : atletas) {
-			c.setDorsal(cont);
-			GestorDB.updateDorsal(c,cont);
+		for (Corredor a : atletas) {
+			a.setDorsal(cont);
 			cont++;
 		}
-		
 	}
 
 	public void muestraAtletas() {
@@ -340,11 +302,6 @@ public class Carrera implements Comparable<Carrera>{
 			System.out.println(a.toString());
 		}
 	}
-	
-	public void actualizaAtletas() {
-		atletas = (ArrayList<Corredor>) GestorApp.getTodosLosCorredores(this);
-	}
-	
 	
 	public double getPrecio() {
 		return getFechaInscripcionActual().getPrecio();
