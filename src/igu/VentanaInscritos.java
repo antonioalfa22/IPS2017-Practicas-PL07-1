@@ -1,117 +1,195 @@
 package igu;
 
-import java.awt.BorderLayout;
-
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-import javax.swing.JLabel;
 
 import java.awt.Font;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+
+
+
+
+
+
+
+
+import logic.GestorApp;
+import logic.Inscrito;
+import entities.Carrera;
+
+import java.awt.BorderLayout;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.border.LineBorder;
 
-import entities.Corredor;
-import entities.Preinscrito;
-import gestorBBDD.GestorDB;
+import java.awt.Color;
 
-/**
- * 
- * Ventana que muestra una tabla con los inscritos en una carrera y el estado de dicha inscripcion
- * 
- * @author Sara Grimaldos
- *
- */
 public class VentanaInscritos extends JDialog {
 
-	
 	private static final long serialVersionUID = 1L;
-	private final JPanel contentPanel = new JPanel();
-	private JScrollPane scrollPnInscritos;
-	private JTable tablaInscritos;
-	private DefaultTableModel modeloTabla;
-	
-	private VentanaSeleccionCarrera ventanaPrincipal;
+	private JPanel contentPane;
+	private JLabel lblCarreras;
+	private JComboBox<Carrera> cbCarreras;
+	private GestorApp g;
+	private JPanel pnClasificaciones;
+	private JScrollPane scrollPaneClasificaciones;
+	private JTable tableClasificaciones;
 
+	private ModeloNoEditable modeloTabla;
+	private JLabel lblOrdenar;
+	private JPanel pnOrdenar;
 
 	/**
-	 * Create the dialog.
-	 * @throws SQLException 
+	 * Create the frame.
+	 * 
+	 * @throws SQLException
 	 */
-	public VentanaInscritos(VentanaSeleccionCarrera ventanaPrincipal, Integer idCarrera) throws SQLException {
-		setBounds(100, 100, 731, 441);
-		this.setVentanaPrincipal(ventanaPrincipal);
-		
-		getContentPane().setLayout(new BorderLayout());
-		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
-		getContentPane().add(contentPanel, BorderLayout.CENTER);
-		contentPanel.setLayout(null);
-		{
-			JLabel lblInscritos = new JLabel("Inscritos:");
-			lblInscritos.setFont(new Font("Tahoma", Font.BOLD, 13));
-			lblInscritos.setBounds(26, 11, 81, 33);
-			contentPanel.add(lblInscritos);
-		}
-		contentPanel.add(getScrollPnInscritos(idCarrera));
-	}
-	private JScrollPane getScrollPnInscritos(Integer idCarrera) throws SQLException {
-		if (scrollPnInscritos == null) {
-			scrollPnInscritos = new JScrollPane();
-			scrollPnInscritos.setBounds(26, 55, 637, 306);
-			scrollPnInscritos.setViewportView(getTablaInscritos(idCarrera));
-		}
-		return scrollPnInscritos;
-	}
-	private JTable getTablaInscritos(Integer idCarrera) throws SQLException {
-		if (tablaInscritos == null) {
-			String[] nombreColumnas = {"DNI", "Nombre", "Categoria", "Fecha Inscripci\u00F3n", "Pagado"};
-			modeloTabla = new DefaultTableModel(nombreColumnas, 0);
-			tablaInscritos = new JTable(modeloTabla);
-			tablaInscritos.getTableHeader().getColumnModel().getColumn(0).setPreferredWidth(20); //modifica ancho de columna 0
-			tablaInscritos.getTableHeader().setReorderingAllowed(false);  
+	public VentanaInscritos() throws SQLException {
+		g = new GestorApp();
 
-			añadirFilas(idCarrera);
-		}
-		return tablaInscritos;
+		setIconImage(Toolkit.getDefaultToolkit().getImage(
+				VentanaInscritos.class
+						.getResource("/img/icons8-Running Filled-50.png")));
+		setTitle("Inscritos de carreras");
+		setBounds(100, 100, 805, 581);
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		setContentPane(contentPane);
+		contentPane.setLayout(null);
+		contentPane.add(getLblCarreras());
+		contentPane.add(getCbCarreras());
+		contentPane.add(getPnClasificaciones());
+		contentPane.add(getPnOrdenar());
 	}
 
-	
-	private void añadirFilas(Integer idCarrera) throws SQLException{
+	private JLabel getLblCarreras() {
+		if (lblCarreras == null) {
+			lblCarreras = new JLabel("Carrera:");
+			lblCarreras.setFont(new Font("Tahoma", Font.BOLD, 14));
+			lblCarreras.setBounds(43, 13, 79, 28);
+		}
+		return lblCarreras;
+	}
+
+	private JComboBox<Carrera> getCbCarreras() throws SQLException {
+		if (cbCarreras == null) {
+			cbCarreras = new JComboBox<Carrera>();
+			for (Carrera carrera : g.getCarrerasOrderByFecha()) {
+				cbCarreras.addItem(carrera);
+			}
+			cbCarreras.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					ClearTabla();
+					Carrera carrera = (Carrera) cbCarreras.getSelectedItem();
+					if ( !(g.getInscritosByIdCarrera(carrera.getId()).isEmpty())){
+						try {
+							añadirFilas(carrera.getId());
+						} catch (ParseException e) {
+							e.printStackTrace();
+						}
+					}else{
+						JOptionPane.showMessageDialog(null, "No hay inscritos para la carrera\n"+ carrera.getNombre());
+					}
+				}
+			});
+			cbCarreras.setFont(new Font("Tahoma", Font.PLAIN, 12));
+			cbCarreras.setBounds(43, 54, 243, 20);
+		}
+		return cbCarreras;
+	}
+
+	private void ClearTabla() {
+		for (int i = 0; i < tableClasificaciones.getRowCount(); i++) {
+			modeloTabla.removeRow(i);
+			i -= 1;
+		}
+	}
+
+	private JPanel getPnClasificaciones() {
+		if (pnClasificaciones == null) {
+			pnClasificaciones = new JPanel();
+			pnClasificaciones.setBounds(43, 159, 692, 328);
+			pnClasificaciones.setLayout(new BorderLayout(0, 0));
+			pnClasificaciones.add(getScrollPaneClasificaciones(),
+					BorderLayout.CENTER);
+		}
+		return pnClasificaciones;
+	}
+
+	private JScrollPane getScrollPaneClasificaciones() {
+		if (scrollPaneClasificaciones == null) {
+			scrollPaneClasificaciones = new JScrollPane();
+			scrollPaneClasificaciones
+					.setViewportView(getTableClasificaciones());
+		}
+		return scrollPaneClasificaciones;
+	}
+
+	private JTable getTableClasificaciones() {
+		if (tableClasificaciones == null) {
+			String[] nombreColumnas = { "DNI", "Nombre", "Categoría",
+					"Fecha de inscripción", "Pagado"};
+			modeloTabla = new ModeloNoEditable(nombreColumnas, 0);
+			tableClasificaciones = new JTable(modeloTabla);
+			tableClasificaciones.setAutoCreateRowSorter(true);
+			RowsRendererInscripciones rr = new RowsRendererInscripciones(4);
+			tableClasificaciones.setDefaultRenderer(Object.class, rr);
+		}
+		return tableClasificaciones;
+	}
+
+	private void añadirFilas(Integer idCarrera) throws ParseException {
 		Object[] nuevaFila = new Object[5];
-		List<Preinscrito> preinscritos = GestorDB.findInscritosByIdCarrera(idCarrera);
-		List<Corredor> inscritos = GestorDB.findCorredoresByIdCarrera(idCarrera);
-		for (int i=0; i<preinscritos.size();i++){
-			nuevaFila[0] = preinscritos.get(i).getDni();
-			nuevaFila[1] = preinscritos.get(i).getNombre();
-			nuevaFila[2] = preinscritos.get(i).getCategoria();
-			nuevaFila[3] = preinscritos.get(i).getFechaInscripcion();
-			nuevaFila[4] = "No";
-			modeloTabla.addRow(nuevaFila);
-		}
-		for (int i=0; i<inscritos.size();i++){
-			nuevaFila[0] = inscritos.get(i).getDni();
+		List<Inscrito> inscritos = g.getInscritosByIdCarrera(idCarrera);
+
+		for (int i = 0; i < inscritos.size(); i++) {
+			String date = formatearFecha(inscritos.get(i).getFechaInscripcion());
+			
+			nuevaFila[0] = inscritos.get(i).getDNI();
 			nuevaFila[1] = inscritos.get(i).getNombre();
 			nuevaFila[2] = inscritos.get(i).getCategoria();
-			nuevaFila[3] = inscritos.get(i).getFechaInscripcion();
-			nuevaFila[4] = "Si";
+			nuevaFila[3] = date;
+			nuevaFila[4] = inscritos.get(i).getPagado();
 			modeloTabla.addRow(nuevaFila);
 		}
 	}
-	/**
-	 * @return the ventanaPrincipal
-	 */
-	public VentanaSeleccionCarrera getVentanaPrincipal() {
-		return ventanaPrincipal;
-	}
-	/**
-	 * @param ventanaPrincipal the ventanaPrincipal to set
-	 */
-	public void setVentanaPrincipal(VentanaSeleccionCarrera ventanaPrincipal) {
-		this.ventanaPrincipal = ventanaPrincipal;
+	
+	private String formatearFecha(String fecha) throws ParseException{
+		SimpleDateFormat parseador = new SimpleDateFormat("dd/MM/yyyy");
+		SimpleDateFormat formateador = new SimpleDateFormat("yyyy/MM/dd");
+		Date date = parseador.parse(fecha);
+		return formateador.format(date);
 	}
 	
+	private JLabel getLblOrdenar() {
+		if (lblOrdenar == null) {
+			lblOrdenar = new JLabel("Haz click sobre una columna para ordenar los inscritos por el criterio que desees");
+			lblOrdenar.setBounds(15, 16, 561, 21);
+			lblOrdenar.setFont(new Font("Tahoma", Font.BOLD, 14));
+		}
+		return lblOrdenar;
+	}
+	private JPanel getPnOrdenar() {
+		if (pnOrdenar == null) {
+			pnOrdenar = new JPanel();
+			pnOrdenar.setBorder(new LineBorder(new Color(0, 0, 0)));
+			pnOrdenar.setBounds(43, 90, 591, 53);
+			pnOrdenar.setLayout(null);
+			pnOrdenar.add(getLblOrdenar());
+		}
+		return pnOrdenar;
+	}
 }

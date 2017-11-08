@@ -1,0 +1,192 @@
+/**
+ * 
+ */
+package gestorBBDD;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import logic.GestorApp;
+import entities.Carrera;
+import entities.Usuario;
+
+/**
+ * @author Antonio Paya Gonzalez
+ *
+ */
+public class LectorCSV {
+	
+	public static final String SEPARADOR = "\t";
+	
+	public static List<Usuario> leerUsuarios(String fichero){
+		BufferedReader bufferLectura = null;
+		ArrayList<Usuario> usuarios = new ArrayList<Usuario>();
+		try {
+			bufferLectura = new BufferedReader(new FileReader(fichero));
+			String linea = bufferLectura.readLine();
+			while (linea != null) {
+				String[] campos = linea.split(SEPARADOR); 
+				linea = bufferLectura.readLine();
+				usuarios.add(new Usuario(campos[0],campos[1],campos[2],Integer.parseInt(campos[3]),campos[4],campos[5]));
+		  }
+		 } 
+		 catch (IOException e) {
+		  e.printStackTrace();
+		 }
+		 finally {
+			 if (bufferLectura != null) {
+				 try {
+					 bufferLectura.close();
+				 } 
+				 catch (IOException e) {
+				    e.printStackTrace();
+				 }
+			 }
+		 }
+		return usuarios;
+	}
+	
+	
+	
+
+	/**
+	 * Se le pasa un fichero con tiempos,la carrera a la que corresponde y actualiza los tiempos en la base de datos
+	 * @param ruta, ruta del fichero
+	 * @param carrera carr
+	 */
+	public static void actualizarTiempos(String ruta, Carrera carrera) {
+		File archivo = null;
+		FileReader fr = null;
+		BufferedReader br = null;
+		boolean asignado = false;
+		
+		GestorApp g = new GestorApp();
+
+		try {
+			// Apertura del fichero y creacion de BufferedReader para poder
+			// hacer una lectura comoda (disponer del metodo readLine()).
+			archivo = new File(ruta);
+			fr = new FileReader(archivo);
+			br = new BufferedReader(fr);
+
+			// Lectura del fichero
+			String linea;
+
+			int dorsal = -1;
+			int tInicio = -1;
+			String tFin = null;
+			while ((linea = br.readLine()) != null) {
+				String[] l = linea.split(",");
+				if (l.length == 3) {
+					if (!linea.split(",")[0].matches("[a-zA-Z].*")) {
+						if (Integer.parseInt(linea.split(",")[0]) > 0) {
+							dorsal = Integer.parseInt(linea.split(",")[0]);
+						}
+					}
+					if (!linea.split(",")[0].matches("[a-zA-Z].*")) {
+						if (Integer.parseInt(linea.split(",")[1]) == 0) {
+							tInicio = Integer.parseInt(linea.split(",")[1]);
+						} else {
+							tInicio = -1;
+						}
+					}
+					if (!linea.split(",")[0].matches("[a-zA-Z].*")) {
+						String[] crono = l[2].split(":");
+						if (crono.length == 3) {
+							int horas = -1;
+							int minutos = -1;
+							int segundos = -1;
+							if (!crono[0].matches(".*[a-zA-Z].*")) {
+								if (Integer.parseInt(crono[0]) >= 0) {
+									horas = Integer.parseInt(crono[0]);
+								}
+							}
+
+							if (!crono[1].matches(".*[a-zA-Z].*")) {
+								if (Integer.parseInt(crono[1]) > 0 && Integer.parseInt(crono[1]) < 60) {
+									minutos = Integer.parseInt(crono[1]);
+								}
+							}
+
+							if (!crono[2].matches(".*[a-zA-Z].*")) {
+								if (Integer.parseInt(crono[2]) > 0 && Integer.parseInt(crono[2]) < 60) {
+									segundos = Integer.parseInt(crono[2]);
+								}
+							}
+
+							if (horas != -1 && minutos != -1 && segundos != -1) {
+								tFin = horas + ":" + minutos + ":" + segundos;
+							}
+
+						}
+					}
+
+					if (dorsal != -1 && tInicio != -1 && tFin != null) {
+						g.asignaTiempo(carrera, dorsal, tFin);
+						asignado = true;
+					}
+
+				} else if (l.length == 2) {
+					if (!linea.split(",")[0].matches(".*[a-zA-Z].*")) {
+						if (Integer.parseInt(linea.split(",")[0]) > 0) {
+							dorsal = Integer.parseInt(linea.split(",")[0]);
+						}
+					}
+					if (!linea.split(",")[1].matches(".*[a-zA-Z].*")) {
+						if (Integer.parseInt(linea.split(",")[1]) == 0) {
+							tInicio = Integer.parseInt(linea.split(",")[1]);
+						} else {
+							tInicio = -1;
+						}
+					}
+
+					if (dorsal != -1 && tInicio == 0) {
+						tFin = "DNF";
+						g.asignaTiempo(carrera, dorsal, tFin);
+						asignado = true;
+					}
+
+				} else if (l.length == 1) {
+					if (!linea.split(",")[0].matches(".*[a-zA-Z].*")) {
+						if (Integer.parseInt(linea.split(",")[0]) > 0) {
+							dorsal = Integer.parseInt(linea.split(",")[0]);
+						} else {
+							dorsal = -1;
+						}
+					}
+
+					if (dorsal != -1) {
+						tFin = "DNS";
+						g.asignaTiempo(carrera, dorsal, tFin);
+						asignado = true;
+					}
+				}
+				
+				if(!asignado) {
+					g.asignaTiempo(carrera, dorsal, "Datos erroneos");
+				}
+			}
+
+		} catch (Exception e) {
+			System.out.println("Archico .csv no encontrado");
+		} finally {
+			// En el finally cerramos el fichero, para asegurarnos
+			// que se cierra tanto si todo va bien como si salta
+			// una excepcion.
+			try {
+				if (null != fr) {
+					fr.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+
+		}
+	}
+
+
+}

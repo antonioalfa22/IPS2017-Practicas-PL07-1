@@ -1,5 +1,8 @@
+/src/
+/db/
+/test/
 /entities/
 /gestorBBDD/
 /igu/
-/img/
 /logic/
+/img/
