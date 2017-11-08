@@ -5,9 +5,14 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+
+import org.joda.time.DateTime;
+import org.joda.time.Interval;
+
 import com.jtattoo.plaf.aluminium.AluminiumLookAndFeel;
 import com.toedter.calendar.JCalendar;
 import entities.Carrera;
+import gestorBBDD.GestorDB;
 import logic.Date;
 import logic.FechaInscripcion;
 import logic.GestorApp;
@@ -17,6 +22,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -40,6 +46,9 @@ import java.awt.SystemColor;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.SQLException;
 import javax.swing.JTextField;
 import javax.swing.JCheckBox;
@@ -48,7 +57,7 @@ import javax.swing.JCheckBox;
 /**
  * Ventana que representa todas las carreras en las que un usuario puede inscribirse
  * 
- * @author Antonio PayÃ¡ GonzÃ¡lez
+ * @author Antonio Payá González
  *
  */
 public class VentanaPrincipal extends JFrame {
@@ -80,6 +89,9 @@ public class VentanaPrincipal extends JFrame {
 	private JCheckBox chcbxMontain;
 	private String txtmemoria;
 	private JMenuItem mntmCrearCarrera;
+	private JMenuItem mntmSolicitarExtractoBancario;
+	
+	public final static String FICHERO_EXTRACTOS = "extractos.csv";
 
 
 	/**
@@ -146,8 +158,21 @@ public class VentanaPrincipal extends JFrame {
 			mnOrganizador.add(getMntmCrearCarrera());
 			mnOrganizador.add(getMntmGestionarcarreras());
 			mnOrganizador.add(getMntmClasificaciones());
+			mnOrganizador.add(getMntmSolicitarExtractoBancario());
 		}
 		return mnOrganizador;
+	}
+	
+	private JMenuItem getMntmSolicitarExtractoBancario() {
+		if (mntmSolicitarExtractoBancario == null) {
+			mntmSolicitarExtractoBancario = new JMenuItem("Solicitar extracto bancario");
+			mntmSolicitarExtractoBancario.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					mostrarInformeBancario();
+				}
+			});
+		}
+		return mntmSolicitarExtractoBancario;
 	}
 	
 	private JMenuItem getMntmCrearCarrera() {
@@ -414,7 +439,7 @@ public class VentanaPrincipal extends JFrame {
 
 	private JCheckBox getChcbxMontain() {
 		if (chcbxMontain == null) {
-			chcbxMontain = new JCheckBox("Monta\u00F1a");
+			chcbxMontain = new JCheckBox("Montaña");
 			chcbxMontain.setForeground(Color.DARK_GRAY);
 			chcbxMontain.setFont(new Font("Source Sans Pro Semibold", Font.BOLD, 12));
 			chcbxMontain.setBounds(196, 115, 165, 24);
@@ -633,7 +658,7 @@ public class VentanaPrincipal extends JFrame {
 	
 	private JLabel getLblFechaLimiteInscripcion(JLabel lblFechaLimiteInscripcion,FechaInscripcion fecha) {
 		if (lblFechaLimiteInscripcion == null) {
-			lblFechaLimiteInscripcion = new JLabel("InscripciÃ³n-> De: "+fecha.getFecha()+" a "+fecha.getFechaFin());
+			lblFechaLimiteInscripcion = new JLabel("Inscripción-> De: "+fecha.getFecha()+" a "+fecha.getFechaFin());
 			lblFechaLimiteInscripcion.setForeground(new Color(47, 79, 79));
 			lblFechaLimiteInscripcion.setFont(new Font("Segoe WP Semibold", Font.PLAIN, 11));
 		}
@@ -641,12 +666,13 @@ public class VentanaPrincipal extends JFrame {
 	}
 	private JLabel getLbPrecio(JLabel lbPrecio,double precio) {
 		if (lbPrecio == null) {
-			lbPrecio = new JLabel(precio+ "â‚¬");
+			lbPrecio = new JLabel(precio+ "€");
 			lbPrecio.setForeground(Color.DARK_GRAY);
 			lbPrecio.setFont(new Font("Segoe UI Semibold", Font.BOLD | Font.ITALIC, 16));
 		}
 		return lbPrecio;
 	}
+	
 	
 	//==========================================================================================
 	//										LOGICA: 
@@ -687,5 +713,105 @@ public class VentanaPrincipal extends JFrame {
 		}
 		actualizarCarreras();		
 	}
+	
+	/**
+	 * Metodo que lee el fichero de extractos bancarios por peticion de un
+	 * organizador para mostrar un informe en pantalla con los datos leidos
+	 */
+	private void mostrarInformeBancario() {
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new FileReader(FICHERO_EXTRACTOS));
+			StringBuilder sb = new StringBuilder();
+			String linea = reader.readLine();
+			while (linea != null) {
+				String[] datos = linea.split(";");
+				actualizarPagos(datos);
+				sb.append("Nombre: " + datos[0] + " \n\tDNI: " + datos[1] + " \n\tCantidad pagada: " + datos[2]
+						+ "€\n\tFecha de pago: " + datos[3] + "\n\tID Carrera: " + datos[4] + "\n\n");
+				linea = reader.readLine();
+			}
+			JOptionPane.showMessageDialog(this, sb.toString().substring(0, sb.length() - 2), "Informe Bancario",
+					JOptionPane.INFORMATION_MESSAGE);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (reader != null) {
+				try {
+					reader.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Metodo que actualiza los pagos de los preinscritos por transferencia bancaria
+	 * en funcion de los datos proporcionados por el informe bancario
+	 * 
+	 * @param datos
+	 */
+	private void actualizarPagos(String[] datos) {
+
+		String DNI = datos[1];
+		int cantidad_pagada = Integer.parseInt(datos[2]);
+		String id_carrera = datos[4];
+
+		// Fecha de pago
+		String pago[] = datos[3].split("/");
+		DateTime fecha_pago = new DateTime(pago[2] + "-" + pago[1] + "-" + pago[0]);
+
+		try {
+
+			double cantidad_pagar = GestorDB.getPrecio(Integer.parseInt(id_carrera));
+
+			// Fecha de inicio
+			String[] inicio = GestorDB.getFechaInicio(Integer.parseInt(id_carrera)).split("/");
+			DateTime fecha_inicio = new DateTime(inicio[2] + "-" + inicio[1] + "-" + inicio[0]);
+			// Fecha de fin
+			String[] fin = GestorDB.getFechaFin(Integer.parseInt(id_carrera)).split("/");
+			DateTime fecha_fin = new DateTime(fin[2] + "-" + fin[1] + "-" + fin[0]);
+
+			Interval interval = new Interval(fecha_inicio, fecha_fin);
+			if (interval.contains(fecha_pago)) {
+				// Pagado de menos
+				if (cantidad_pagada < cantidad_pagar) {
+					try {
+						GestorDB.setNotasPago("Pagado de menos - Faltan " + (cantidad_pagar - cantidad_pagada) + "€",
+								DNI,gestorCarreras.getCarreras().stream().filter(x -> x.getId() == Integer.parseInt(id_carrera))
+								.findFirst().get());
+					} catch (SQLException ex) {
+						GestorDB.handleSQLException(ex);
+					}
+				}
+				// Pagado de mas
+				else if (cantidad_pagada > cantidad_pagar) {
+					try {
+						GestorDB.setNotasPago("Pagado de mas - Sobran " + (cantidad_pagada - cantidad_pagar) + "€",
+								DNI,gestorCarreras.getCarreras().stream().filter(x -> x.getId() == Integer.parseInt(id_carrera))
+								.findFirst().get());
+						GestorDB.pagar(Integer.parseInt(id_carrera), DNI);
+					} catch (SQLException ex) {
+						GestorDB.handleSQLException(ex);
+					}
+				}
+				// Pago correcto
+				else {
+					try {
+						GestorDB.setNotasPago("Pagado", DNI,gestorCarreras.getCarreras().stream().filter(x -> x.getId() == Integer.parseInt(id_carrera))
+								.findFirst().get());
+						GestorDB.pagar(Integer.parseInt(id_carrera), DNI);
+					} catch (SQLException ex) {
+						GestorDB.handleSQLException(ex);
+					}
+				}
+			}
+
+		} catch (SQLException ex) {
+			GestorDB.handleSQLException(ex);
+		}
+	}
+	
 	
 }

@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.List;
 
 import entities.Carrera;
+import entities.Club;
 import entities.Corredor;
 import entities.Preinscrito;
 import entities.Usuario;
@@ -22,6 +23,7 @@ import gestorBBDD.GestorDB;
 public class GestorApp {
 	
 	public ArrayList<Carrera> carreras;
+	public ArrayList<Club> clubs;
 	public ArrayList<Usuario> usuarios;
 	private Usuario usuarioActivo;
 
@@ -41,6 +43,13 @@ public class GestorApp {
 			
 		} catch (SQLException e) {
 			System.out.println("Error al sacar los usuarios de la base de datos");
+			e.printStackTrace();
+		}
+		try {
+			clubs = GestorDB.sacaTodosLosClubs();
+			
+		} catch (SQLException e) {
+			System.out.println("Error al sacar los clubs de la base de datos");
 			e.printStackTrace();
 		}
 		usuarioActivo = null;
@@ -87,6 +96,21 @@ public class GestorApp {
 	public void setUsuarios(ArrayList<Usuario> usuarios) {
 		this.usuarios = usuarios;
 	}
+	/**
+	 * @return the clubs
+	 */
+	public ArrayList<Club> getClubs() {
+		return clubs;
+	}
+
+	/**
+	 * @param clubs the clubs to set
+	 */
+	public void setClubs(ArrayList<Club> clubs) {
+		this.clubs = clubs;
+	}
+
+
 
 	/**
 	 * @param c
@@ -99,6 +123,19 @@ public class GestorApp {
 			e.printStackTrace();
 		}
 		carreras.add(c);
+	}
+	
+	/**
+	 * @param c
+	 */
+	public void addClub(Club c) {
+		try {
+			GestorDB.addClub(c);
+		} catch (SQLException e) {
+			System.out.println("Error meter un club en la base de datos");
+			e.printStackTrace();
+		}
+		clubs.add(c);
 	}
 	
 	/**
@@ -124,6 +161,20 @@ public class GestorApp {
 			GestorDB.addPreeinscrito(u, c,fecha);
 		} catch (SQLException e) {
 			System.out.println("Error meter un preeinscrito en la base de datos");
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Metodo que añade un usuario a un club
+	 * @param u
+	 * @param c
+	 */
+	public void addPertenece_a_Club(Usuario u,Club c) {
+		try {
+			GestorDB.addUsuario_a_Club(u, c);
+		} catch (SQLException e) {
+			System.out.println("Error meter un usuario en un club en la base de datos");
 			e.printStackTrace();
 		}
 	}
@@ -223,6 +274,24 @@ public class GestorApp {
 			if(carreras.get(i).getId()==id) {
 				try {
 					GestorDB.deleteCarrera(id);
+				} catch (SQLException e) {
+					System.out.println("Error al borrar una carrera de la base de datos");
+					e.printStackTrace();
+				}
+				carreras.remove(i);
+			}
+		}
+	}
+	
+	/**
+	 * 
+	 * @param id
+	 */
+	public void deleteClub(int id) {
+		for (int i = 0; i < clubs.size(); i++) {
+			if(clubs.get(i).getId() == id) {
+				try {
+					GestorDB.deleteClub(id);
 				} catch (SQLException e) {
 					System.out.println("Error al borrar una carrera de la base de datos");
 					e.printStackTrace();

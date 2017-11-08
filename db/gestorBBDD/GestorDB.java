@@ -9,6 +9,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 import entities.Carrera;
+import entities.Club;
 import entities.Corredor;
 import entities.Preinscrito;
 import entities.Usuario;
@@ -138,6 +139,29 @@ public class GestorDB {
 	}
 	
 	/**
+	 * Metodo que devuelve un ArrayList con todos los clubs
+	 * @return
+	 * @throws SQLException
+	 */
+	public static ArrayList<Club> sacaTodosLosClubs() throws SQLException{
+		conectar();
+		ArrayList<Club> clubs = new ArrayList<Club>();
+		Statement st = conexion.createStatement();
+		ResultSet rs = st.executeQuery("SELECT * FROM Club");
+		while (rs.next()){
+			int id = rs.getInt("Id_club");
+			String nombre = rs.getString("Nombre");
+			String dir = rs.getString("Direccion");
+			Club u = new Club(id,nombre,dir);
+			clubs.add(u);
+		}
+		rs.close();
+		st.close();
+		cerrar();
+		return clubs;
+	}
+	
+	/**
 	 * Metodo que saca todos los dni inscritos en una carrera
 	 * @param c
 	 * @return
@@ -250,16 +274,14 @@ public class GestorDB {
 		ArrayList<Carrera> carreras = new ArrayList<Carrera>();
 		ArrayList<Integer> ids_carreras = new ArrayList<Integer>();
 		conectar();
-		PreparedStatement pst = conexion.prepareStatement("SELECT p.Id_Carrera FROM Preinscritos p WHERE p.DNI = ?" + 
+		PreparedStatement pst = conexion.prepareStatement("SELECT Id_Carrera FROM Preinscritos WHERE DNI = ? " + 
 				"union " + 
-				"select c.Id_Carrera FROM Corredores c WHERE c.DNI = ?");
+				"select Id_Carrera FROM Corredores WHERE DNI = ?");
 		pst.setString(1, u.getDni());
 		pst.setString(2, u.getDni());
 		ResultSet rs=pst.executeQuery();
 		while(rs.next()) {
 			ids_carreras.add(rs.getInt("Id_Carrera"));	
-			rs.close();
-			pst.close();
 		}
 		rs.close();
 		pst.close();
@@ -339,6 +361,42 @@ public class GestorDB {
 		addUsuario.close();
 		cerrar();
 	}
+	
+	/**
+	 * 
+	 * Metodo que añade un Usuario a la base de datos
+	 * @param u, Usuario
+	 * @param c, Clun
+	 * @throws SQLException
+	 */
+	public static void addUsuario_a_Club(Usuario u,Club c) throws SQLException {
+		conectar();
+		PreparedStatement addUsuario = conexion.prepareStatement("INSERT INTO Pertenece "
+				+ "VALUES (?,?)");
+		addUsuario.setInt(1, c.getId());
+		addUsuario.setString(2, u.getDni());
+		addUsuario.executeUpdate();
+		addUsuario.close();
+		cerrar();
+	}
+	
+	/**
+	 * 
+	 * Metodo que añade un Club a la base de datos
+	 * @param U, Club
+	 * @throws SQLException
+	 */
+	public static void addClub(Club u) throws SQLException {
+		conectar();
+		PreparedStatement addClub = conexion.prepareStatement("INSERT INTO Club "
+				+ "VALUES (?,?,?)");
+		addClub.setInt(1, u.getId());
+		addClub.setString(2, u.getNombre());
+		addClub.setString(3, u.getDir());
+		addClub.executeUpdate();
+		addClub.close();
+		cerrar();
+	}
 
 	/**
 	 * Metodo que borra una carrera de la base de datos
@@ -355,6 +413,21 @@ public class GestorDB {
 	}
 	
 	/**
+	 * Metodo que borra un club de la base de datos
+	 * @param c
+	 * @throws SQLException
+	 */
+	public static void deleteClub(int id) throws SQLException {
+		conectar();
+		PreparedStatement deleteClub = conexion.prepareStatement("DELETE FROM CLUB WHERE Id_club = ?");
+		deleteClub.setInt(1, id);
+		deleteClub.executeUpdate();
+		deleteClub.close();
+		cerrar();
+	}
+	
+	
+	/**
 	 * Metodo que preeinscribe a un usuario en una carrera
 	 * @param u
 	 * @param c
@@ -363,7 +436,7 @@ public class GestorDB {
 	public static void addPreeinscrito(Usuario u,Carrera c,String fecha) throws SQLException {
 		conectar();
 		PreparedStatement addPreinscrito = conexion.prepareStatement("INSERT INTO Preinscritos "
-				+ "VALUES (?,?,'No',?,?,?,?,?)");
+				+ "VALUES (?,?,'No',?,?,?,?,?,?)");
 		addPreinscrito.setString(1, u.getDni());
 		addPreinscrito.setInt(2, c.getId());
 		addPreinscrito.setString(3, c.getCategoriaParaUsuario(u.getEdad()));
@@ -371,6 +444,7 @@ public class GestorDB {
 		addPreinscrito.setString(5, u.getNombre());
 		addPreinscrito.setString(6, fecha);
 		addPreinscrito.setString(7, fecha);
+		addPreinscrito.setString(8, "Pendiente de pago");
 		addPreinscrito.executeUpdate();
 		addPreinscrito.close();
 		cerrar();
@@ -401,7 +475,7 @@ public class GestorDB {
 	 * @param DNI
 	 * @throws SQLException
 	 */
-	public static void pagoPorTarjeta(int idCarrera, String DNI) throws SQLException {
+	public static void pagar(int idCarrera, String DNI) throws SQLException {
 		conectar();
 		PreparedStatement ps = conexion
 				.prepareStatement("UPDATE Preinscritos SET Pagado = ? WHERE Id_carrera = ? AND DNI = ?");
@@ -413,6 +487,7 @@ public class GestorDB {
 		cerrar();
 	}
 
+
 	/**
 	 * Método auxiliar que maneja las excepciones de tipo SQLException en las
 	 * consultas a la base de datos
@@ -420,13 +495,13 @@ public class GestorDB {
 	 * @param ex
 	 */
 	public static void handleSQLException(SQLException ex) {
-		System.out.println(" SQLException recogida: ");
+//		System.out.println(" SQLException recogida: ");
 		while (ex != null) {
-			System.out.println("Mensaje: " + ex.getMessage());
-			System.out.println("SQLState: " + ex.getSQLState());
-			System.out.println("ErrorCode: " + ex.getErrorCode());
+//			System.out.println("Mensaje: " + ex.getMessage());
+//			System.out.println("SQLState: " + ex.getSQLState());
+//			System.out.println("ErrorCode: " + ex.getErrorCode());
 			ex = ex.getNextException();
-			System.out.println(" ");
+//			System.out.println(" ");
 		}
 	}
 	
@@ -473,5 +548,115 @@ public class GestorDB {
 		rs.close();
 		cerrar();
 		return fecha;
+	}
+	
+	/**
+	 * Método que devuelve el precio de una carrera de id recibido como parámetro
+	 * 
+	 * @param Id_carrera
+	 * @return precio
+	 * @throws SQLException
+	 */
+	public static double getPrecio(int Id_carrera) throws SQLException {
+		double precio = 0;
+		Carrera carrera = sacarTodasLasCarreras().stream().filter(
+				x -> x.getId() == Id_carrera).findFirst().get();
+		precio = carrera.getFechaInscripcionActual().getPrecio();
+		return precio;
+	}
+
+	/**
+	 * Método que devuelve la fecha límite de pago de una carrera de id recibido
+	 * como parámetro
+	 * 
+	 * @param Id_carrera
+	 * @return fecha de pago
+	 * @throws SQLException
+	 */
+	public static String getFechaFin(int Id_carrera) throws SQLException {
+		String fecha = "";
+		Carrera carrera = sacarTodasLasCarreras().stream().filter(
+				x -> x.getId() == Id_carrera).findFirst().get();
+		fecha = carrera.getFechaInscripcionActual().getFechaFin();
+		return fecha;
+	}
+
+	/**
+	 * Método que devuelve la fecha inicio de pago de una carrera de id recibido
+	 * como parámetro
+	 * 
+	 * @param Id_carrera
+	 * @return fecha de pago
+	 * @throws SQLException
+	 */
+	public static String getFechaInicio(int Id_carrera) throws SQLException {
+		String fecha = "";
+		Carrera carrera = sacarTodasLasCarreras().stream().filter(
+				x -> x.getId() == Id_carrera).findFirst().get();
+		fecha = carrera.getFechaInscripcionActual().getFecha();
+		return fecha;
+	}
+	
+	/**
+	 * Método que modifica las anotaciones relativas al pago de la inscripción de
+	 * una persona de DNI dado
+	 * 
+	 * @param nota
+	 * @param DNI
+	 * @throws SQLException
+	 */
+	public static void setNotasPago(String nota, String DNI,Carrera c) throws SQLException {
+		conectar();
+		PreparedStatement ps = conexion.prepareStatement("UPDATE Preinscritos SET Notas_pago = ? WHERE DNI = ? and Id_Carrera = ?");
+		ps.setString(1, nota);
+		ps.setString(2, DNI);
+		ps.setInt(3, c.getId());
+		ps.executeUpdate();
+		ps.close();
+		cerrar();
+	}
+
+	/**
+	 * Método que devuelve las anotaciones relativas al pago de la inscripción de
+	 * una persona de DNI dado que está preinscrita
+	 * 
+	 * @param DNI
+	 * @return nota
+	 * @throws SQLException
+	 */
+	public static String getNotasPagoPreinscrito(String DNI,Carrera c) throws SQLException {
+		String nota = "";
+		conectar();
+		PreparedStatement ps = conexion.prepareStatement("SELECT Notas_pago FROM Preinscritos WHERE DNI = ? and Id_Carrera = ?");
+		ps.setString(1, DNI);
+		ps.setInt(2, c.getId());
+		ResultSet rs = ps.executeQuery();
+		nota = rs.getString("Notas_pago");
+		ps.close();
+		rs.close();
+		cerrar();
+		return nota;
+	}
+
+	/**
+	 * Método que devuelve las anotaciones relativas al pago de la inscripción de
+	 * una persona de DNI dado que ya está inscrita
+	 * 
+	 * @param DNI
+	 * @return nota
+	 * @throws SQLException
+	 */
+	public static String getNotasPagoInscrito(String DNI, Carrera c) throws SQLException {
+		String nota = "";
+		conectar();
+		PreparedStatement ps = conexion.prepareStatement("SELECT Notas_pago FROM Corredores WHERE DNI = ? and Id_Carrera = ?");
+		ps.setString(1, DNI);
+		ps.setInt(2, c.getId());
+		ResultSet rs = ps.executeQuery();
+		nota = rs.getString("Notas_pago");
+		ps.close();
+		rs.close();
+		cerrar();
+		return nota;
 	}
 }

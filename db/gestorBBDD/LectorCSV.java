@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 import entities.Usuario;
 
 /**
@@ -28,11 +30,18 @@ public class LectorCSV {
 			while (linea != null) {
 				String[] campos = linea.split(SEPARADOR); 
 				linea = bufferLectura.readLine();
-				usuarios.add(new Usuario(campos[0],campos[1],campos[2],Integer.parseInt(campos[3]),campos[4],campos[5]));
+				try {
+					usuarios.add(new Usuario(campos[0],campos[1],campos[2],Integer.parseInt(campos[3]),campos[4],campos[5]));
+				}		
+				catch (Exception e){
+					JOptionPane.showMessageDialog(null, "El csv debe tener un integrante por fila con formato DNI Nombre Fecha Telefono"
+					 		+ " Correo Genero \nSeparados por tabuladores",
+								"CSV mal formado", JOptionPane.ERROR_MESSAGE);
+				}
 		  }
 		 } 
 		 catch (IOException e) {
-		  e.printStackTrace();
+			 e.printStackTrace();
 		 }
 		 finally {
 			 if (bufferLectura != null) {

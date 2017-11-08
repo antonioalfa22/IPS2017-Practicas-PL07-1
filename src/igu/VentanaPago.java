@@ -146,6 +146,7 @@ public class VentanaPago extends JDialog {
 				String fecha_actual = date.get(Calendar.DAY_OF_MONTH) + "/" + (date.get(Calendar.MONTH) + 1) + "/"
 						+ date.get(Calendar.YEAR);
 				GestorDB.setFechaPago(usuario.getDni(), fecha_actual);
+				GestorDB.setNotasPago("Pendiente de confirmación", usuario.getDni(),carrera);
 				JOptionPane.showMessageDialog(this,
 						"Pago por transferencia escogido.\nDispone de 48 horas para confirmar la transferencia",
 						"Pago pendiente de confirmación", JOptionPane.INFORMATION_MESSAGE);

@@ -259,8 +259,10 @@ public class Usuario{
 
 	
 	/**
-	 * Comprueba que el usuario esté inscrito o preinscrito en una determinada carrera
-	 * @param c carrera
+	 * Comprueba que el usuario esté inscrito o preinscrito en una determinada
+	 * carrera
+	 * 
+	 * @param c ,carrera
 	 * @return true si está inscrito,false si está preinscrito
 	 */
 	public boolean isInscrito(Carrera c) {
@@ -270,8 +272,8 @@ public class Usuario{
 		} catch (SQLException e) {
 			GestorDB.handleSQLException(e);
 		}
-		for(Corredor co:corredores) {
-			if(this.getDni()==co.getDni()) {
+		for (Corredor co : corredores) {
+			if (getDni().equals(co.getDni())) {
 				return true;
 			}
 		}

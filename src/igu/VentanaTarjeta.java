@@ -139,7 +139,8 @@ public class VentanaTarjeta extends JDialog {
 				JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
 		if (option == JOptionPane.YES_OPTION) {
 			try {
-				GestorDB.pagoPorTarjeta(carrera.getId(), usuario.getDni());
+				GestorDB.pagar(carrera.getId(), usuario.getDni());
+				GestorDB.setNotasPago("Pagado", usuario.getDni(),carrera);
 				JOptionPane.showMessageDialog(this, "¡El pago por tarjeta se ha realizado con éxito!",
 						"Pago completado", JOptionPane.INFORMATION_MESSAGE);
 				dispose();

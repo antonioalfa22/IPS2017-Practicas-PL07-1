@@ -479,56 +479,58 @@ public class VentanaUsuario extends JDialog {
 			c.setFinalizada(true);
 			pnSelectCarrera.add(new JLabel(" " + c.getNombre()));
 			pnSelectCarrera.doLayout();
+
 			if (user.isInscrito(c)) {
-				pnEstadoInscripcion.add(new JLabel("Pagada"));
-				pnEstadoInscripcion.doLayout();
-
-			} else {
-
-				JLabel pago = new JLabel("Pendiente de pago");
-				for (Corredor u : gestor.getTodosLosCorredores(c)) {
-					if (u.getDni().equals(user.getDni())) {
-						pago.setText("Pagada");
-					}
+				try {
+					pnEstadoInscripcion.add(new JLabel(GestorDB.getNotasPagoInscrito(user.getDni(),c)));
+				} catch (SQLException ex) {
+					GestorDB.handleSQLException(ex);
 				}
+			}
 
-				if (pago.getText() != "Pagada") {
-					String date = null;
+			String date = null;
+			try {
+				date = GestorDB.getFechaPago(user.getDni());
+			} catch (SQLException ex) {
+				GestorDB.handleSQLException(ex);
+			}
+
+			if (date != null) {
+				String[] fecha_pago = date.split("/");
+				Calendar fecha_actual = Calendar.getInstance();
+				GregorianCalendar auxDate = new GregorianCalendar(Integer.parseInt(fecha_pago[0]),
+						Integer.parseInt(fecha_pago[1]), Integer.parseInt(fecha_pago[2]));
+
+				// CASOS: Año actual mayor que el de pago / Mismo año, y mes actual al menos 2
+				// unidades mayor que el de pago / Mismo año y mes, y día actual más de 2
+				// unidades mayor que el de pago / Mismo año, y mes actual posterior al de pago,
+				// y día actual más de 2 unidades mayor que el de pago
+				if (fecha_actual.get(Calendar.YEAR) > Integer.parseInt(fecha_pago[2])
+						|| (fecha_actual.get(Calendar.YEAR) == Integer.parseInt(fecha_pago[2])
+								&& fecha_actual.get(Calendar.MONTH) + 1 - Integer.parseInt(fecha_pago[1]) >= 2)
+						|| (fecha_actual.get(Calendar.YEAR) == Integer.parseInt(fecha_pago[2])
+								&& fecha_actual.get(Calendar.MONTH) + 1 == Integer.parseInt(fecha_pago[1])
+								&& fecha_actual.get(Calendar.DAY_OF_MONTH) - Integer.parseInt(fecha_pago[0]) > 2)
+						|| (fecha_actual.get(Calendar.YEAR) == Integer.parseInt(fecha_pago[2])
+								&& fecha_actual.get(Calendar.MONTH) + 1 - Integer.parseInt(fecha_pago[1]) == 1
+								&& fecha_actual.get(Calendar.DAY_OF_MONTH)
+										+ (auxDate.getActualMaximum(GregorianCalendar.DAY_OF_MONTH)
+												- Integer.parseInt(fecha_pago[0])) > 2)) {
+					pnEstadoInscripcion.add(new JLabel("Cancelada - Límite de 48h superado"));
 					try {
-						date = GestorDB.getFechaPago(user.getDni());
+						GestorDB.setNotasPago("Cancelada - Límite de 48h superado", user.getDni(),c);
 					} catch (SQLException ex) {
 						GestorDB.handleSQLException(ex);
 					}
-
-					if (date != null) {
-						String[] fecha_pago = date.split("/");
-						Calendar fecha_actual = Calendar.getInstance();
-						GregorianCalendar auxDate = new GregorianCalendar(Integer.parseInt(fecha_pago[0]),
-								Integer.parseInt(fecha_pago[1]), Integer.parseInt(fecha_pago[2]));
-
-						// CASOS: Año actual mayor que el de pago / Mismo año, y mes actual al menos 2
-						// unidades mayor que el de pago / Mismo año y mes, y día actual más de 2
-						// unidades mayor que el de pago / Mismo año, y mes actual posterior al de pago,
-						// y día actual más de 2 unidades mayor que el de pago
-						if (fecha_actual.get(Calendar.YEAR) > Integer.parseInt(fecha_pago[2])
-								|| (fecha_actual.get(Calendar.YEAR) == Integer.parseInt(fecha_pago[2])
-										&& fecha_actual.get(Calendar.MONTH) + 1 - Integer.parseInt(fecha_pago[1]) >= 2)
-								|| (fecha_actual.get(Calendar.YEAR) == Integer.parseInt(fecha_pago[2])
-										&& fecha_actual.get(Calendar.MONTH) + 1 == Integer.parseInt(fecha_pago[1])
-										&& fecha_actual.get(Calendar.DAY_OF_MONTH)
-												- Integer.parseInt(fecha_pago[0]) > 2)
-								|| (fecha_actual.get(Calendar.YEAR) == Integer.parseInt(fecha_pago[2])
-										&& fecha_actual.get(Calendar.MONTH) + 1 - Integer.parseInt(fecha_pago[1]) == 1
-										&& fecha_actual.get(Calendar.DAY_OF_MONTH)
-												+ (auxDate.getActualMaximum(GregorianCalendar.DAY_OF_MONTH)
-														- Integer.parseInt(fecha_pago[0])) > 2)) {
-							pago.setText("Cancelada - Límite de 48h superado");
-						}
+				} else {
+					try {
+						pnEstadoInscripcion.add(new JLabel(GestorDB.getNotasPagoPreinscrito(user.getDni(),c)));
+					} catch (SQLException ex) {
+						GestorDB.handleSQLException(ex);
 					}
 				}
-
-				pnEstadoInscripcion.add(pago);
 			}
+
 			JButton btn = new JButton("Ver clasificación");
 			pnAccederClasificacion.add(btn);
 			if (c.isFinalizada()) {
