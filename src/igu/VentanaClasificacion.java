@@ -53,9 +53,8 @@ public class VentanaClasificacion extends JDialog {
 	 */
 	public VentanaClasificacion() throws SQLException {
 		g = new GestorApp();
-		setIconImage(Toolkit.getDefaultToolkit().getImage(
-				VentanaClasificacion.class
-						.getResource("/img/icons8-Running Filled-50.png")));
+		setIconImage(Toolkit.getDefaultToolkit()
+				.getImage(VentanaClasificacion.class.getResource("/img/icons8-Running Filled-50.png")));
 		setTitle("Clasificacion de carreras");
 		setBounds(100, 100, 805, 581);
 		contentPane = new JPanel();
@@ -71,10 +70,10 @@ public class VentanaClasificacion extends JDialog {
 		contentPane.add(getBtnBuscar());
 		contentPane.add(getPnClasificaciones());
 	}
-	
-	//==========================================================================================
-	//										IGU: 
-	//==========================================================================================
+
+	// ==========================================================================================
+	// IGU:
+	// ==========================================================================================
 
 	private JLabel getLblCarreras() {
 		if (lblCarreras == null) {
@@ -95,8 +94,9 @@ public class VentanaClasificacion extends JDialog {
 				public void actionPerformed(ActionEvent arg0) {
 					Carrera carrera = (Carrera) cbCarreras.getSelectedItem();
 					inicializarModeloCategorias(carrera);
-					LectorCSV.actualizarTiempos(carrera.getNombre() + ".csv",
-							carrera); // Actualizamos tiempos de corredores
+					System.out.println(carrera.getNombre());
+					LectorCSV.actualizarTiempos(carrera.getNombre() + ".csv", carrera); // Actualizamos tiempos de
+																						// corredores
 					btnBuscar.setEnabled(true);
 				}
 			});
@@ -105,6 +105,7 @@ public class VentanaClasificacion extends JDialog {
 		}
 		return cbCarreras;
 	}
+
 	private void inicializarModeloCategorias(Carrera carrera) {
 		cbCategoria.removeAllItems();
 		cbCategoria.addItem("Todas");
@@ -113,6 +114,7 @@ public class VentanaClasificacion extends JDialog {
 			cbCategoria.addItem(c.getNombre().toString());
 		}
 	}
+
 	private JLabel getLblSexo() {
 		if (lblSexo == null) {
 			lblSexo = new JLabel("Sexo:");
@@ -121,6 +123,7 @@ public class VentanaClasificacion extends JDialog {
 		}
 		return lblSexo;
 	}
+
 	private JComboBox<String> getCbSexo() {
 		if (cbSexo == null) {
 			cbSexo = new JComboBox<String>();
@@ -131,6 +134,7 @@ public class VentanaClasificacion extends JDialog {
 		}
 		return cbSexo;
 	}
+
 	private JLabel getLblCategoria() {
 		if (lblCategoria == null) {
 			lblCategoria = new JLabel("Categor\u00EDa:");
@@ -139,6 +143,7 @@ public class VentanaClasificacion extends JDialog {
 		}
 		return lblCategoria;
 	}
+
 	private JComboBox<String> getCbCategoria() {
 		if (cbCategoria == null) {
 			cbCategoria = new JComboBox<String>();
@@ -146,13 +151,14 @@ public class VentanaClasificacion extends JDialog {
 		}
 		return cbCategoria;
 	}
+
 	private JButton getBtnBuscar() {
 		if (btnBuscar == null) {
 			btnBuscar = new JButton("Buscar");
 			btnBuscar.setEnabled(false);
 			btnBuscar.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					buscar();	
+					buscar();
 				}
 			});
 			btnBuscar.setFont(new Font("Tahoma", Font.BOLD, 14));
@@ -160,34 +166,35 @@ public class VentanaClasificacion extends JDialog {
 		}
 		return btnBuscar;
 	}
+
 	private void ClearTabla() {
 		for (int i = 0; i < tableClasificaciones.getRowCount(); i++) {
 			modeloTabla.removeRow(i);
 			i -= 1;
 		}
 	}
+
 	private JPanel getPnClasificaciones() {
 		if (pnClasificaciones == null) {
 			pnClasificaciones = new JPanel();
 			pnClasificaciones.setBounds(43, 120, 692, 367);
 			pnClasificaciones.setLayout(new BorderLayout(0, 0));
-			pnClasificaciones.add(getScrollPaneClasificaciones(),
-					BorderLayout.CENTER);
+			pnClasificaciones.add(getScrollPaneClasificaciones(), BorderLayout.CENTER);
 		}
 		return pnClasificaciones;
 	}
+
 	private JScrollPane getScrollPaneClasificaciones() {
 		if (scrollPaneClasificaciones == null) {
 			scrollPaneClasificaciones = new JScrollPane();
-			scrollPaneClasificaciones
-					.setViewportView(getTableClasificaciones());
+			scrollPaneClasificaciones.setViewportView(getTableClasificaciones());
 		}
 		return scrollPaneClasificaciones;
 	}
+
 	private JTable getTableClasificaciones() {
 		if (tableClasificaciones == null) {
-			String[] nombreColumnas = { "Categoría", "Posición", "Dorsal",
-					"Nombre", "Club", "Tiempo" };
+			String[] nombreColumnas = { "Categoría", "Posición", "Dorsal", "Nombre", "Club", "Tiempo" };
 			modeloTabla = new ModeloNoEditable(nombreColumnas, 0);
 			tableClasificaciones = new JTable(modeloTabla);
 			RowsRendererClasificaciones rr = new RowsRendererClasificaciones(1);
@@ -195,49 +202,47 @@ public class VentanaClasificacion extends JDialog {
 		}
 		return tableClasificaciones;
 	}
-	
-	//==========================================================================================
-	//										LOGICA: 
-	//==========================================================================================
+
+	// ==========================================================================================
+	// LOGICA:
+	// ==========================================================================================
 
 	/**
-	 * Se ejecuta cuando se pulsa en buscar
-	 * Muestra los corredores de la carrera y categoria seleccionadas
+	 * Se ejecuta cuando se pulsa en buscar Muestra los corredores de la carrera y
+	 * categoria seleccionadas
 	 */
 	private void buscar() {
 		Carrera carrera = (Carrera) cbCarreras.getSelectedItem();
 		String genero = (String) cbSexo.getSelectedItem();
 		String categoria = (String) cbCategoria.getSelectedItem();
 		ClearTabla();
-		
-		if (carrera.isFinalizada() && !(g.getCorredores(carrera.getId()).isEmpty())){
+
+		if (carrera.isFinalizada() && !(g.getCorredores(carrera.getId()).isEmpty())) {
 			if (categoria.equals("Todas")) {
-				añadirFilasCategoriasTodas(carrera.getId(), genero,
-						categoria);
+				añadirFilasCategoriasTodas(carrera.getId(), genero, categoria);
 			} else {
 				añadirFilas(carrera.getId(), genero, categoria);
 			}
-			if (modeloTabla.getRowCount()==0){
-				JOptionPane.showMessageDialog(null, "No hay corredores de la carrera\n"
-						+ carrera.getNombre()+" de la categoría "+ categoria);
+			if (modeloTabla.getRowCount() == 0) {
+				JOptionPane.showMessageDialog(null,
+						"No hay corredores de la carrera\n" + carrera.getNombre() + " de la categoría " + categoria);
 			}
-		}else{
-			JOptionPane.showMessageDialog(null, "No hay corredores de la carrera o no se ha disputado aun\n"
-					+ carrera.getNombre());
+		} else {
+			JOptionPane.showMessageDialog(null,
+					"No hay corredores de la carrera o no se ha disputado aun\n" + carrera.getNombre());
 		}
 	}
-	
+
 	/**
 	 * Añade filas
+	 * 
 	 * @param idCarrera
 	 * @param genero
 	 * @param categoria
 	 */
-	private void añadirFilasCategoriasTodas(Integer idCarrera, String genero,
-			String categoria) {
+	private void añadirFilasCategoriasTodas(Integer idCarrera, String genero, String categoria) {
 		Object[] nuevaFila = new Object[6];
-		List<Corredor> corredores = escogerListaCorredores(idCarrera, genero,
-				categoria);
+		List<Corredor> corredores = escogerListaCorredores(idCarrera, genero, categoria);
 		String currentCategoria;
 		int pos = 1;
 		currentCategoria = corredores.get(0).getCategoria();
@@ -253,23 +258,26 @@ public class VentanaClasificacion extends JDialog {
 				nuevaFila[5] = "";
 				modeloTabla.addRow(nuevaFila);
 			}
-			
-			if (!(corredores.get(i).getTiempo().equals("-1"))){
+
+			// if (!(corredores.get(i).getTiempo().equals("-1"))){
+			if (!(corredores.get(i).getTiempos().get(corredores.get(i).getTiempos().size() - 1).toString()
+					.equals("-1"))) {
 				nuevaFila[0] = corredores.get(i).getCategoria();
 				nuevaFila[1] = pos++;
 				nuevaFila[2] = corredores.get(i).getDorsal();
 				nuevaFila[3] = corredores.get(i).getNombre();
 				nuevaFila[4] = corredores.get(i).getClub();
-				nuevaFila[5] = corredores.get(i).getTiempo();
-				
-				if (nuevaFila[5].equals("DNF")){
+				nuevaFila[5] = corredores.get(i).getTiempos().get(corredores.get(i).getTiempos().size() - 1).toString();
+				// nuevaFila[5] = corredores.get(i).getTiempo();
+
+				if (nuevaFila[5].equals("DNF")) {
 					nuevaFila[1] = "DNF";
-					nuevaFila[5]= "---";
-				}else if(nuevaFila[5].equals("DNS")){
+					nuevaFila[5] = "---";
+				} else if (nuevaFila[5].equals("DNS")) {
 					nuevaFila[1] = "DNS";
-					nuevaFila[5]= "---";
+					nuevaFila[5] = "---";
 				}
-				
+
 				modeloTabla.addRow(nuevaFila);
 			}
 		}
@@ -277,30 +285,34 @@ public class VentanaClasificacion extends JDialog {
 
 	/**
 	 * Añade filas
+	 * 
 	 * @param idCarrera
 	 * @param genero
 	 * @param categoria
 	 */
 	private void añadirFilas(Integer idCarrera, String genero, String categoria) {
 		Object[] nuevaFila = new Object[6];
-		List<Corredor> corredores = escogerListaCorredores(idCarrera, genero,
-				categoria);
+		List<Corredor> corredores = escogerListaCorredores(idCarrera, genero, categoria);
 
 		int pos = 1;
 		for (int i = 0; i < corredores.size(); i++) {
-			if (!(corredores.get(i).getTiempo().equals("DNF"))
-					&& !(corredores.get(i).getTiempo().equals("DNS")) && !(corredores.get(i).getTiempo().equals("-1"))) {
-					nuevaFila[0] = corredores.get(i).getCategoria();
-					nuevaFila[1] = pos++;
-					nuevaFila[2] = corredores.get(i).getDorsal();
-					nuevaFila[3] = corredores.get(i).getNombre();
-					nuevaFila[4] = corredores.get(i).getClub();
-					nuevaFila[5] = corredores.get(i).getTiempo();
-					modeloTabla.addRow(nuevaFila);
+			if (!(corredores.get(i).getTiempos().get(corredores.get(i).getTiempos().size() - 1).toString()
+					.equals("DNF"))
+					&& !(corredores.get(i).getTiempos().get(corredores.get(i).getTiempos().size() - 1).toString()
+							.equals("DNS"))
+					&& !(corredores.get(i).getTiempos().get(corredores.get(i).getTiempos().size() - 1).toString()
+							.equals("-1"))) {
+				nuevaFila[0] = corredores.get(i).getCategoria();
+				nuevaFila[1] = pos++;
+				nuevaFila[2] = corredores.get(i).getDorsal();
+				nuevaFila[3] = corredores.get(i).getNombre();
+				nuevaFila[4] = corredores.get(i).getClub();
+				nuevaFila[5] = corredores.get(i).getTiempos().get(corredores.get(i).getTiempos().size() - 1).toString();
+				modeloTabla.addRow(nuevaFila);
 			}
 		}
 		for (int i = 0; i < corredores.size(); i++) {
-			if (corredores.get(i).getTiempo().equals("DNF")) {
+			if (corredores.get(i).getTiempos().get(corredores.get(i).getTiempos().size()-1).toString().equals("DNF")) {
 				nuevaFila[0] = corredores.get(i).getCategoria();
 				nuevaFila[1] = "DNF";
 				nuevaFila[2] = corredores.get(i).getDorsal();
@@ -308,7 +320,7 @@ public class VentanaClasificacion extends JDialog {
 				nuevaFila[4] = corredores.get(i).getClub();
 				nuevaFila[5] = "---";
 				modeloTabla.addRow(nuevaFila);
-			} else if (corredores.get(i).getTiempo().equals("DNS")) {
+			} else if (corredores.get(i).getTiempos().get(corredores.get(i).getTiempos().size()-1).toString().equals("DNS")) {
 				nuevaFila[0] = corredores.get(i).getCategoria();
 				nuevaFila[1] = "DNS";
 				nuevaFila[2] = corredores.get(i).getDorsal();
@@ -322,28 +334,25 @@ public class VentanaClasificacion extends JDialog {
 
 	/**
 	 * Escoge la lista de corredores
+	 * 
 	 * @param idCarrera
 	 * @param genero
 	 * @param categoria
 	 * @return
 	 */
-	private List<Corredor> escogerListaCorredores(Integer idCarrera,
-			String genero, String categoria) {
+	private List<Corredor> escogerListaCorredores(Integer idCarrera, String genero, String categoria) {
 		if (genero.equals("Todos") && categoria.equals("Absoluta")) {
 			return g.getCorredores(idCarrera);
-		} else if ((genero.equals("Femenino") || genero.equals("Masculino"))
-				&& categoria.equals("Absoluta")) {
+		} else if ((genero.equals("Femenino") || genero.equals("Masculino")) && categoria.equals("Absoluta")) {
 			return g.getCorredoresByGenero(idCarrera, genero);
 		} else if (genero.equals("Todos") && categoria.equals("Todas")) {
 			return g.getCorredoresTodasCategorias(idCarrera);
-		} else if ((genero.equals("Femenino") || genero.equals("Masculino"))
-				&& categoria.equals("Todas")) {
+		} else if ((genero.equals("Femenino") || genero.equals("Masculino")) && categoria.equals("Todas")) {
 			return g.getCorredoresTodasCategoriasByGenero(idCarrera, genero);
 		} else if (genero.equals("Todos") && categoria.equals(categoria)) {
 			return g.getCorredoresTodasCategoriasGeneroT(idCarrera, categoria);
 		} else {
-			return g.getCorredoresByGeneroByCategoria(idCarrera, genero,
-					categoria);
+			return g.getCorredoresByGeneroByCategoria(idCarrera, genero, categoria);
 		}
 	}
 

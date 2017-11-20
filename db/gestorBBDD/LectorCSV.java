@@ -15,6 +15,7 @@ import javax.swing.JOptionPane;
 import entities.Carrera;
 import entities.Usuario;
 import logic.GestorApp;
+import logic.PuntoControl;
 
 /**
  * @author Antonio Paya Gonzalez
@@ -70,7 +71,7 @@ public class LectorCSV {
 		BufferedReader br = null;
 		boolean asignado = false;
 		
-		GestorApp g = new GestorApp();
+		GestorApp g = new GestorApp();	
 
 		try {
 			// Apertura del fichero y creacion de BufferedReader para poder
@@ -81,27 +82,33 @@ public class LectorCSV {
 
 			// Lectura del fichero
 			String linea;
+			
+			
+			//Puntos de control
+			ArrayList<PuntoControl> puntoControl = carrera.getPuntos_control();
+			
 
 			int dorsal = -1;
 			int tInicio = -1;
 			String tFin = null;
 			while ((linea = br.readLine()) != null) {
 				String[] l = linea.split(",");
-				if (l.length == 3) {
+				if (l.length == puntoControl.size()+2) {
+					//Comprobación del dorsal, si no es correcto el valor se queda en -1
 					if (!linea.split(",")[0].matches(".*[a-zA-Z].*")) {
 						if (Integer.parseInt(linea.split(",")[0]) > 0) {
 							dorsal = Integer.parseInt(linea.split(",")[0]);
 						}
 					}
-					if (!linea.split(",")[0].matches(".*[a-zA-Z].*")) {
+					//Comprabomos si el atleta ha empezado la carrera, si no el valor se queda en -1
+					if (!linea.split(",")[1].matches(".*[a-zA-Z].*")) {
 						if (Integer.parseInt(linea.split(",")[1]) == 0) {
 							tInicio = Integer.parseInt(linea.split(",")[1]);
-						} else {
-							tInicio = -1;
-						}
+						} 
 					}
-					if (!linea.split(",")[0].matches(".*[a-zA-Z].*")) {
-						String[] crono = l[2].split(":");
+					
+					for(int i=2;i<puntoControl.size();i++) {  
+						String[] crono = l[i].split(":");
 						if (crono.length == 3) {
 							int horas = -1;
 							int minutos = -1;
@@ -126,15 +133,16 @@ public class LectorCSV {
 
 							if (horas != -1 && minutos != -1 && segundos != -1) {
 								tFin = horas + ":" + minutos + ":" + segundos;
+								g.asignaTiempo(carrera, dorsal,puntoControl.get(i).getKm(),tFin);
 							}
-
 						}
 					}
+				
 
-					if (dorsal != -1 && tInicio != -1 && tFin != null) {
-						g.asignaTiempo(carrera, dorsal, tFin);
-						asignado = true;
-					}
+				if (dorsal != -1 && tInicio != -1 && tFin != null) {
+					asignado = true;
+				}
+				
 
 				} else if (l.length == 2) {
 					if (!linea.split(",")[0].matches(".*[a-zA-Z].*")) {
@@ -152,7 +160,7 @@ public class LectorCSV {
 
 					if (dorsal != -1 && tInicio == 0) {
 						tFin = "DNF";
-						g.asignaTiempo(carrera, dorsal, tFin);
+						g.asignaTiempo(carrera,0,dorsal, tFin);
 						asignado = true;
 					}
 
@@ -167,18 +175,19 @@ public class LectorCSV {
 
 					if (dorsal != -1) {
 						tFin = "DNS";
-						g.asignaTiempo(carrera, dorsal, tFin);
+						g.asignaTiempo(carrera,0,dorsal, tFin);
 						asignado = true;
 					}
 				}
 				
 				if(!asignado) {
-					g.asignaTiempo(carrera, dorsal, "Datos erroneos");
+					g.asignaTiempo(carrera,0,dorsal, "Datos erroneos");
 				}
 			}
 
 		} catch (Exception e) {
-			System.out.println("Archico .csv no encontrado");
+			//System.out.println("Archico .csv no encontrado");
+			e.printStackTrace();
 		} finally {
 			// En el finally cerramos el fichero, para asegurarnos
 			// que se cierra tanto si todo va bien como si salta

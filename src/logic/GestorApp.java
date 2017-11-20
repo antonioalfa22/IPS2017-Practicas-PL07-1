@@ -357,14 +357,14 @@ public class GestorApp {
 	 * @param tiempo
 	 * @throws SQLException
 	 */
-	public void asignaTiempo(Carrera carrera, int dorsal, String tiempo)
+	public void asignaTiempo(Carrera carrera,int km, int dorsal, String tiempo)
 			throws SQLException {
 		List<Corredor> corredores;
 
 		corredores = getTodosLosCorredores(carrera);
 		for (Corredor c : corredores) {
 			if (c.getDorsal() == dorsal) {
-				GestorDB.updateTiempo(c, tiempo);
+				GestorDB.updateTiempo(c,km,tiempo);
 			}
 		}
 

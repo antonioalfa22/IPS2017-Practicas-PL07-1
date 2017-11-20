@@ -1,5 +1,9 @@
 package entities;
 
+import java.util.ArrayList;
+
+import logic.Time;
+
 /**
  * Clase que representa a un atleta que ya ha pagado su inscripcion
  * y va a disputar la carrera.
@@ -15,11 +19,14 @@ public class Corredor implements Comparable<Corredor>{
 	private String fechaInscripcion;
 	private String genero;
 	private String club;
-	private String tiempo;
+	//private String tiempo;
 	private Integer dorsal,idCarrera;
 	//Posiciones 
 	private String posicionAbsoluta;
 	private String posicionCategoria;
+	
+	
+	private ArrayList<Time> tiempos;
 	
 	
 	/**
@@ -32,13 +39,13 @@ public class Corredor implements Comparable<Corredor>{
 	 * @param nombre
 	 * @param fechaInscripcion
 	 */
-	public Corredor(String dni, Integer idCarrera, String tiempo,
+	public Corredor(String dni, Integer idCarrera, ArrayList<Time> tiempos,
 			Integer dorsal, String categoria, String genero, String nombre,
 			String fechaInscripcion) {
 		super();
 		this.dni = dni;
 		this.idCarrera = idCarrera;
-		this.tiempo = tiempo;
+		this.tiempos = tiempos;
 		this.dorsal = dorsal;
 		this.categoria = categoria;
 		this.genero = genero;
@@ -48,13 +55,13 @@ public class Corredor implements Comparable<Corredor>{
 		posicionCategoria="-";
 	}
 
-	public Corredor(String dni, Integer idCarrera, String tiempo,
+	public Corredor(String dni, Integer idCarrera,  ArrayList<Time> tiempos,
 			Integer dorsal, String categoria, String genero, String nombre,
 			String fechaInscripcion,String club) {
 		super();
 		this.dni = dni;
 		this.idCarrera = idCarrera;
-		this.tiempo = tiempo;
+		this.tiempos = tiempos;
 		this.dorsal = dorsal;
 		this.categoria = categoria;
 		this.genero = genero;
@@ -121,17 +128,14 @@ public class Corredor implements Comparable<Corredor>{
 	public void setIdCarrera(Integer idCarrera) {
 		this.idCarrera = idCarrera;
 	}
-	/**
-	 * @return the tiempo
-	 */
-	public String getTiempo() {
-		return tiempo;
+
+
+	public ArrayList<Time> getTiempos() {
+		return tiempos;
 	}
-	/**
-	 * @param tiempo the tiempo to set
-	 */
-	public void setTiempo(String tiempo) {
-		this.tiempo = tiempo;
+
+	public void setTiempos(ArrayList<Time> tiempos) {
+		this.tiempos = tiempos;
 	}
 
 	public String getDni() {
