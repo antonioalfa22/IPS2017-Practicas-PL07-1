@@ -14,8 +14,10 @@ import entities.Corredor;
 import entities.Preinscrito;
 import entities.Usuario;
 import logic.Categoria;
+import logic.FechaCancelacion;
 import logic.FechaInscripcion;
 import logic.Inscrito;
+import logic.PuntoControl;
 
 /**
  * Clase que accede a la base de datos y tiene métodos para sacar y añadir datos
@@ -71,6 +73,8 @@ public class GestorDB {
 		while (rs.next()) {
 			ArrayList<Categoria> categorias = new ArrayList<Categoria>();
 			ArrayList<FechaInscripcion> fechas = new ArrayList<FechaInscripcion>();
+			ArrayList<FechaCancelacion> cancelacion = new ArrayList<FechaCancelacion>();
+			ArrayList<PuntoControl> control = new ArrayList<PuntoControl>();
 			int id = rs.getInt("Id_Carrera");
 			String nombre = rs.getString("Nombre");
 			String lugar = rs.getString("Lugar");
@@ -102,13 +106,34 @@ public class GestorDB {
 				int precio = rs3.getInt("Precio");
 				fechas.add(new FechaInscripcion(fi, ff, precio));
 			}
+			PreparedStatement st4 = conexion
+					.prepareStatement("SELECT * FROM FECHA_CANCELACION WHERE Id_Carrera = ?");
+			st4.setInt(1, id);
+			ResultSet rs4 = st4.executeQuery();
+			while (rs4.next()) {
+				String fi = rs4.getString("Fecha_inicio");
+				String ff = rs4.getString("Fecha_fin");
+				int devolver = rs4.getInt("A_Devolver");
+				cancelacion.add(new FechaCancelacion(fi, ff, devolver));
+			}
+			PreparedStatement st5 = conexion
+					.prepareStatement("SELECT * FROM PUNTOSCONTROL WHERE Id_Carrera = ?");
+			st5.setInt(1, id);
+			ResultSet rs5 = st5.executeQuery();
+			while (rs5.next()) {
+				int n_km = rs5.getInt("N_km");
+				String[] tiempo = rs5.getString("Tiempo_max").split(":");
+				control.add(new PuntoControl(n_km,Integer.parseInt(tiempo[0]),Integer.parseInt(tiempo[1])));
+			}
 			Carrera c = new Carrera(id, nombre, lugar, fecha, num_max, km,
-					dureza, edad, tipo, ncuenta, dni, fechas, categorias);
+					dureza, edad, tipo, ncuenta, dni, fechas, categorias,cancelacion,control);
 			carreras.add(c);
 			rs2.close();
 			rs3.close();
 			st2.close();
 			st3.close();
+			rs4.close();
+			st4.close();
 		}
 		rs.close();
 		st.close();
@@ -159,6 +184,27 @@ public class GestorDB {
 			addFechas.setString(2, fi.getFechaFin());
 			addFechas.setDouble(3, fi.getPrecio());
 			addFechas.setInt(4, c.getId());
+			addFechas.executeUpdate();
+			addFechas.close();
+		}
+		for (FechaCancelacion fi : c.getFechas_cancelacion()) {
+			PreparedStatement addFechas = conexion
+					.prepareStatement("INSERT INTO FECHA_CANCELACION "
+							+ "VALUES (?,?,?,?)");
+			addFechas.setInt(1, c.getId());
+			addFechas.setString(2, fi.getFecha());
+			addFechas.setString(3, fi.getFechaFin());
+			addFechas.setDouble(4, fi.getADevolver());
+			addFechas.executeUpdate();
+			addFechas.close();
+		}
+		for (PuntoControl fi : c.getPuntos_control()) {
+			PreparedStatement addFechas = conexion
+					.prepareStatement("INSERT INTO PUNTOSCONTROL "
+							+ "VALUES (?,?,?)");
+			addFechas.setInt(1, c.getId());
+			addFechas.setInt(2, fi.getKm());
+			addFechas.setString(3, fi.getHoras()+":"+fi.getMin());
 			addFechas.executeUpdate();
 			addFechas.close();
 		}
