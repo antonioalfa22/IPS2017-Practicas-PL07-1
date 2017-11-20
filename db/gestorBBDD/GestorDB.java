@@ -527,7 +527,7 @@ public class GestorDB {
 			ResultSet rs3 = pst2.executeQuery();
 
 			while (rs3.next()) {
-				String[] tiempo = rs3.getString("Tiempo").split(":");
+				String[] tiempo = rs3.getString("Tiempo").split(":");			
 				if(tiempo!=null) {
 					int horas = Integer.valueOf(tiempo[0]);
 					int minutos = Integer.valueOf(tiempo[1]);
@@ -1146,14 +1146,24 @@ public class GestorDB {
 	 * @param tiempo
 	 * @throws SQLException
 	 */
-	public static void updateTiempo(Corredor c,int km,String tiempo) throws SQLException {
+	public static void updateTiempo(Corredor c,Integer km,String tiempo) throws SQLException {
 		conectar();
-		PreparedStatement ps = conexion
-				.prepareStatement("INSERT INTO Tiempos VALUES(?,?,?,?)");
-		ps.setString(1, c.getDni());
-		ps.setInt(2, km);
-		ps.setString(3, tiempo);
-		ps.setInt(4, c.getIdCarrera());
+		PreparedStatement ps;
+		if(km!=null) {
+			 ps = conexion
+					.prepareStatement("INSERT INTO Tiempos VALUES(?,?,?,?)");
+			 ps.setString(1, c.getDni());
+			 ps.setInt(2, km);
+			 ps.setString(3, tiempo);
+			 ps.setInt(4, c.getIdCarrera());
+		}else {
+			 ps = conexion
+					.prepareStatement("INSERT INTO Tiempos VALUES(?,null,?,?)");
+			 ps.setString(1, c.getDni());
+			 ps.setString(2, tiempo);
+			 ps.setInt(3, c.getIdCarrera());
+		}
+		
 		ps.executeUpdate();
 		ps.close();
 		cerrar();

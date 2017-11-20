@@ -357,7 +357,7 @@ public class GestorApp {
 	 * @param tiempo
 	 * @throws SQLException
 	 */
-	public void asignaTiempo(Carrera carrera,int km, int dorsal, String tiempo)
+	public void asignaTiempo(Carrera carrera,int dorsal,Integer km, String tiempo)
 			throws SQLException {
 		List<Corredor> corredores;
 

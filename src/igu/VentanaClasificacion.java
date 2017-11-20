@@ -94,7 +94,6 @@ public class VentanaClasificacion extends JDialog {
 				public void actionPerformed(ActionEvent arg0) {
 					Carrera carrera = (Carrera) cbCarreras.getSelectedItem();
 					inicializarModeloCategorias(carrera);
-					System.out.println(carrera.getNombre());
 					LectorCSV.actualizarTiempos(carrera.getNombre() + ".csv", carrera); // Actualizamos tiempos de
 																						// corredores
 					btnBuscar.setEnabled(true);
