@@ -55,4 +55,22 @@ public class Time implements Comparable<Time>{
 		return hour+":"+minute+":"+second;
 	}
 	
+	
+	public Time suma(Time tiempo){
+		int h=tiempo.hour;
+		int m=tiempo.minute;
+		Time time = new Time(0,0,0);
+		
+		if(this.minute+m >59) {
+			int suma=(this.minute+m)-60;
+			time.minute=suma;
+			time.hour++;
+			time.hour+=tiempo.hour;
+		}else {
+			time.minute=this.minute+tiempo.minute;
+			time.hour=this.hour+tiempo.hour;
+		}
+		return time;
+		
+	}
 }
