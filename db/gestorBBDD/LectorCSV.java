@@ -94,6 +94,7 @@ public class LectorCSV {
 			int tInicio = -1;
 			String tFin = null;
 			while ((linea = br.readLine()) != null) {
+				asignado = false;
 				String[] line = linea.split(",");
 				if (line.length == puntoControl.size()+2) {
 					//Comprobación del dorsal, si no es correcto el valor se queda en -1
@@ -209,13 +210,13 @@ public class LectorCSV {
 				}
 				
 				if(!asignado) {
-					g.asignaTiempo(carrera,0,dorsal, "Datos erroneos");
+					g.asignaTiempo(carrera,dorsal,null,"-3:-3:-3");
 				}
 			}
 
 		} catch (Exception e) {
-			//System.out.println("Archico .csv no encontrado");
-			e.printStackTrace();
+			System.out.println("Archico .csv no encontrado");
+			//e.printStackTrace();
 		} finally {
 			// En el finally cerramos el fichero, para asegurarnos
 			// que se cierra tanto si todo va bien como si salta
