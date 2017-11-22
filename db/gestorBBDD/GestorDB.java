@@ -527,8 +527,8 @@ public class GestorDB {
 			ResultSet rs3 = pst2.executeQuery();
 
 			while (rs3.next()) {
-				String[] tiempo = rs3.getString("Tiempo").split(":");			
-				if(tiempo!=null) {
+				String[] tiempo = rs3.getString("Tiempo").split(":");
+				if (tiempo != null) {
 					int horas = Integer.valueOf(tiempo[0]);
 					int minutos = Integer.valueOf(tiempo[1]);
 					int segundos = Integer.valueOf(tiempo[2]);
@@ -590,7 +590,7 @@ public class GestorDB {
 
 			while (rs3.next()) {
 				String[] tiempo = rs3.getString("Tiempo").split(":");
-				if(tiempo!=null) {
+				if (tiempo != null) {
 					int horas = Integer.valueOf(tiempo[0]);
 					int minutos = Integer.valueOf(tiempo[1]);
 					int segundos = Integer.valueOf(tiempo[2]);
@@ -657,7 +657,7 @@ public class GestorDB {
 
 			while (rs3.next()) {
 				String[] tiempo = rs3.getString("Tiempo").split(":");
-				if(tiempo!=null) {
+				if (tiempo != null) {
 					int horas = Integer.valueOf(tiempo[0]);
 					int minutos = Integer.valueOf(tiempo[1]);
 					int segundos = Integer.valueOf(tiempo[2]);
@@ -715,7 +715,7 @@ public class GestorDB {
 
 			while (rs3.next()) {
 				String[] tiempo = rs3.getString("Tiempo").split(":");
-				if(tiempo!=null) {
+				if (tiempo != null) {
 					int horas = Integer.valueOf(tiempo[0]);
 					int minutos = Integer.valueOf(tiempo[1]);
 					int segundos = Integer.valueOf(tiempo[2]);
@@ -774,7 +774,7 @@ public class GestorDB {
 
 			while (rs3.next()) {
 				String[] tiempo = rs3.getString("Tiempo").split(":");
-				if(tiempo!=null) {
+				if (tiempo != null) {
 					int horas = Integer.valueOf(tiempo[0]);
 					int minutos = Integer.valueOf(tiempo[1]);
 					int segundos = Integer.valueOf(tiempo[2]);
@@ -837,7 +837,7 @@ public class GestorDB {
 
 			while (rs3.next()) {
 				String[] tiempo = rs3.getString("Tiempo").split(":");
-				if(tiempo!=null) {
+				if (tiempo != null) {
 					int horas = Integer.valueOf(tiempo[0]);
 					int minutos = Integer.valueOf(tiempo[1]);
 					int segundos = Integer.valueOf(tiempo[2]);
@@ -900,7 +900,7 @@ public class GestorDB {
 
 			while (rs3.next()) {
 				String[] tiempo = rs3.getString("Tiempo").split(":");
-				if(tiempo!=null) {
+				if (tiempo != null) {
 					int horas = Integer.valueOf(tiempo[0]);
 					int minutos = Integer.valueOf(tiempo[1]);
 					int segundos = Integer.valueOf(tiempo[2]);
@@ -1146,27 +1146,46 @@ public class GestorDB {
 	 * @param tiempo
 	 * @throws SQLException
 	 */
-	public static void updateTiempo(Corredor c,Integer km,String tiempo) throws SQLException {
+	public static void updateTiempo(Corredor c, Integer km, String tiempo) throws SQLException {
 		conectar();
 		PreparedStatement ps;
-		if(km!=null) {
-			 ps = conexion
-					.prepareStatement("INSERT INTO Tiempos VALUES(?,?,?,?)");
-			 ps.setString(1, c.getDni());
-			 ps.setInt(2, km);
-			 ps.setString(3, tiempo);
-			 ps.setInt(4, c.getIdCarrera());
-		}else {
-			 ps = conexion
-					.prepareStatement("INSERT INTO Tiempos VALUES(?,null,?,?)");
-			 ps.setString(1, c.getDni());
-			 ps.setString(2, tiempo);
-			 ps.setInt(3, c.getIdCarrera());
+		if (km != null) {
+			ps = conexion.prepareStatement("INSERT INTO Tiempos VALUES(?,?,?,?)");
+			ps.setString(1, c.getDni());
+			ps.setInt(2, km);
+			ps.setString(3, tiempo);
+			ps.setInt(4, c.getIdCarrera());
+		} else {
+			ps = conexion.prepareStatement("INSERT INTO Tiempos VALUES(?,null,?,?)");
+			ps.setString(1, c.getDni());
+			ps.setString(2, tiempo);
+			ps.setInt(3, c.getIdCarrera());
 		}
-		
+
 		ps.executeUpdate();
 		ps.close();
 		cerrar();
+	}
+
+	/**
+	 * Elimina los tiempos de una carrera
+	 * 
+	 * @param c
+	 * @param km
+	 * @param tiempo
+	 * @throws SQLException
+	 */
+	public static void removeTiempos(Carrera carrera) throws SQLException {
+		conectar();
+		PreparedStatement ps;
+
+		ps = conexion.prepareStatement("DELETE FROM Tiempos WHERE Id_carrera =?");
+		ps.setInt(1, carrera.getId());
+
+		ps.executeUpdate();
+		ps.close();
+		cerrar();
+
 	}
 
 	/**

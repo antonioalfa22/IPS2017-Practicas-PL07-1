@@ -357,18 +357,37 @@ public class GestorApp {
 	 * @param tiempo
 	 * @throws SQLException
 	 */
-	public void asignaTiempo(Carrera carrera,int dorsal,Integer km, String tiempo)
-			throws SQLException {
+	public void asignaTiempo(Carrera carrera, int dorsal, Integer km, String tiempo) {
 		List<Corredor> corredores;
 
-		corredores = getTodosLosCorredores(carrera);
-		for (Corredor c : corredores) {
-			if (c.getDorsal() == dorsal) {
-				GestorDB.updateTiempo(c,km,tiempo);
+		try {
+			corredores = getTodosLosCorredores(carrera);
+			for (Corredor c : corredores) {
+				if (c.getDorsal() == dorsal) {
+					GestorDB.updateTiempo(c, km, tiempo);
+				}
 			}
+		} catch (SQLException e) {
+			System.out.println("Error al añadir tiempo a un corredor");
 		}
 
 	}
+	
+	/**
+	 * Elimina el tiempo del corredor que tenga el dorsal que se lee
+	 * @param carrera2
+	 * @param dorsal
+	 * @param km
+	 * @param tFin
+	 */
+	public void eliminaTiempos(Carrera carrera) {
+		try {
+			GestorDB.removeTiempos(carrera);
+		}catch(SQLException e) {
+			System.out.println("Error al eliminar tiempos de una carrera");
+		}
+	}
+	
 
 	/**
 	 * Devuelve si existe un usuario en la DB con el mismo dni
@@ -555,4 +574,5 @@ public class GestorApp {
 
 		return inscritos;
 	}
+
 }
