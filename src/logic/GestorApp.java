@@ -59,6 +59,17 @@ public class GestorApp {
 			System.out.println("Error al sacar los clubs de la base de datos");
 			e.printStackTrace();
 		}
+		try {
+			corredores = new ArrayList<Corredor>();
+			for(Carrera c:carreras) {
+				for(Corredor corr: GestorDB.findCorredoresByIdCarrera(c.getId()))
+					corredores.add(corr);
+			}
+
+		} catch (SQLException e) {
+			System.out.println("Error al sacar los corredores de la base de datos");
+			e.printStackTrace();
+		}
 		usuarioActivo = null;
 	}
 
@@ -324,7 +335,7 @@ public class GestorApp {
 							.println("Error al borrar una carrera de la base de datos");
 					e.printStackTrace();
 				}
-				carreras.remove(i);
+				clubs.remove(i);
 			}
 		}
 	}
@@ -343,7 +354,45 @@ public class GestorApp {
 							.println("Error al borrar un usuario de la base de datos");
 					e.printStackTrace();
 				}
+				usuarios.remove(i);
+			}
+		}
+	}
+	
+	/**
+	 * 
+	 * @param id
+	 */
+	public void deletePreinscrito(String dni) {
+		for (int i = 0; i < preinscritos.size(); i++) {
+			if (preinscritos.get(i).getDni() == dni) {
+				try {
+					GestorDB.deletePreinscrito(dni);
+				} catch (SQLException e) {
+					System.out
+							.println("Error al borrar un preinscrito de la base de datos");
+					e.printStackTrace();
+				}
 				carreras.remove(i);
+			}
+		}
+	}
+	
+	/**
+	 * 
+	 * @param id
+	 */
+	public void deleteCorredor(String dni) {
+		for (int i = 0; i < corredores.size(); i++) {
+			if (corredores.get(i).getDni() == dni) {
+				try {
+					GestorDB.deleteCorredor(dni);
+				} catch (SQLException e) {
+					System.out
+							.println("Error al borrar un corredor de la base de datos");
+					e.printStackTrace();
+				}
+				corredores.remove(i);
 			}
 		}
 	}

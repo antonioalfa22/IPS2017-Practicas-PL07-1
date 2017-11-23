@@ -495,11 +495,22 @@ public class GestorDB {
 		addPreinscrito.close();
 		cerrar();
 	}
-
-	// ==========================================================================================
-	// CORREDORES:
-	// ==========================================================================================
-
+	
+	/**
+	 * Metodo que borra un preinscrito de la base de datos
+	 * @param dni
+	 * @throws SQLException 
+	 */
+	public static void deletePreinscrito(String dni) throws SQLException {
+		conectar();
+		PreparedStatement deletePreinscrito= conexion
+				.prepareStatement("DELETE FROM PREINSCRITOS WHERE DNI = ?");
+		deletePreinscrito.setString(1, dni);
+		deletePreinscrito.executeUpdate();
+		deletePreinscrito.close();
+		cerrar();
+	}
+	
 	/**
 	 * Metodo que devuelve un ArrayList de Preinscritos(no pagaron aun) de una
 	 * carrera
@@ -530,6 +541,27 @@ public class GestorDB {
 		cerrar();
 		return preinscritos;
 	}
+
+
+	// ==========================================================================================
+	// CORREDORES:
+	// ==========================================================================================
+
+	/**
+	 * Metodo que borra un preinscrito de la base de datos
+	 * @param dni
+	 * @throws SQLException 
+	 */
+	public static void deleteCorredor(String dni) throws SQLException {
+		conectar();
+		PreparedStatement deleteCorredor= conexion
+				.prepareStatement("DELETE FROM CORREDORES WHERE DNI = ?");
+		deleteCorredor.setString(1, dni);
+		deleteCorredor.executeUpdate();
+		deleteCorredor.close();
+		cerrar();
+	}
+	
 
 	/**
 	 * Metodo que saca un ArrayList de los Corredores(con dorsal, es decir ya
@@ -1109,4 +1141,64 @@ public class GestorDB {
 		cerrar();
 	}
 
+	/**
+	 * Método que devuelve la cantidad pagada por el usuario hasta el momento. Sirve
+	 * para comprobar las transacciones múltiples
+	 * 
+	 * @param DNI
+	 * @return
+	 * @throws SQLException
+	 */
+	public static int getCantidadPagada(String DNI) throws SQLException {
+		int cantidad = 0;
+		conectar();
+		PreparedStatement ps = conexion.prepareStatement("SELECT Cantidad_pagada FROM Preinscritos WHERE DNI = ?");
+		ps.setString(1, DNI);
+		ResultSet rs = ps.executeQuery();
+		while (rs.next())
+			cantidad = rs.getInt("Cantidad_pagada");
+		ps.close();
+		rs.close();
+		cerrar();
+		return cantidad;
+	}
+
+	/**
+	 * Método que modifica la cantidad pagada por el usuario hasta el momento. Sirve
+	 * para comprobar las transacciones múltiples
+	 * 
+	 * @param DNI
+	 * @return
+	 * @throws SQLException
+	 */
+	public static void setCantidadPagada(String DNI, int cantidad) throws SQLException {
+		int aux = getCantidadPagada(DNI);
+		conectar();
+		PreparedStatement ps = conexion.prepareStatement("UPDATE Preinscritos SET Cantidad_pagada = ? WHERE DNI = ?");
+		ps.setInt(1, aux + cantidad);
+		ps.setString(2, DNI);
+		ps.executeUpdate();
+		ps.close();
+		cerrar();
+	}
+
+	/**
+	 * Método que cancela la inscripción de un corredor para una determinada carrera
+	 * 
+	 * @param dni
+	 * @param c
+	 * @throws SQLException
+	 */
+	public static void cancelar(String DNI, Carrera c) throws SQLException {
+		conectar();
+		PreparedStatement ps = conexion
+				.prepareStatement("UPDATE Corredores SET Pagado = ? WHERE Id_Carrera = ? AND DNI = ?");
+		ps.setString(1, "No");
+		ps.setInt(2, c.getId());
+		ps.setString(3, DNI);
+		ps.executeUpdate();
+		ps.close();
+		cerrar();
+	}
+	
 }
