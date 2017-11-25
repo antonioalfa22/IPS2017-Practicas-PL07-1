@@ -19,23 +19,21 @@ import logic.PuntoControl;
 
 /**
  * Clase que representa una carrera
- * 
  * @author Antonio Paya Gonzalez
  *
  */
-public class Carrera implements Comparable<Carrera> {
-
-	private String nombre, lugar, dureza, tipo, num_cuenta, fecha, dni_creador;
-	private int id, num_max_part, distancia, edad_minima;
+public class Carrera implements Comparable<Carrera>{
+	
+	private String nombre,lugar,dureza,tipo,num_cuenta,fecha,dni_creador;
+	private int id,num_max_part,distancia,edad_minima;
 	private ArrayList<Corredor> atletas;
 	private ArrayList<FechaInscripcion> fechas_inscripcion;
 	private ArrayList<Categoria> categorias;
 	private ArrayList<FechaCancelacion> fechas_cancelacion;
 	private ArrayList<PuntoControl> puntos_control;
-
+	
 	/**
 	 * Constructor con parametros de la clase
-	 * 
 	 * @param nombre
 	 * @param lugar
 	 * @param fecha
@@ -49,9 +47,10 @@ public class Carrera implements Comparable<Carrera> {
 	 * @param num_cuenta
 	 * @param dni_creador
 	 */
-	public Carrera(int id, String nombre, String lugar, String fecha, int num_max_part, int distancia, String dureza,
-			int edad_minima, String tipo, String num_cuenta, String dni_creador, ArrayList<FechaInscripcion> fechas,
-			ArrayList<Categoria> cats, ArrayList<FechaCancelacion> fechasC, ArrayList<PuntoControl> control) {
+	public Carrera(int id,String nombre,String lugar,String fecha,int num_max_part,
+			int distancia,String dureza,int edad_minima,String tipo,String num_cuenta,String dni_creador,
+			ArrayList<FechaInscripcion> fechas,ArrayList<Categoria> cats,ArrayList<FechaCancelacion> fechasC,
+			ArrayList<PuntoControl> control) {
 		setId(id);
 		setNombre(nombre);
 		setLugar(lugar);
@@ -69,7 +68,10 @@ public class Carrera implements Comparable<Carrera> {
 		setPuntos_control(control);
 		atletas = new ArrayList<Corredor>();
 	}
-
+	
+	
+	
+	
 	/**
 	 * @return the categorias
 	 */
@@ -77,13 +79,18 @@ public class Carrera implements Comparable<Carrera> {
 		return categorias;
 	}
 
+
+
+
 	/**
-	 * @param categorias
-	 *            the categorias to set
+	 * @param categorias the categorias to set
 	 */
 	public void setCategorias(ArrayList<Categoria> categorias) {
 		this.categorias = categorias;
 	}
+
+
+
 
 	/**
 	 * @return the fechas_inscripcion
@@ -92,13 +99,16 @@ public class Carrera implements Comparable<Carrera> {
 		return fechas_inscripcion;
 	}
 
+
+
 	/**
-	 * @param fechas_inscripcion
-	 *            the fechas_inscripcion to set
+	 * @param fechas_inscripcion the fechas_inscripcion to set
 	 */
 	public void setFechas_inscripcion(ArrayList<FechaInscripcion> fechas_inscripcion) {
 		this.fechas_inscripcion = fechas_inscripcion;
 	}
+
+
 
 	/**
 	 * 
@@ -106,13 +116,14 @@ public class Carrera implements Comparable<Carrera> {
 	 */
 	public boolean isFinalizada() {
 		Calendar f = new GregorianCalendar();
-		String fecha_a = f.get(Calendar.DAY_OF_MONTH) + "/" + (f.get(Calendar.MONTH) + 1) + "/" + f.get(Calendar.YEAR);
+		String fecha_a = f.get(Calendar.DAY_OF_MONTH) + "/" + (f.get(Calendar.MONTH) + 1) + "/"
+				+ f.get(Calendar.YEAR);
 		Date fecha_actual = new Date(fecha_a);
 		Date fecha_fin = new Date(fecha);
-		fecha_fin.day = fecha_fin.day + 1;
-		return fecha_actual.compareTo(fecha_fin) > 0 ? true : false;
+		fecha_fin.day = fecha_fin.day+1;
+		return fecha_actual.compareTo(fecha_fin) > 0 ? true: false;
 	}
-
+	
 	/**
 	 * @return the id
 	 */
@@ -121,8 +132,7 @@ public class Carrera implements Comparable<Carrera> {
 	}
 
 	/**
-	 * @param id
-	 *            the id to set
+	 * @param id the id to set
 	 */
 	public void setId(int id) {
 		this.id = id;
@@ -136,8 +146,7 @@ public class Carrera implements Comparable<Carrera> {
 	}
 
 	/**
-	 * @param nombre
-	 *            the nombre to set
+	 * @param nombre the nombre to set
 	 */
 	public void setNombre(String nombre) {
 		this.nombre = nombre;
@@ -151,8 +160,7 @@ public class Carrera implements Comparable<Carrera> {
 	}
 
 	/**
-	 * @param lugar
-	 *            the lugar to set
+	 * @param lugar the lugar to set
 	 */
 	public void setLugar(String lugar) {
 		this.lugar = lugar;
@@ -166,8 +174,7 @@ public class Carrera implements Comparable<Carrera> {
 	}
 
 	/**
-	 * @param dureza
-	 *            the dureza to set
+	 * @param dureza the dureza to set
 	 */
 	public void setDureza(String dureza) {
 		this.dureza = dureza;
@@ -181,8 +188,7 @@ public class Carrera implements Comparable<Carrera> {
 	}
 
 	/**
-	 * @param tipo
-	 *            the tipo to set
+	 * @param tipo the tipo to set
 	 */
 	public void setTipo(String tipo) {
 		this.tipo = tipo;
@@ -196,8 +202,7 @@ public class Carrera implements Comparable<Carrera> {
 	}
 
 	/**
-	 * @param num_cuenta
-	 *            the num_cuenta to set
+	 * @param num_cuenta the num_cuenta to set
 	 */
 	public void setNum_cuenta(String num_cuenta) {
 		this.num_cuenta = num_cuenta;
@@ -211,8 +216,7 @@ public class Carrera implements Comparable<Carrera> {
 	}
 
 	/**
-	 * @param num_max_part
-	 *            the num_max_part to set
+	 * @param num_max_part the num_max_part to set
 	 */
 	public void setNum_max_part(int num_max_part) {
 		this.num_max_part = num_max_part;
@@ -226,8 +230,7 @@ public class Carrera implements Comparable<Carrera> {
 	}
 
 	/**
-	 * @param distancia
-	 *            the distancia to set
+	 * @param distancia the distancia to set
 	 */
 	public void setDistancia(int distancia) {
 		this.distancia = distancia;
@@ -241,8 +244,7 @@ public class Carrera implements Comparable<Carrera> {
 	}
 
 	/**
-	 * @param edad_minima
-	 *            the edad_minima to set
+	 * @param edad_minima the edad_minima to set
 	 */
 	public void setEdad_minima(int edad_minima) {
 		this.edad_minima = edad_minima;
@@ -256,8 +258,7 @@ public class Carrera implements Comparable<Carrera> {
 	}
 
 	/**
-	 * @param dni_creador
-	 *            the dni_creador to set
+	 * @param dni_creador the dni_creador to set
 	 */
 	public void setDni_creador(String dni_creador) {
 		this.dni_creador = dni_creador;
@@ -271,59 +272,51 @@ public class Carrera implements Comparable<Carrera> {
 	}
 
 	/**
-	 * @param fecha
-	 *            the fecha to set
+	 * @param fecha the fecha to set
 	 */
 	public void setFecha(String fecha) {
 		this.fecha = fecha;
 	}
-
+	
 	public Date getFechaFormateada() {
 		return new Date(fecha);
 	}
-
 	/**
 	 * @return the fechas_cancelacion
 	 */
 	public ArrayList<FechaCancelacion> getFechas_cancelacion() {
 		return fechas_cancelacion;
 	}
-
 	/**
-	 * @param fechas_cancelacion
-	 *            the fechas_cancelacion to set
+	 * @param fechas_cancelacion the fechas_cancelacion to set
 	 */
 	public void setFechas_cancelacion(ArrayList<FechaCancelacion> fechas_cancelacion) {
 		this.fechas_cancelacion = fechas_cancelacion;
 	}
-
 	/**
 	 * @return the puntos_control
 	 */
 	public ArrayList<PuntoControl> getPuntos_control() {
 		return puntos_control;
 	}
-
 	/**
-	 * @param puntos_control
-	 *            the puntos_control to set
+	 * @param puntos_control the puntos_control to set
 	 */
 	public void setPuntos_control(ArrayList<PuntoControl> puntos_control) {
 		this.puntos_control = puntos_control;
 	}
 
 	/**
-	 * Ordena a los atletas por fecha de inscripción.
+	 * Ordena a los atletas por fecha de inscripción. 
 	 */
 	public void ordenarAtletas() {
 		Collections.sort(atletas);
 	}
 
 	/**
-	 * Asigna un dorsal a cada atleta en función de la fecha de inscripción.Esta
-	 * asignación de número de dorsal se realiza en orden creciente respecto a la
-	 * fecha de inscripción, y se dejan los diez primeros números sin asignar para
-	 * atender a posibles compromisos.
+	 * Asigna un dorsal a cada atleta en función de la fecha de inscripción.Esta 
+	 * asignación de número de dorsal se realiza en orden creciente respecto a la fecha de inscripción, 
+	 * y se dejan los diez primeros números sin asignar para atender a posibles compromisos.
 	 */
 	public void asignaDorsal() {
 		ordenarAtletas();
@@ -339,43 +332,40 @@ public class Carrera implements Comparable<Carrera> {
 			System.out.println(a.toString());
 		}
 	}
-
+	
 	public double getPrecio() {
 		return getFechaInscripcionActual().getPrecio();
 	}
-
+	
 	public FechaInscripcion getFechaInscripcionActual() {
 		Calendar fecha = new GregorianCalendar();
-		String ffaa = fecha.get(Calendar.DAY_OF_MONTH) + "/" + (fecha.get(Calendar.MONTH) + 1) + "/"
-				+ fecha.get(Calendar.YEAR);
+		String ffaa = fecha.get(Calendar.DAY_OF_MONTH)+"/"+(fecha.get(Calendar.MONTH)+1)+"/"+fecha.get(Calendar.YEAR);
 		Date fActual = new Date(ffaa);
 		Collections.sort(fechas_inscripcion);
 		for (FechaInscripcion f : fechas_inscripcion) {
 			Date fPrueba = new Date(f.getFecha());
 			Date fPruebaFinal = new Date(f.getFechaFin());
-			if (fActual.compareTo(fPrueba) >= 0 && fActual.compareTo(fPruebaFinal) <= 0)
+			if(fActual.compareTo(fPrueba) >= 0 && fActual.compareTo(fPruebaFinal) <= 0)
 				return f;
 		}
-		return fechas_inscripcion.get(fechas_inscripcion.size() - 1);
+		return fechas_inscripcion.get(fechas_inscripcion.size()-1);
 	}
-
+	
 	public String getCategoriaParaUsuario(int edad) {
 		for (Categoria cat : categorias) {
-			if (edad >= cat.getEdadMin() && edad < cat.getEdadMax()) {
+			if(edad >= cat.getEdadMin() && edad < cat.getEdadMax()) {
 				return cat.getNombre();
 			}
 		}
 		return "Sin categoria";
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
+	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
-		return nombre + "  Lugar:" + lugar;
+		return nombre+"  Lugar:"+lugar;
 	}
 
 	@Override
@@ -383,7 +373,7 @@ public class Carrera implements Comparable<Carrera> {
 		int dia = Integer.parseInt(this.getFecha().split("/")[0]);
 		int mes = Integer.parseInt(this.getFecha().split("/")[1]);
 		int año = Integer.parseInt(this.getFecha().split("/")[2]);
-
+		
 		int diaA2 = Integer.parseInt(a2.getFecha().split("/")[0]);
 		int mesA2 = Integer.parseInt(a2.getFecha().split("/")[1]);
 		int añoA2 = Integer.parseInt(a2.getFecha().split("/")[2]);
@@ -405,28 +395,26 @@ public class Carrera implements Comparable<Carrera> {
 			}
 		}
 	}
-
+	
 	public void actualizaAtletas() {
 		atletas = (ArrayList<Corredor>) GestorApp.getTodosLosCorredores(this);
 	}
-
 	/**
-	 * Asigna un dorsal a cada atleta en función de la fecha de inscripción.Esta
-	 * asignación de número de dorsal se realiza en orden creciente respecto a la
-	 * fecha de inscripción, y se dejan los diez primeros números sin asignar para
-	 * atender a posibles compromisos.
-	 * 
-	 * @throws SQLException
+	 * Asigna un dorsal a cada atleta en función de la fecha de inscripción.Esta 
+	 * asignación de número de dorsal se realiza en orden creciente respecto a la fecha de inscripción, 
+	 * y se dejan los diez primeros números sin asignar para atender a posibles compromisos.
+	 * @throws SQLException 
 	 */
 	public void asignaDorsales() throws SQLException {
 		ordenarAtletas();
 		int cont = 10;
 		for (Corredor c : atletas) {
 			c.setDorsal(cont);
-			GestorDB.updateDorsal(c, cont);
+			GestorDB.updateDorsal(c,cont);
 			cont++;
 		}
-
+		
 	}
+	
 
 }

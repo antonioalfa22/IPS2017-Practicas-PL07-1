@@ -89,13 +89,13 @@ public class LectorCSV {
 
 			// Puntos de control
 			ArrayList<PuntoControl> puntoControl = carrera.getPuntos_control();
-			Time tiempoAcumulado = new Time(puntoControl.get(0).getHoras(), puntoControl.get(0).getMin(), 0);
-			int cont = 1;
+			Time tiempoAcumulado;
 
 			int dorsal = -1;
 			int tInicio = -1;
 			String tFin = null;
 			while ((linea = br.readLine()) != null) {
+				tiempoAcumulado = new Time(puntoControl.get(0).getHoras(), puntoControl.get(0).getMin(), 0);
 				asignado = false;
 				String[] line = linea.split(",");
 				if (line.length == puntoControl.size() + 2) {
@@ -116,7 +116,8 @@ public class LectorCSV {
 							}
 						}
 					}
-
+					int cont = 1;
+					boolean descalificado = false;
 					for (int i = 2; i < 2 + puntoControl.size(); i++) {
 						String[] crono = line[i].split(":");
 						if (crono.length == 3) {
@@ -144,23 +145,28 @@ public class LectorCSV {
 									}
 								}
 							}
-
 							if (horas != -1 && minutos != -1 && segundos != -1) {
-								Time time = new Time(horas, minutos, segundos);
-								if (time.compareTo(tiempoAcumulado) < 0) {
-									tFin = horas + ":" + minutos + ":" + segundos;
-									g.asignaTiempo(carrera, dorsal, puntoControl.get(i - 2).getKm(), tFin);
-									
+								if (!descalificado) {
+									Time time = new Time(horas, minutos, segundos);
+									if (time.compareTo(tiempoAcumulado) < 0) {
+										tFin = horas + ":" + minutos + ":" + segundos;
+										g.asignaTiempo(carrera, dorsal, puntoControl.get(i - 2).getKm(), tFin);
+										if (cont < puntoControl.size()) {
+											tiempoAcumulado = tiempoAcumulado
+													.suma(new Time(puntoControl.get(cont).getHoras(),
+															puntoControl.get(cont).getMin(), 0));
+											cont++;
+										}
+									} else {
+										tFin = horas + ":" + minutos + ":" + segundos;
+										g.asignaTiempo(carrera, dorsal, puntoControl.get(i - 2).getKm(), tFin);
+										descalificado = true;
+									}
 								} else {
-									tFin = "-2:-2:-2";
+									tFin = "100:100:100";
 									g.asignaTiempo(carrera, dorsal, puntoControl.get(i - 2).getKm(), tFin);
 								}
 							}
-						}
-						if (cont < puntoControl.size()) {
-							tiempoAcumulado = tiempoAcumulado.suma(
-									new Time(puntoControl.get(cont).getHoras(), puntoControl.get(cont).getMin(), 0));
-							cont++;
 						}
 					}
 
@@ -187,8 +193,10 @@ public class LectorCSV {
 					}
 
 					if (dorsal != -1 && tInicio == 0) {
-						tFin = "-1:-1:-1";
-						g.asignaTiempo(carrera, dorsal, null, tFin);
+						for (PuntoControl p : puntoControl) {
+							tFin = "200:200:200";
+							g.asignaTiempo(carrera, dorsal, p.getKm(), tFin);
+						}
 						asignado = true;
 					}
 
@@ -206,8 +214,10 @@ public class LectorCSV {
 					}
 
 					if (dorsal != -1) {
-						tFin = "00:00:00";
-						g.asignaTiempo(carrera, dorsal, null, tFin);
+						for (PuntoControl p : puntoControl) {
+							tFin = "300:300:300";
+							g.asignaTiempo(carrera, dorsal, p.getKm(), tFin);
+						}
 						asignado = true;
 					}
 				}

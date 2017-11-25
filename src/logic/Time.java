@@ -1,5 +1,7 @@
 package logic;
 
+import java.util.Calendar;
+
 /**
  * Clase de utilidad que permite hacer comparaciones entre dos tiempos
  * 
@@ -17,18 +19,6 @@ public class Time implements Comparable<Time>{
 		this.hour = hour;
 		this.minute = minute;
 		this.second = second;
-	}
-	
-	/**
-	 * Constructor de la clase que la crea dandole por parametro
-	 * un String en formato hh:mm:ss
-	 * @param date
-	 */
-	public Time(String date) {
-		String[] datos = date.split("/");
-		this.hour = Integer.parseInt(datos[2]);
-		this.minute = Integer.parseInt(datos[1]);
-		this.second = Integer.parseInt(datos[0]);
 	}
 	
 	/**
@@ -54,7 +44,7 @@ public class Time implements Comparable<Time>{
 	public String toString() {
 		return hour+":"+minute+":"+second;
 	}
-	
+
 	
 	public Time suma(Time tiempo){
 		int h=tiempo.hour;

@@ -1,6 +1,7 @@
 package entities;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 
 import logic.Time;
 
@@ -11,7 +12,7 @@ import logic.Time;
  * @author Pablo Menendez y Sara Grimaldos
  *
  */
-public class Corredor implements Comparable<Corredor>{
+public class Corredor implements Comparable<Corredor>, Comparator<Corredor>{
 
 	private String dni;
 	private String nombre;
@@ -73,7 +74,9 @@ public class Corredor implements Comparable<Corredor>{
 	}
 	
 	
-
+	public Corredor() {
+		super();
+	}
 
 	/**
 	 * @return the posicionAbsoluta
@@ -245,6 +248,46 @@ public class Corredor implements Comparable<Corredor>{
 		}
 	
 		
+	}
+
+	@Override
+	public int compare(Corredor c1, Corredor c2) {
+		Time tiempoCorredor = null;
+		Time tiempoComparar = null;
+		if (c1.getTiempos().size() != 0 && c2.getTiempos().size() != 0) {
+			tiempoCorredor = c1.getTiempos().get(c1.getTiempos().size() - 1);
+			tiempoComparar = c2.getTiempos().get(c2.getTiempos().size() - 1);
+		} else {
+			if (c1.getTiempos().size() == 0) {
+				if (c2.getTiempos().size() == 0) {
+					tiempoCorredor = new Time(0, 0, 0);
+					tiempoComparar = new Time(0, 0, 0);
+				} else {
+					tiempoCorredor = new Time(0, 0, 0);
+					tiempoComparar = c2.getTiempos().get(
+							c2.getTiempos().size() - 1);
+				}
+			} else {
+				tiempoComparar = new Time(0, 0, 0);
+				tiempoCorredor = c1.getTiempos()
+						.get(c1.getTiempos().size() - 1);
+			}
+		}
+
+		if (tiempoComparar.hour > tiempoCorredor.hour)
+			return -1;
+		if (tiempoComparar.hour == tiempoCorredor.hour) {
+			if (tiempoComparar.minute > tiempoCorredor.minute)
+				return -1;
+			if (tiempoComparar.minute == tiempoCorredor.minute) {
+				if (tiempoComparar.second > tiempoCorredor.second)
+					return -1;
+				if (tiempoComparar.second == tiempoCorredor.second)
+					return 0;
+			}
+		}
+
+		return 1;
 	}
 
 
