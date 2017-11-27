@@ -13,6 +13,8 @@ import com.jtattoo.plaf.aluminium.AluminiumLookAndFeel;
 import com.toedter.calendar.JCalendar;
 import entities.Carrera;
 import gestorBBDD.GestorDB;
+import iguRegistros.CarreraDescripcion;
+import iguRegistros.RegistroCarrera;
 import logic.Date;
 import logic.FechaInscripcion;
 import logic.GestorApp;
@@ -118,8 +120,9 @@ public class VentanaPrincipal extends JFrame {
 
 	/**
 	 * Create the frame.
+	 * @throws SQLException 
 	 */
-	public VentanaPrincipal() {
+	public VentanaPrincipal() throws SQLException {
 		gestorCarreras = new GestorApp();
 		this.carreras = gestorCarreras.carreras;
 		setBackground(new Color(153, 153, 204));
@@ -135,6 +138,7 @@ public class VentanaPrincipal extends JFrame {
 		contentPane.setLayout(new BorderLayout(0, 0));
 		contentPane.add(getPanelSuperior(), BorderLayout.NORTH);
 		contentPane.add(getPanelCentro(), BorderLayout.CENTER);
+		actualizaDorsales();
 	}
 	
 	//==========================================================================================
@@ -185,7 +189,7 @@ public class VentanaPrincipal extends JFrame {
 					dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 					dialog.setVisible(true);
 					dialog.setLocationRelativeTo(null);
-					dialog.setResizable(false);		
+					dialog.setResizable(false);	
 				}
 			});
 			mntmCrearCarrera.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_K, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK));
@@ -199,9 +203,9 @@ public class VentanaPrincipal extends JFrame {
 			mntmGestionarcarreras.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.CTRL_MASK));
 			mntmGestionarcarreras.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					VentanaSeleccionCarrera dialog;
+					VentanaInscritos dialog;
 					try {
-						dialog = new VentanaSeleccionCarrera();
+						dialog = new VentanaInscritos();
 						dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 						dialog.setVisible(true);
 						dialog.setLocationRelativeTo(null);
@@ -220,9 +224,9 @@ public class VentanaPrincipal extends JFrame {
 			mntmClasificaciones = new JMenuItem("Clasificaciones");
 			mntmClasificaciones.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					VentanaSeleccionCarreraClasificacion dialog;
+					VentanaClasificacion dialog;
 					try {
-						dialog = new VentanaSeleccionCarreraClasificacion();
+						dialog = new VentanaClasificacion();
 						dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 						dialog.setVisible(true);
 						dialog.setLocationRelativeTo(null);
@@ -694,6 +698,10 @@ public class VentanaPrincipal extends JFrame {
 		panelCarreras.updateUI();
 	}
 	
+	/**
+	 * Metodo que comprueba si se ha pulsado el checkbox de 
+	 * carrera de montaña o urbana
+	 */
 	protected void comprobarCHC() {
 		gestorCarreras = new GestorApp();
 		carreras = new ArrayList<Carrera>();
@@ -701,7 +709,7 @@ public class VentanaPrincipal extends JFrame {
 			carreras = gestorCarreras.carreras;
 		}else if(chcbxMontain.isSelected() && !chckbxUrbana.isSelected()) {
 			for (Carrera carrera : gestorCarreras.carreras) {
-				if(carrera.getTipo().equals("MontaÃ±a"))carreras.add(carrera);
+				if(carrera.getTipo().equals("Montaña"))carreras.add(carrera);
 			}
 		}else if(!chcbxMontain.isSelected() && chckbxUrbana.isSelected()) {
 			for (Carrera carrera : gestorCarreras.carreras) {
@@ -813,5 +821,25 @@ public class VentanaPrincipal extends JFrame {
 		}
 	}
 	
+	/**
+	 * Metodo que actualiza los dorsales cada vez que se
+	 * inicia la aplicación
+	 * @throws SQLException
+	 */
+	private void actualizaDorsales() throws SQLException {
+		Calendar fecha = new GregorianCalendar();
+		String ffaa = fecha.get(Calendar.DAY_OF_MONTH)+"/"+(fecha.get(Calendar.MONTH)+1)+"/"+fecha.get(Calendar.YEAR);
+		Date fActual = new Date(ffaa);
+		for(Carrera c:carreras) {
+			ArrayList<FechaInscripcion> fechas = c.getFechas_inscripcion();
+			Date d = new Date(fechas.get(fechas.size()-1).getFechaFin());//Coge la fecha fin de la ultima fecha de inscripcion posible
+			d.setDay(d.getDay()+2);//Le suma dos dias por posibles preinscritos
+			if(fActual.compareTo(d)>0) {
+				c.actualizaAtletas();
+				c.asignaDorsales();
+				
+			}
+		}
+	}
 	
 }
