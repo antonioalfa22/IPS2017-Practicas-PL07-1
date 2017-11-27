@@ -14,8 +14,10 @@ import entities.Corredor;
 import entities.Preinscrito;
 import entities.Usuario;
 import logic.Categoria;
+import logic.FechaCancelacion;
 import logic.FechaInscripcion;
 import logic.Inscrito;
+import logic.PuntoControl;
 
 /**
  * Clase que accede a la base de datos y tiene métodos para sacar y añadir datos
@@ -71,6 +73,8 @@ public class GestorDB {
 		while (rs.next()) {
 			ArrayList<Categoria> categorias = new ArrayList<Categoria>();
 			ArrayList<FechaInscripcion> fechas = new ArrayList<FechaInscripcion>();
+			ArrayList<FechaCancelacion> cancelacion = new ArrayList<FechaCancelacion>();
+			ArrayList<PuntoControl> control = new ArrayList<PuntoControl>();
 			int id = rs.getInt("Id_Carrera");
 			String nombre = rs.getString("Nombre");
 			String lugar = rs.getString("Lugar");
@@ -102,13 +106,34 @@ public class GestorDB {
 				int precio = rs3.getInt("Precio");
 				fechas.add(new FechaInscripcion(fi, ff, precio));
 			}
+			PreparedStatement st4 = conexion
+					.prepareStatement("SELECT * FROM FECHA_CANCELACION WHERE Id_Carrera = ?");
+			st4.setInt(1, id);
+			ResultSet rs4 = st4.executeQuery();
+			while (rs4.next()) {
+				String fi = rs4.getString("Fecha_inicio");
+				String ff = rs4.getString("Fecha_fin");
+				int devolver = rs4.getInt("A_Devolver");
+				cancelacion.add(new FechaCancelacion(fi, ff, devolver));
+			}
+			PreparedStatement st5 = conexion
+					.prepareStatement("SELECT * FROM PUNTOSCONTROL WHERE Id_Carrera = ?");
+			st5.setInt(1, id);
+			ResultSet rs5 = st5.executeQuery();
+			while (rs5.next()) {
+				int n_km = rs5.getInt("N_km");
+				String[] tiempo = rs5.getString("Tiempo_max").split(":");
+				control.add(new PuntoControl(n_km,Integer.parseInt(tiempo[0]),Integer.parseInt(tiempo[1])));
+			}
 			Carrera c = new Carrera(id, nombre, lugar, fecha, num_max, km,
-					dureza, edad, tipo, ncuenta, dni, fechas, categorias);
+					dureza, edad, tipo, ncuenta, dni, fechas, categorias,cancelacion,control);
 			carreras.add(c);
 			rs2.close();
 			rs3.close();
 			st2.close();
 			st3.close();
+			rs4.close();
+			st4.close();
 		}
 		rs.close();
 		st.close();
@@ -159,6 +184,27 @@ public class GestorDB {
 			addFechas.setString(2, fi.getFechaFin());
 			addFechas.setDouble(3, fi.getPrecio());
 			addFechas.setInt(4, c.getId());
+			addFechas.executeUpdate();
+			addFechas.close();
+		}
+		for (FechaCancelacion fi : c.getFechas_cancelacion()) {
+			PreparedStatement addFechas = conexion
+					.prepareStatement("INSERT INTO FECHA_CANCELACION "
+							+ "VALUES (?,?,?,?)");
+			addFechas.setInt(1, c.getId());
+			addFechas.setString(2, fi.getFecha());
+			addFechas.setString(3, fi.getFechaFin());
+			addFechas.setDouble(4, fi.getADevolver());
+			addFechas.executeUpdate();
+			addFechas.close();
+		}
+		for (PuntoControl fi : c.getPuntos_control()) {
+			PreparedStatement addFechas = conexion
+					.prepareStatement("INSERT INTO PUNTOSCONTROL "
+							+ "VALUES (?,?,?)");
+			addFechas.setInt(1, c.getId());
+			addFechas.setInt(2, fi.getKm());
+			addFechas.setString(3, fi.getHoras()+":"+fi.getMin());
 			addFechas.executeUpdate();
 			addFechas.close();
 		}
@@ -436,7 +482,7 @@ public class GestorDB {
 		conectar();
 		PreparedStatement addPreinscrito = conexion
 				.prepareStatement("INSERT INTO Preinscritos "
-						+ "VALUES (?,?,'No',?,?,?,?,?,?)");
+						+ "VALUES (?,?,'No',?,?,?,?,?,?,?)");
 		addPreinscrito.setString(1, u.getDni());
 		addPreinscrito.setInt(2, c.getId());
 		addPreinscrito.setString(3, c.getCategoriaParaUsuario(u.getEdad()));
@@ -445,15 +491,27 @@ public class GestorDB {
 		addPreinscrito.setString(6, fecha);
 		addPreinscrito.setString(7, fecha);
 		addPreinscrito.setString(8, "Pendiente de pago");
+		addPreinscrito.setInt(9, 0);
 		addPreinscrito.executeUpdate();
 		addPreinscrito.close();
 		cerrar();
 	}
-
-	// ==========================================================================================
-	// CORREDORES:
-	// ==========================================================================================
-
+	
+	/**
+	 * Metodo que borra un preinscrito de la base de datos
+	 * @param dni
+	 * @throws SQLException 
+	 */
+	public static void deletePreinscrito(String dni) throws SQLException {
+		conectar();
+		PreparedStatement deletePreinscrito= conexion
+				.prepareStatement("DELETE FROM PREINSCRITOS WHERE DNI = ?");
+		deletePreinscrito.setString(1, dni);
+		deletePreinscrito.executeUpdate();
+		deletePreinscrito.close();
+		cerrar();
+	}
+	
 	/**
 	 * Metodo que devuelve un ArrayList de Preinscritos(no pagaron aun) de una
 	 * carrera
@@ -484,6 +542,55 @@ public class GestorDB {
 		cerrar();
 		return preinscritos;
 	}
+
+
+	// ==========================================================================================
+	// CORREDORES:
+	// ==========================================================================================
+
+	/**
+	 * Metodo que preeinscribe a un usuario en una carrera
+	 * 
+	 * @param u
+	 * @param c
+	 * @throws SQLException
+	 */
+	public static void addCorredor(Usuario u, Carrera c, String fecha, String notaPago,int cantidadPagada, int dorsal)
+			throws SQLException {
+		conectar();
+		PreparedStatement addPreinscrito = conexion
+				.prepareStatement("INSERT INTO Corredores "
+						+ "VALUES (?,?,'DNR',?,?,?,?,?,?,?,?)");
+		addPreinscrito.setString(1, u.getDni());
+		addPreinscrito.setInt(2, c.getId());
+		addPreinscrito.setInt(3, dorsal);
+		addPreinscrito.setString(4, c.getCategoriaParaUsuario(u.getEdad()));
+		addPreinscrito.setString(5, u.getGenero());
+		addPreinscrito.setString(6, u.getNombre());
+		addPreinscrito.setString(7, fecha);
+		addPreinscrito.setString(8, notaPago);
+		addPreinscrito.setString(9, "Si");
+		addPreinscrito.setInt(10, cantidadPagada);
+		addPreinscrito.executeUpdate();
+		addPreinscrito.close();
+		cerrar();
+	}
+	
+	/**
+	 * Metodo que borra un preinscrito de la base de datos
+	 * @param dni
+	 * @throws SQLException 
+	 */
+	public static void deleteCorredor(String dni) throws SQLException {
+		conectar();
+		PreparedStatement deleteCorredor= conexion
+				.prepareStatement("DELETE FROM CORREDORES WHERE DNI = ?");
+		deleteCorredor.setString(1, dni);
+		deleteCorredor.executeUpdate();
+		deleteCorredor.close();
+		cerrar();
+	}
+	
 
 	/**
 	 * Metodo que saca un ArrayList de los Corredores(con dorsal, es decir ya
@@ -1063,4 +1170,86 @@ public class GestorDB {
 		cerrar();
 	}
 
+	/**
+	 * Método que devuelve la cantidad pagada por el usuario hasta el momento. Sirve
+	 * para comprobar las transacciones múltiples
+	 * 
+	 * @param DNI
+	 * @return
+	 * @throws SQLException
+	 */
+	public static int getCantidadPagada(String DNI) throws SQLException {
+		int cantidad = 0;
+		conectar();
+		PreparedStatement ps = conexion.prepareStatement("SELECT CantidadPagada FROM Preinscritos WHERE DNI = ?");
+		ps.setString(1, DNI);
+		ResultSet rs = ps.executeQuery();
+		while (rs.next())
+			cantidad = rs.getInt("CantidadPagada");
+		ps.close();
+		rs.close();
+		cerrar();
+		return cantidad;
+	}
+
+	/**
+	 * Método que devuelve la cantidad pagada por el usuario hasta el momento. Sirve
+	 * para comprobar las transacciones múltiples
+	 * 
+	 * @param DNI
+	 * @return
+	 * @throws SQLException
+	 */
+	public static int getCantidadPagadaCorredor(String DNI) throws SQLException {
+		int cantidad = 0;
+		conectar();
+		PreparedStatement ps = conexion.prepareStatement("SELECT Cantidad_Pagada FROM Corredores WHERE DNI = ?");
+		ps.setString(1, DNI);
+		ResultSet rs = ps.executeQuery();
+		while (rs.next())
+			cantidad = rs.getInt("Cantidad_Pagada");
+		ps.close();
+		rs.close();
+		cerrar();
+		return cantidad;
+	}
+	
+	/**
+	 * Método que modifica la cantidad pagada por el usuario hasta el momento. Sirve
+	 * para comprobar las transacciones múltiples
+	 * 
+	 * @param DNI
+	 * @return
+	 * @throws SQLException
+	 */
+	public static void setCantidadPagada(String DNI, int cantidad) throws SQLException {
+		int aux = getCantidadPagada(DNI);
+		conectar();
+		PreparedStatement ps = conexion.prepareStatement("UPDATE Preinscritos SET Cantidad_pagada = ? WHERE DNI = ?");
+		ps.setInt(1, aux + cantidad);
+		ps.setString(2, DNI);
+		ps.executeUpdate();
+		ps.close();
+		cerrar();
+	}
+
+	/**
+	 * Método que cancela la inscripción de un corredor para una determinada carrera
+	 * 
+	 * @param dni
+	 * @param c
+	 * @throws SQLException
+	 */
+	public static void cancelar(String DNI, Carrera c) throws SQLException {
+		conectar();
+		PreparedStatement ps = conexion
+				.prepareStatement("UPDATE Corredores SET Pagado = ? WHERE Id_Carrera = ? AND DNI = ?");
+		ps.setString(1, "No");
+		ps.setInt(2, c.getId());
+		ps.setString(3, DNI);
+		ps.executeUpdate();
+		ps.close();
+		cerrar();
+	}
+	
 }

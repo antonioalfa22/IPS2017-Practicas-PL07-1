@@ -40,16 +40,14 @@ public class GestorApp {
 			carreras = GestorDB.sacarTodasLasCarreras();
 			Collections.sort(carreras);
 		} catch (SQLException e) {
-			System.out
-					.println("Error al sacar las carreras de la base de datos");
+			System.out.println("Error al sacar las carreras de la base de datos");
 			e.printStackTrace();
 		}
 		try {
 			usuarios = GestorDB.sacaTodosLosUsuarios();
 
 		} catch (SQLException e) {
-			System.out
-					.println("Error al sacar los usuarios de la base de datos");
+			System.out.println("Error al sacar los usuarios de la base de datos");
 			e.printStackTrace();
 		}
 		try {
@@ -57,6 +55,17 @@ public class GestorApp {
 
 		} catch (SQLException e) {
 			System.out.println("Error al sacar los clubs de la base de datos");
+			e.printStackTrace();
+		}
+		try {
+			corredores = new ArrayList<Corredor>();
+			for (Carrera c : carreras) {
+				for (Corredor corr : GestorDB.findCorredoresByIdCarrera(c.getId()))
+					corredores.add(corr);
+			}
+
+		} catch (SQLException e) {
+			System.out.println("Error al sacar los corredores de la base de datos");
 			e.printStackTrace();
 		}
 		usuarioActivo = null;
@@ -171,8 +180,22 @@ public class GestorApp {
 		try {
 			GestorDB.addPreeinscrito(u, c, fecha);
 		} catch (SQLException e) {
-			System.out
-					.println("Error meter un preeinscrito en la base de datos");
+			System.out.println("Error meter un preeinscrito en la base de datos");
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Metodo que añade un usuario a una carrera
+	 * 
+	 * @param u
+	 * @param c
+	 */
+	public void addCorredor(Usuario u, Carrera c, String fecha, String notasPago, int cantidadPagada,int dorsal) {
+		try {
+			GestorDB.addCorredor(u, c, fecha, notasPago, cantidadPagada,dorsal);
+		} catch (SQLException e) {
+			System.out.println("Error meter un corredor en la base de datos");
 			e.printStackTrace();
 		}
 	}
@@ -187,8 +210,7 @@ public class GestorApp {
 		try {
 			GestorDB.addUsuario_a_Club(u, c);
 		} catch (SQLException e) {
-			System.out
-					.println("Error meter un usuario en un club en la base de datos");
+			System.out.println("Error meter un usuario en un club en la base de datos");
 			e.printStackTrace();
 		}
 	}
@@ -203,15 +225,13 @@ public class GestorApp {
 	public boolean isPreeinscrito(String d, Carrera c) {
 		boolean preinscrito = false;
 		try {
-			ArrayList<String> dnis = GestorDB
-					.sacaTodosLosDNIPreinscritosEnCarrera(c);
+			ArrayList<String> dnis = GestorDB.sacaTodosLosDNIPreinscritosEnCarrera(c);
 			for (String dni : dnis) {
 				if (dni.equals(d))
 					preinscrito = true;
 			}
 		} catch (SQLException e) {
-			System.out
-					.println("Error meter un preeinscrito en la base de datos");
+			System.out.println("Error meter un preeinscrito en la base de datos");
 			e.printStackTrace();
 		}
 		return preinscrito;
@@ -228,8 +248,7 @@ public class GestorApp {
 		try {
 			num = GestorDB.sacaTodosLosDNIPreinscritosEnCarrera(c).size();
 		} catch (SQLException e) {
-			System.out
-					.println("Error al sacar los un preeinscritos des la base de datos");
+			System.out.println("Error al sacar los un preeinscritos des la base de datos");
 			e.printStackTrace();
 		}
 		return num;
@@ -301,8 +320,7 @@ public class GestorApp {
 				try {
 					GestorDB.deleteCarrera(id);
 				} catch (SQLException e) {
-					System.out
-							.println("Error al borrar una carrera de la base de datos");
+					System.out.println("Error al borrar una carrera de la base de datos");
 					e.printStackTrace();
 				}
 				carreras.remove(i);
@@ -320,11 +338,10 @@ public class GestorApp {
 				try {
 					GestorDB.deleteClub(id);
 				} catch (SQLException e) {
-					System.out
-							.println("Error al borrar una carrera de la base de datos");
+					System.out.println("Error al borrar una carrera de la base de datos");
 					e.printStackTrace();
 				}
-				carreras.remove(i);
+				clubs.remove(i);
 			}
 		}
 	}
@@ -339,8 +356,25 @@ public class GestorApp {
 				try {
 					GestorDB.deleteUsuario(dni);
 				} catch (SQLException e) {
-					System.out
-							.println("Error al borrar un usuario de la base de datos");
+					System.out.println("Error al borrar un usuario de la base de datos");
+					e.printStackTrace();
+				}
+				usuarios.remove(i);
+			}
+		}
+	}
+
+	/**
+	 * 
+	 * @param id
+	 */
+	public void deletePreinscrito(String dni) {
+		for (int i = 0; i < preinscritos.size(); i++) {
+			if (preinscritos.get(i).getDni() == dni) {
+				try {
+					GestorDB.deletePreinscrito(dni);
+				} catch (SQLException e) {
+					System.out.println("Error al borrar un preinscrito de la base de datos");
 					e.printStackTrace();
 				}
 				carreras.remove(i);
@@ -349,16 +383,33 @@ public class GestorApp {
 	}
 
 	/**
-	 * Actualiza el dato tiempos en el corredor que tenga el dorsal que se le
-	 * pasa por parámetro
+	 * 
+	 * @param id
+	 */
+	public void deleteCorredor(String dni) {
+		for (int i = 0; i < corredores.size(); i++) {
+			if (corredores.get(i).getDni() == dni) {
+				try {
+					GestorDB.deleteCorredor(dni);
+				} catch (SQLException e) {
+					System.out.println("Error al borrar un corredor de la base de datos");
+					e.printStackTrace();
+				}
+				corredores.remove(i);
+			}
+		}
+	}
+
+	/**
+	 * Actualiza el dato tiempos en el corredor que tenga el dorsal que se le pasa
+	 * por parámetro
 	 * 
 	 * @param carrera
 	 * @param dorsal
 	 * @param tiempo
 	 * @throws SQLException
 	 */
-	public void asignaTiempo(Carrera carrera, int dorsal, String tiempo)
-			throws SQLException {
+	public void asignaTiempo(Carrera carrera, int dorsal, String tiempo) throws SQLException {
 		List<Corredor> corredores;
 
 		corredores = getTodosLosCorredores(carrera);
@@ -419,12 +470,10 @@ public class GestorApp {
 	 */
 	public ArrayList<Corredor> getCorredores(Integer idCarrera) {
 		try {
-			corredores = GestorDB
-					.findCorredoresByIdCarreraOrderByTiempo(idCarrera);
+			corredores = GestorDB.findCorredoresByIdCarreraOrderByTiempo(idCarrera);
 
 		} catch (SQLException e) {
-			System.out
-					.println("Error al sacar los corredores de la base de datos");
+			System.out.println("Error al sacar los corredores de la base de datos");
 			e.printStackTrace();
 		}
 
@@ -437,16 +486,12 @@ public class GestorApp {
 	 * @return corredores de una carrera, de un genero pasado por parametro
 	 *         ordenados por tiempo
 	 */
-	public ArrayList<Corredor> getCorredoresByGenero(Integer idCarrera,
-			String genero) {
+	public ArrayList<Corredor> getCorredoresByGenero(Integer idCarrera, String genero) {
 		try {
-			corredores = GestorDB
-					.findCorredoresByIdCarreraOrderByTiempoByGenero(idCarrera,
-							genero);
+			corredores = GestorDB.findCorredoresByIdCarreraOrderByTiempoByGenero(idCarrera, genero);
 
 		} catch (SQLException e) {
-			System.out
-					.println("Error al sacar los corredores de la base de datos");
+			System.out.println("Error al sacar los corredores de la base de datos");
 			e.printStackTrace();
 		}
 
@@ -460,16 +505,13 @@ public class GestorApp {
 	 * @return corredores de la carrera, del genero y de la categoria pasada por
 	 *         parametro ordenados por tiempo.
 	 */
-	public ArrayList<Corredor> getCorredoresByGeneroByCategoria(
-			Integer idCarrera, String genero, String categoria) {
+	public ArrayList<Corredor> getCorredoresByGeneroByCategoria(Integer idCarrera, String genero, String categoria) {
 		try {
-			corredores = GestorDB
-					.findCorredoresByIdCarreraOrderByTiempoByGeneroByCategoria(
-							idCarrera, genero, categoria);
+			corredores = GestorDB.findCorredoresByIdCarreraOrderByTiempoByGeneroByCategoria(idCarrera, genero,
+					categoria);
 
 		} catch (SQLException e) {
-			System.out
-					.println("Error al sacar los corredores de la base de datos");
+			System.out.println("Error al sacar los corredores de la base de datos");
 			e.printStackTrace();
 		}
 
@@ -482,12 +524,10 @@ public class GestorApp {
 	 */
 	public ArrayList<Corredor> getCorredoresTodasCategorias(Integer idCarrera) {
 		try {
-			corredores = GestorDB
-					.findCorredoresByIdCarreraOrderByTiempoByCategoria(idCarrera);
+			corredores = GestorDB.findCorredoresByIdCarreraOrderByTiempoByCategoria(idCarrera);
 
 		} catch (SQLException e) {
-			System.out
-					.println("Error al sacar los corredores de la base de datos");
+			System.out.println("Error al sacar los corredores de la base de datos");
 			e.printStackTrace();
 		}
 
@@ -500,16 +540,12 @@ public class GestorApp {
 	 * @return corredores de una carrera con un genero pasado por parametro
 	 *         ordenados por categoría y por tiempo.
 	 */
-	public ArrayList<Corredor> getCorredoresTodasCategoriasByGenero(
-			Integer idCarrera, String genero) {
+	public ArrayList<Corredor> getCorredoresTodasCategoriasByGenero(Integer idCarrera, String genero) {
 		try {
-			corredores = GestorDB
-					.findCorredoresByIdCarreraOrderByTiempoByCategoriaByGenero(
-							idCarrera, genero);
+			corredores = GestorDB.findCorredoresByIdCarreraOrderByTiempoByCategoriaByGenero(idCarrera, genero);
 
 		} catch (SQLException e) {
-			System.out
-					.println("Error al sacar los corredores de la base de datos");
+			System.out.println("Error al sacar los corredores de la base de datos");
 			e.printStackTrace();
 		}
 
@@ -522,16 +558,12 @@ public class GestorApp {
 	 * @return corredores de la carrera y de la categoria pasada por parametro
 	 *         ordenados por tiempo.
 	 */
-	public ArrayList<Corredor> getCorredoresTodasCategoriasGeneroT(
-			Integer idCarrera, String categoria) {
+	public ArrayList<Corredor> getCorredoresTodasCategoriasGeneroT(Integer idCarrera, String categoria) {
 		try {
-			corredores = GestorDB
-					.findCorredoresByIdCarreraOrderByTiempoByCategoria(
-							idCarrera, categoria);
+			corredores = GestorDB.findCorredoresByIdCarreraOrderByTiempoByCategoria(idCarrera, categoria);
 
 		} catch (SQLException e) {
-			System.out
-					.println("Error al sacar los corredores de la base de datos");
+			System.out.println("Error al sacar los corredores de la base de datos");
 			e.printStackTrace();
 		}
 
@@ -540,16 +572,15 @@ public class GestorApp {
 
 	/**
 	 * @param idCarrera
-	 * @return inscritos de una carrera, es decir, los que ya han pagado y los
-	 *         que aún no han pagado.
+	 * @return inscritos de una carrera, es decir, los que ya han pagado y los que
+	 *         aún no han pagado.
 	 */
 	public ArrayList<Inscrito> getInscritosByIdCarrera(Integer idCarrera) {
 		try {
 			inscritos = GestorDB.findInscritosByIdCarrera(idCarrera, idCarrera);
 
 		} catch (SQLException e) {
-			System.out
-					.println("Error al sacar los inscritos de la base de datos");
+			System.out.println("Error al sacar los inscritos de la base de datos");
 			e.printStackTrace();
 		}
 

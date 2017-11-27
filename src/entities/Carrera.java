@@ -12,8 +12,10 @@ import java.util.GregorianCalendar;
 import gestorBBDD.GestorDB;
 import logic.Categoria;
 import logic.Date;
+import logic.FechaCancelacion;
 import logic.FechaInscripcion;
 import logic.GestorApp;
+import logic.PuntoControl;
 
 /**
  * Clase que representa una carrera
@@ -27,6 +29,8 @@ public class Carrera implements Comparable<Carrera>{
 	private ArrayList<Corredor> atletas;
 	private ArrayList<FechaInscripcion> fechas_inscripcion;
 	private ArrayList<Categoria> categorias;
+	private ArrayList<FechaCancelacion> fechas_cancelacion;
+	private ArrayList<PuntoControl> puntos_control;
 	
 	/**
 	 * Constructor con parametros de la clase
@@ -45,7 +49,8 @@ public class Carrera implements Comparable<Carrera>{
 	 */
 	public Carrera(int id,String nombre,String lugar,String fecha,int num_max_part,
 			int distancia,String dureza,int edad_minima,String tipo,String num_cuenta,String dni_creador,
-			ArrayList<FechaInscripcion> fechas,ArrayList<Categoria> cats) {
+			ArrayList<FechaInscripcion> fechas,ArrayList<Categoria> cats,ArrayList<FechaCancelacion> fechasC,
+			ArrayList<PuntoControl> control) {
 		setId(id);
 		setNombre(nombre);
 		setLugar(lugar);
@@ -59,6 +64,8 @@ public class Carrera implements Comparable<Carrera>{
 		setDni_creador(dni_creador);
 		setFechas_inscripcion(fechas);
 		setCategorias(cats);
+		setFechas_cancelacion(fechasC);
+		setPuntos_control(control);
 		atletas = new ArrayList<Corredor>();
 	}
 	
@@ -274,7 +281,31 @@ public class Carrera implements Comparable<Carrera>{
 	public Date getFechaFormateada() {
 		return new Date(fecha);
 	}
-	
+	/**
+	 * @return the fechas_cancelacion
+	 */
+	public ArrayList<FechaCancelacion> getFechas_cancelacion() {
+		return fechas_cancelacion;
+	}
+	/**
+	 * @param fechas_cancelacion the fechas_cancelacion to set
+	 */
+	public void setFechas_cancelacion(ArrayList<FechaCancelacion> fechas_cancelacion) {
+		this.fechas_cancelacion = fechas_cancelacion;
+	}
+	/**
+	 * @return the puntos_control
+	 */
+	public ArrayList<PuntoControl> getPuntos_control() {
+		return puntos_control;
+	}
+	/**
+	 * @param puntos_control the puntos_control to set
+	 */
+	public void setPuntos_control(ArrayList<PuntoControl> puntos_control) {
+		this.puntos_control = puntos_control;
+	}
+
 	/**
 	 * Ordena a los atletas por fecha de inscripción. 
 	 */
