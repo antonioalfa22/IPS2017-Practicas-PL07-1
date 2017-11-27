@@ -11,6 +11,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
@@ -460,6 +461,14 @@ public class EstadoCompeticion extends JDialog {
 		}
 		if (dni.equals(usuario.getDni())) {
 			JOptionPane.showMessageDialog(null, "No puedes traspasarte el dorsal a ti mismo",
+					"Error al traspasar el dorsal", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		GregorianCalendar cal = new GregorianCalendar();
+		GregorianCalendar cal2 = new GregorianCalendar(Integer.parseInt(c.getFecha().split("/")[2]),
+				Integer.parseInt(c.getFecha().split("/")[1])-1, Integer.parseInt(c.getFecha().split("/")[0]));
+		if (cal.compareTo(cal2) > 0) {
+			JOptionPane.showMessageDialog(null, "No puedes traspasar el dorsal de una carrera ya finalizada",
 					"Error al traspasar el dorsal", JOptionPane.ERROR_MESSAGE);
 			return false;
 		}
