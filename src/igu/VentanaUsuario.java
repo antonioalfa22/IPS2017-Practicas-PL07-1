@@ -964,7 +964,7 @@ public class VentanaUsuario extends JDialog {
 			} catch (SQLException ex) {
 				GestorDB.handleSQLException(ex);
 			}
-			if (!user.isInscrito(c) && str != null && !str.toLowerCase().contains("cancelado")) {
+			if (!user.isInscrito(c) && str != null && !str.toLowerCase().contains("cancela")) {
 				JButton btn = new JButton("Ver Estado");
 				btn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {

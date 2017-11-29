@@ -487,8 +487,8 @@ public class EstadoCompeticion extends JDialog {
 
 			// TODO: Acabar de hacer
 		} catch (Exception e) {
-			e.printStackTrace();
-			JOptionPane.showMessageDialog(null, "Ha ocurrido un error", "Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Ha ocurrido un error, prueba a recargar la aplicación para actualizar posibles cambios hechos"
+					+ "anteriormente", "Error", JOptionPane.ERROR_MESSAGE);
 			return false;
 		}
 
