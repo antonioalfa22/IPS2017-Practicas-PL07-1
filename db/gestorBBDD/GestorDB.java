@@ -561,7 +561,7 @@ public class GestorDB {
 		conectar();
 		PreparedStatement addPreinscrito = conexion
 				.prepareStatement("INSERT INTO Corredores "
-						+ "VALUES (?,?,'DNR',?,?,?,?,?,?,?,?)");
+						+ "VALUES (?,?,?,?,?,?,?,?,?,?)");
 		addPreinscrito.setString(1, u.getDni());
 		addPreinscrito.setInt(2, c.getId());
 		addPreinscrito.setInt(3, dorsal);
