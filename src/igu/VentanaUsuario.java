@@ -788,7 +788,7 @@ public class VentanaUsuario extends JDialog {
 		lblClasificacion.setText("Clasificación " + c.getNombre() + ":");
 		if (user != null) {
 			Corredor corredor = user.getCorredor(c);
-			lbDatosTiempo.setText(corredor.getTiempo());
+			lbDatosTiempo.setText(corredor.getTiempos().get(corredor.getTiempos().size() - 1).toString());
 			lbDatosPosAbsoluta.setText(corredor.getPosicionAbsoluta());
 			lbDatosPosCategoria.setText(corredor.getPosicionCategoria());
 
@@ -834,9 +834,9 @@ public class VentanaUsuario extends JDialog {
 			}
 			JButton btnClas = new JButton("Ver clasificacion");
 			btnClas.setEnabled(false);
-			if (user.getCorredor(c) != null && user.getCorredor(c).getTiempo() != null) {
-				btnClas.setEnabled(true);
-			}
+//			if (user.getCorredor(c) != null && user.getCorredor(c).getTiempos().get(user.getCorredor(c).getTiempos().size() - 1) != null) {
+//				btnClas.setEnabled(true);
+//			}
 			pnAccederClasificacion.add(btnClas);
 			if (c.isFinalizada()) {
 				pnAccederClasificacion.setEnabled(true);

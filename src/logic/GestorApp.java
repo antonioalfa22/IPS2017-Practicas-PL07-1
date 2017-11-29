@@ -401,21 +401,22 @@ public class GestorApp {
 	}
 
 	/**
-	 * Actualiza el dato tiempos en el corredor que tenga el dorsal que se le pasa
-	 * por parámetro
+	 * Actualiza el dato tiempos en el corredor que tenga el dorsal que se le
+	 * pasa por parámetro
 	 * 
 	 * @param carrera
 	 * @param dorsal
 	 * @param tiempo
 	 * @throws SQLException
 	 */
-	public void asignaTiempo(Carrera carrera, int dorsal, String tiempo) throws SQLException {
+	public void asignaTiempo(Carrera carrera,int dorsal,Integer km, String tiempo)
+			throws SQLException {
 		List<Corredor> corredores;
 
 		corredores = getTodosLosCorredores(carrera);
 		for (Corredor c : corredores) {
 			if (c.getDorsal() == dorsal) {
-				GestorDB.updateTiempo(c, tiempo);
+				GestorDB.updateTiempo(c,km,tiempo);
 			}
 		}
 
@@ -470,10 +471,15 @@ public class GestorApp {
 	 */
 	public ArrayList<Corredor> getCorredores(Integer idCarrera) {
 		try {
-			corredores = GestorDB.findCorredoresByIdCarreraOrderByTiempo(idCarrera);
+			corredores = GestorDB
+					.findCorredoresByIdCarreraOrderByTiempo(idCarrera);
+			
+			Collections.sort(corredores, new Corredor());
+			
 
 		} catch (SQLException e) {
-			System.out.println("Error al sacar los corredores de la base de datos");
+			System.out
+					.println("Error al sacar los corredores de la base de datos");
 			e.printStackTrace();
 		}
 
@@ -486,17 +492,23 @@ public class GestorApp {
 	 * @return corredores de una carrera, de un genero pasado por parametro
 	 *         ordenados por tiempo
 	 */
-	public ArrayList<Corredor> getCorredoresByGenero(Integer idCarrera, String genero) {
+	public ArrayList<Corredor> getCorredoresByGenero(Integer idCarrera,
+			String genero) {
 		try {
-			corredores = GestorDB.findCorredoresByIdCarreraOrderByTiempoByGenero(idCarrera, genero);
+			corredores = GestorDB
+					.findCorredoresByIdCarreraOrderByTiempoByGenero(idCarrera,
+							genero);
+			Collections.sort(corredores, new Corredor());
 
 		} catch (SQLException e) {
-			System.out.println("Error al sacar los corredores de la base de datos");
+			System.out
+					.println("Error al sacar los corredores de la base de datos");
 			e.printStackTrace();
 		}
 
 		return corredores;
 	}
+
 
 	/**
 	 * @param idCarrera
@@ -505,13 +517,16 @@ public class GestorApp {
 	 * @return corredores de la carrera, del genero y de la categoria pasada por
 	 *         parametro ordenados por tiempo.
 	 */
-	public ArrayList<Corredor> getCorredoresByGeneroByCategoria(Integer idCarrera, String genero, String categoria) {
+	public ArrayList<Corredor> getCorredoresByGeneroByCategoria(
+			Integer idCarrera, String genero, String categoria) {
 		try {
-			corredores = GestorDB.findCorredoresByIdCarreraOrderByTiempoByGeneroByCategoria(idCarrera, genero,
-					categoria);
-
+			corredores = GestorDB
+					.findCorredoresByIdCarreraOrderByTiempoByGeneroByCategoria(
+							idCarrera, genero, categoria);
+			Collections.sort(corredores, new Corredor());
 		} catch (SQLException e) {
-			System.out.println("Error al sacar los corredores de la base de datos");
+			System.out
+					.println("Error al sacar los corredores de la base de datos");
 			e.printStackTrace();
 		}
 
@@ -522,12 +537,13 @@ public class GestorApp {
 	 * @param idCarrera
 	 * @return corredores de una carrera ordenados por categoría y por tiempo.
 	 */
-	public ArrayList<Corredor> getCorredoresTodasCategorias(Integer idCarrera) {
+	public ArrayList<Corredor> getCorredoresTodasCategorias(Integer idCarrera, Integer n_km) {
 		try {
-			corredores = GestorDB.findCorredoresByIdCarreraOrderByTiempoByCategoria(idCarrera);
-
+			corredores = GestorDB
+					.findCorredoresByIdCarreraOrderByTiempoByCategoria(idCarrera, n_km);
 		} catch (SQLException e) {
-			System.out.println("Error al sacar los corredores de la base de datos");
+			System.out
+					.println("Error al sacar los corredores de la base de datos");
 			e.printStackTrace();
 		}
 
@@ -540,12 +556,15 @@ public class GestorApp {
 	 * @return corredores de una carrera con un genero pasado por parametro
 	 *         ordenados por categoría y por tiempo.
 	 */
-	public ArrayList<Corredor> getCorredoresTodasCategoriasByGenero(Integer idCarrera, String genero) {
+	public ArrayList<Corredor> getCorredoresTodasCategoriasByGenero(
+			Integer idCarrera, String genero, Integer n_km) {
 		try {
-			corredores = GestorDB.findCorredoresByIdCarreraOrderByTiempoByCategoriaByGenero(idCarrera, genero);
-
+			corredores = GestorDB
+					.findCorredoresByIdCarreraOrderByTiempoByCategoriaByGenero(
+							idCarrera, genero, n_km);
 		} catch (SQLException e) {
-			System.out.println("Error al sacar los corredores de la base de datos");
+			System.out
+					.println("Error al sacar los corredores de la base de datos");
 			e.printStackTrace();
 		}
 
@@ -558,12 +577,16 @@ public class GestorApp {
 	 * @return corredores de la carrera y de la categoria pasada por parametro
 	 *         ordenados por tiempo.
 	 */
-	public ArrayList<Corredor> getCorredoresTodasCategoriasGeneroT(Integer idCarrera, String categoria) {
+	public ArrayList<Corredor> getCorredoresTodasCategoriasGeneroT(
+			Integer idCarrera, String categoria) {
 		try {
-			corredores = GestorDB.findCorredoresByIdCarreraOrderByTiempoByCategoria(idCarrera, categoria);
-
+			corredores = GestorDB
+					.findCorredoresByIdCarreraOrderByTiempoByCategoria(
+							idCarrera, categoria);
+			Collections.sort(corredores, new Corredor());
 		} catch (SQLException e) {
-			System.out.println("Error al sacar los corredores de la base de datos");
+			System.out
+					.println("Error al sacar los corredores de la base de datos");
 			e.printStackTrace();
 		}
 
@@ -585,5 +608,21 @@ public class GestorApp {
 		}
 
 		return inscritos;
+	}
+	
+	
+	/**
+	 * Elimina el tiempo del corredor que tenga el dorsal que se lee
+	 * @param carrera2
+	 * @param dorsal
+	 * @param km
+	 * @param tFin
+	 */
+	public void eliminaTiempos(Carrera carrera) {
+		try {
+			GestorDB.removeTiempos(carrera);
+		}catch(SQLException e) {
+			System.out.println("Error al eliminar tiempos de una carrera");
+		}
 	}
 }
