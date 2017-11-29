@@ -857,6 +857,7 @@ public class GestorDB {
 		return corredores;
 	}
 	
+
 	
 	/**
 	 * Metodo que saca un ArrayList de los Corredores de una carrera con un genero
@@ -1274,12 +1275,30 @@ public class GestorDB {
 	 */
 	public static void updateDorsal(Corredor c, int dorsal) throws SQLException {
 		conectar();
-		PreparedStatement ps = conexion.prepareStatement("UPDATE Corredores SET Dorsal = ? WHERE DNI = ?");
+		PreparedStatement ps = conexion.prepareStatement("UPDATE Corredores SET Dorsal = ? WHERE DNI = ? and Id_carrera= ?");
 		ps.setInt(1, dorsal);
+		ps.setString(2, c.getDni());
+		ps.setInt(3, c.getIdCarrera());
+		ps.executeUpdate();
+		ps.close();
+		cerrar();
+	}
+	
+	/**
+	 * Borra el dorsal de un corredor
+	 * 
+	 * @param c
+	 * @param dorsal
+	 * @throws SQLException
+	 */
+	public static void removeDorsal(Corredor c) throws SQLException {
+		conectar();
+		PreparedStatement ps = conexion.prepareStatement("UPDATE Corredores SET Dorsal = null WHERE DNI = ?");
 		ps.setString(2, c.getDni());
 		ps.executeUpdate();
 		ps.close();
 		cerrar();
 	}
+	
 
 }

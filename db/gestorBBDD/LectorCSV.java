@@ -163,7 +163,7 @@ public class LectorCSV {
 										descalificado = true;
 									}
 								} else {
-									tFin = "100:100:100";
+									tFin = "97:97:97";
 									g.asignaTiempo(carrera, dorsal, puntoControl.get(i - 2).getKm(), tFin);
 								}
 							}
@@ -194,7 +194,7 @@ public class LectorCSV {
 
 					if (dorsal != -1 && tInicio == 0) {
 						for (PuntoControl p : puntoControl) {
-							tFin = "200:200:200";
+							tFin = "98:98:98";
 							g.asignaTiempo(carrera, dorsal, p.getKm(), tFin);
 						}
 						asignado = true;
@@ -215,7 +215,7 @@ public class LectorCSV {
 
 					if (dorsal != -1) {
 						for (PuntoControl p : puntoControl) {
-							tFin = "300:300:300";
+							tFin = "99:99:99";
 							g.asignaTiempo(carrera, dorsal, p.getKm(), tFin);
 						}
 						asignado = true;

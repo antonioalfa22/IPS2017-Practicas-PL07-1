@@ -115,10 +115,9 @@ public class VentanaClasificacion extends JDialog {
 					tableClasificaciones.setModel(modeloTabla);
 					modeloTabla.fireTableDataChanged();
 
-					// LectorCSV.actualizarTiempos(carrera.getNombre() + ".csv", carrera); //
+					LectorCSV.actualizarTiempos(carrera.getNombre() + ".csv", carrera); //
 					// Actualizamos tiempos de
 					// corredores
-					LectorCSV.actualizarTiempos("LecturaTiempos2" + ".csv", carrera);
 					btnBuscar.setEnabled(true);
 
 				}
@@ -432,11 +431,11 @@ public class VentanaClasificacion extends JDialog {
 			int cont = 1;
 			Time tiempoAcumulado = new Time(puntosControl.get(0).getHoras(), puntosControl.get(0).getMin(), 0);
 			for (Time time : corredores.get(i).getTiempos()) {
-				if (time.toString().equals("300:300:300")) {
+				if (time.toString().equals("99:99:99")) {
 					dns = true;
 				}
 
-				if (time.toString().equals("200:200:200")) {
+				if (time.toString().equals("98:98:98")) {
 					dnf = true;
 				}
 
@@ -492,9 +491,9 @@ public class VentanaClasificacion extends JDialog {
 
 					if (this.chckbxTiemposIntermedios.isSelected()) {
 						for (Time time : corredores.get(i).getTiempos()) {
-							if (time.toString().equals("100:100:100") || time.toString().equals("200:200:200")
-									|| time.toString().equals("300:300:300")) {
-								if (time.toString().equals("200:200:200") || time.toString().equals("300:300:300")) {
+							if (time.toString().equals("97:97:97") || time.toString().equals("99:99:99")
+									|| time.toString().equals("98:98:98")) {
+								if (time.toString().equals("98:98:98") || time.toString().equals("99:99:99")) {
 									for (int x = 0; x < puntosControl.size(); x++) {
 										list.add("----");
 									}
@@ -585,11 +584,11 @@ public class VentanaClasificacion extends JDialog {
 				int cont = 1;
 				Time tiempoAcumulado = new Time(puntosControl.get(0).getHoras(), puntosControl.get(0).getMin(), 0);
 				for (Time time : corredores.get(i).getTiempos()) {
-					if (time.toString().equals("300:300:300")) {
+					if (time.toString().equals("99:99:99")) {
 						dns = true;
 					}
 
-					if (time.toString().equals("200:200:200")) {
+					if (time.toString().equals("98:98:98")) {
 						dnf = true;
 					}
 
@@ -643,9 +642,9 @@ public class VentanaClasificacion extends JDialog {
 
 					if (this.chckbxTiemposIntermedios.isSelected()) {
 						for (Time time : corredores.get(i).getTiempos()) {
-							if (time.toString().equals("100:100:100") || time.toString().equals("300:300:300")
-									|| time.toString().equals("200:200:200")) {
-								if (time.toString().equals("200:200:200") || time.toString().equals("300:300:300")) {
+							if (time.toString().equals("97:97:97") || time.toString().equals("99:99:99")
+									|| time.toString().equals("98:98:98")) {
+								if (time.toString().equals("98:98:98") || time.toString().equals("99:99:99")) {
 									for (int x = 0; x < puntosControl.size(); x++) {
 										list.add("----");
 									}
