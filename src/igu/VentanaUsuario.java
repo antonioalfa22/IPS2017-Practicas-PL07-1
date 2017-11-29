@@ -174,7 +174,7 @@ public class VentanaUsuario extends JDialog {
 		if (pnSubInfo == null) {
 			pnSubInfo = new JPanel();
 			pnSubInfo.setBorder(new MatteBorder(2, 0, 0, 0, (Color) new Color(0, 0, 0)));
-			pnSubInfo.setBackground(SystemColor.info);
+			pnSubInfo.setBackground(SystemColor.controlHighlight);
 			pnSubInfo.setLayout(new GridLayout(0, 2, 0, 0));
 			pnSubInfo.add(getLblNombre());
 			pnSubInfo.add(getLbDatosNombre());
@@ -199,7 +199,7 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLblNombre() {
 		if (lblNombre == null) {
 			lblNombre = new JLabel("  Nombre:");
-			lblNombre.setForeground(new Color(255, 0, 0));
+			lblNombre.setForeground(SystemColor.desktop);
 			lblNombre.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lblNombre;
@@ -208,7 +208,7 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLblDNI() {
 		if (lblDNI == null) {
 			lblDNI = new JLabel("  DNI:");
-			lblDNI.setForeground(new Color(255, 0, 0));
+			lblDNI.setForeground(SystemColor.desktop);
 			lblDNI.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lblDNI;
@@ -217,7 +217,7 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLbEdad() {
 		if (lblEdad == null) {
 			lblEdad = new JLabel("  Edad:");
-			lblEdad.setForeground(Color.RED);
+			lblEdad.setForeground(SystemColor.desktop);
 			lblEdad.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lblEdad;
@@ -226,6 +226,7 @@ public class VentanaUsuario extends JDialog {
 	private JPanel getPanel_2() {
 		if (pnCard == null) {
 			pnCard = new JPanel();
+			pnCard.setBackground(SystemColor.controlHighlight);
 			pnCard.setBorder(new MatteBorder(3, 2, 2, 3, (Color) new Color(0, 0, 0)));
 			pnCard.setLayout(new CardLayout(0, 0));
 			pnCard.add(getPanel_1_1(), "carreras");
@@ -256,6 +257,7 @@ public class VentanaUsuario extends JDialog {
 	private JPanel getPnSubClasis() {
 		if (pnSubClasis == null) {
 			pnSubClasis = new JPanel();
+			pnSubClasis.setBackground(SystemColor.controlHighlight);
 			pnSubClasis.setLayout(new BorderLayout(0, 0));
 			pnSubClasis.add(getPnAtras(), BorderLayout.EAST);
 			pnSubClasis.add(getPanel_1(), BorderLayout.CENTER);
@@ -274,6 +276,7 @@ public class VentanaUsuario extends JDialog {
 	private JPanel getPanel_1_1() {
 		if (pnCarreras == null) {
 			pnCarreras = new JPanel();
+			pnCarreras.setBackground(SystemColor.controlHighlight);
 			pnCarreras.setLayout(new BorderLayout(0, 0));
 			pnCarreras.add(getPanel_1_2(), BorderLayout.CENTER);
 			pnCarreras.add(getPnLabelsCarreras(), BorderLayout.NORTH);
@@ -296,7 +299,7 @@ public class VentanaUsuario extends JDialog {
 		if (pnSelectCarrera == null) {
 			pnSelectCarrera = new JPanel();
 			pnSelectCarrera.setBorder(new MatteBorder(2, 0, 0, 0, (Color) new Color(0, 0, 0)));
-			pnSelectCarrera.setBackground(SystemColor.info);
+			pnSelectCarrera.setBackground(SystemColor.controlHighlight);
 			pnSelectCarrera.setLayout(new GridLayout(2, 0, 0, 0));
 		}
 		return pnSelectCarrera;
@@ -306,7 +309,7 @@ public class VentanaUsuario extends JDialog {
 		if (pnEstadoInscripcion == null) {
 			pnEstadoInscripcion = new JPanel();
 			pnEstadoInscripcion.setBorder(new MatteBorder(2, 2, 0, 0, (Color) new Color(0, 0, 0)));
-			pnEstadoInscripcion.setBackground(SystemColor.info);
+			pnEstadoInscripcion.setBackground(SystemColor.controlHighlight);
 			pnEstadoInscripcion.setLayout(new GridLayout(1, 0, 0, 0));
 		}
 		return pnEstadoInscripcion;
@@ -316,7 +319,7 @@ public class VentanaUsuario extends JDialog {
 		if (pnAccederClasificacion == null) {
 			pnAccederClasificacion = new JPanel();
 			pnAccederClasificacion.setBorder(new MatteBorder(2, 2, 0, 0, (Color) new Color(0, 0, 0)));
-			pnAccederClasificacion.setBackground(SystemColor.info);
+			pnAccederClasificacion.setBackground(SystemColor.controlHighlight);
 			pnAccederClasificacion.setLayout(new GridLayout(1, 0, 0, 0));
 		}
 		return pnAccederClasificacion;
@@ -377,7 +380,7 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLblFecha() {
 		if (lblFecha == null) {
 			lblFecha = new JLabel("  Fecha de nacimiento:");
-			lblFecha.setForeground(new Color(255, 0, 0));
+			lblFecha.setForeground(SystemColor.desktop);
 			lblFecha.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lblFecha;
@@ -394,7 +397,7 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLblDireccion() {
 		if (lblDireccion == null) {
 			lblDireccion = new JLabel("  Direcci\u00F3n:");
-			lblDireccion.setForeground(new Color(255, 0, 0));
+			lblDireccion.setForeground(SystemColor.desktop);
 			lblDireccion.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lblDireccion;
@@ -411,7 +414,7 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLblCodigoPostal() {
 		if (lblCodigoPostal == null) {
 			lblCodigoPostal = new JLabel("  Codigo Postal:");
-			lblCodigoPostal.setForeground(new Color(255, 0, 0));
+			lblCodigoPostal.setForeground(SystemColor.desktop);
 			lblCodigoPostal.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lblCodigoPostal;
@@ -428,7 +431,7 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLblCorreo() {
 		if (lblCorreo == null) {
 			lblCorreo = new JLabel("  Correo:");
-			lblCorreo.setForeground(new Color(255, 0, 0));
+			lblCorreo.setForeground(SystemColor.desktop);
 			lblCorreo.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lblCorreo;
@@ -445,7 +448,7 @@ public class VentanaUsuario extends JDialog {
 	private JLabel getLblLocalidad() {
 		if (lblLocalidad == null) {
 			lblLocalidad = new JLabel("  Localidad");
-			lblLocalidad.setForeground(new Color(255, 0, 0));
+			lblLocalidad.setForeground(SystemColor.desktop);
 			lblLocalidad.setFont(new Font("Tahoma", Font.ITALIC, 13));
 		}
 		return lblLocalidad;
@@ -462,7 +465,7 @@ public class VentanaUsuario extends JDialog {
 	private JPanel getPnAtras() {
 		if (pnAtras == null) {
 			pnAtras = new JPanel();
-			pnAtras.setBackground(SystemColor.info);
+			pnAtras.setBackground(SystemColor.controlHighlight);
 			pnAtras.setLayout(new BorderLayout(0, 0));
 			pnAtras.add(getBtnAtrs(), BorderLayout.SOUTH);
 		}
@@ -485,7 +488,7 @@ public class VentanaUsuario extends JDialog {
 	private JPanel getPanel_1() {
 		if (pnResultados == null) {
 			pnResultados = new JPanel();
-			pnResultados.setBackground(SystemColor.info);
+			pnResultados.setBackground(SystemColor.controlHighlight);
 			pnResultados.setLayout(new GridLayout(3, 3, 0, 0));
 			pnResultados.add(getLbTiempo());
 			pnResultados.add(getLbDatosTiempo());
@@ -550,7 +553,7 @@ public class VentanaUsuario extends JDialog {
 			panelBusqueda = new JPanel();
 			panelBusqueda.setForeground(new Color(210, 180, 140));
 			panelBusqueda.setBorder(new MatteBorder(0, 2, 2, 2, (Color) new Color(0, 0, 0)));
-			panelBusqueda.setBackground(new Color(210, 180, 140));
+			panelBusqueda.setBackground(Color.LIGHT_GRAY);
 			GridBagLayout gbl_panelBusqueda = new GridBagLayout();
 			gbl_panelBusqueda.columnWidths = new int[] { 137, 86, 114, 136, 0, 0 };
 			gbl_panelBusqueda.rowHeights = new int[] { 24, 17, 31, 0, 0 };
@@ -598,7 +601,7 @@ public class VentanaUsuario extends JDialog {
 	private JRadioButton getRbDNI() {
 		if (rbDNI == null) {
 			rbDNI = new JRadioButton("DNI");
-			rbDNI.setBackground(SystemColor.info);
+			rbDNI.setBackground(Color.LIGHT_GRAY);
 			buttonGroup.add(rbDNI);
 			rbDNI.setFont(new Font("Tahoma", Font.ITALIC, 13));
 			rbDNI.addItemListener(new ItemListener() {
@@ -616,7 +619,7 @@ public class VentanaUsuario extends JDialog {
 	private JRadioButton getRbNombre() {
 		if (rbNombre == null) {
 			rbNombre = new JRadioButton("Nombre");
-			rbNombre.setBackground(SystemColor.info);
+			rbNombre.setBackground(Color.LIGHT_GRAY);
 			buttonGroup.add(rbNombre);
 			rbNombre.setFont(new Font("Tahoma", Font.ITALIC, 13));
 			rbDNI.setSelected(true);
@@ -636,7 +639,7 @@ public class VentanaUsuario extends JDialog {
 	private JRadioButton getRdbtnCorreo() {
 		if (rdbtnCorreo == null) {
 			rdbtnCorreo = new JRadioButton("Correo");
-			rdbtnCorreo.setBackground(SystemColor.info);
+			rdbtnCorreo.setBackground(Color.LIGHT_GRAY);
 			buttonGroup.add(rdbtnCorreo);
 			rdbtnCorreo.setFont(new Font("Tahoma", Font.ITALIC, 13));
 			rdbtnCorreo.addItemListener(new ItemListener() {
@@ -664,7 +667,7 @@ public class VentanaUsuario extends JDialog {
 	private JList<Usuario> getListaUsuarios() {
 		if (listaUsuarios == null) {
 			listaUsuarios = new JList<Usuario>();
-			listaUsuarios.setBackground(SystemColor.info);
+			listaUsuarios.setBackground(new Color(245, 222, 179));
 			modelList();
 			listaUsuarios.setModel(modeloLista);
 			listaUsuarios.addListSelectionListener(new ListSelectionListener() {
