@@ -1225,7 +1225,7 @@ public class GestorDB {
 	public static void setCantidadPagada(String DNI, int cantidad) throws SQLException {
 		int aux = getCantidadPagada(DNI);
 		conectar();
-		PreparedStatement ps = conexion.prepareStatement("UPDATE Preinscritos SET Cantidad_pagada = ? WHERE DNI = ?");
+		PreparedStatement ps = conexion.prepareStatement("UPDATE Preinscritos SET CantidadPagada = ? WHERE DNI = ?");
 		ps.setInt(1, aux + cantidad);
 		ps.setString(2, DNI);
 		ps.executeUpdate();
@@ -1250,6 +1250,60 @@ public class GestorDB {
 		ps.executeUpdate();
 		ps.close();
 		cerrar();
+	}
+	
+
+	/**
+	 * Método que devuelve la fecha límite de cancelación de una carrera de id
+	 * recibido como parámetro
+	 * 
+	 * @param Id_carrera
+	 * @return fecha de cancelacion
+	 * @throws SQLException
+	 */
+	public static String getFechaFinCancelacion(int Id_carrera) throws SQLException {
+		String fecha = null;
+		Carrera carrera = sacarTodasLasCarreras().stream().filter(x -> x.getId() == Id_carrera).findFirst().get();
+		fecha = carrera.getFechaCancelacionActual().getFechaFin();
+		return fecha;
+	}
+
+	/**
+	 * Método que devuelve la fecha inicio de cancelación de una carrera de id
+	 * recibido como parámetro
+	 * 
+	 * @param Id_carrera
+	 * @return fecha de cancelacion
+	 * @throws SQLException
+	 */
+	public static String getFechaInicioCancelacion(int Id_carrera) throws SQLException {
+		String fecha = "";
+		Carrera carrera = sacarTodasLasCarreras().stream().filter(x -> x.getId() == Id_carrera).findFirst().get();
+		fecha = carrera.getFechaCancelacionActual().getFecha();
+		return fecha;
+	}
+
+	/**
+	 * Método que devuelve la cantidad correspondiente a devolver para la
+	 * cancelación en una carrera dada
+	 * 
+	 * @param Id_carrera
+	 * @return devolucion
+	 * @throws SQLException
+	 */
+	public static int getDevolucion(int Id_carrera) throws SQLException {
+		int devolucion = 0;
+		conectar();
+		PreparedStatement ps = conexion
+				.prepareStatement("SELECT A_devolver FROM Fecha_Cancelacion WHERE Id_carrera = ?");
+		ps.setInt(1, Id_carrera);
+		ResultSet rs = ps.executeQuery();
+		while (rs.next())
+			devolucion = rs.getInt("A_devolver");
+		ps.close();
+		rs.close();
+		cerrar();
+		return devolucion;
 	}
 	
 }

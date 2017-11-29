@@ -351,6 +351,22 @@ public class Carrera implements Comparable<Carrera>{
 		return fechas_inscripcion.get(fechas_inscripcion.size()-1);
 	}
 	
+	public FechaCancelacion getFechaCancelacionActual() {
+		Calendar fecha = new GregorianCalendar();
+		String ffaa = fecha.get(Calendar.DAY_OF_MONTH) + "/" + (fecha.get(Calendar.MONTH) + 1) + "/"
+				+ fecha.get(Calendar.YEAR);
+		Date fActual = new Date(ffaa);
+		Collections.sort(fechas_cancelacion);
+		for (FechaCancelacion f : fechas_cancelacion) {
+			Date fPrueba = new Date(f.getFecha());
+			Date fPruebaFinal = new Date(f.getFechaFin());
+			if (fActual.compareTo(fPrueba) >= 0 && fActual.compareTo(fPruebaFinal) <= 0)
+				return f;
+		}
+		return fechas_cancelacion.get(fechas_cancelacion.size() - 1);
+	}
+
+	
 	public String getCategoriaParaUsuario(int edad) {
 		for (Categoria cat : categorias) {
 			if(edad >= cat.getEdadMin() && edad < cat.getEdadMax()) {

@@ -24,6 +24,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
+import org.joda.time.DateTime;
+import org.joda.time.Interval;
+
 import entities.Carrera;
 import entities.Corredor;
 import entities.Preinscrito;
@@ -117,6 +120,31 @@ public class EstadoCompeticion extends JDialog {
 	private JButton getBtCancelarInscripcion() {
 		if (btCancelarInscripcion == null) {
 			btCancelarInscripcion = new JButton("Cancelar Inscripcion");
+			btCancelarInscripcion.setEnabled(false);
+
+			try {
+				String aux = null;
+				// Fecha actual
+				DateTime fecha_actual = new DateTime();
+				// Fecha de inicio
+				aux = GestorDB.getFechaInicioCancelacion(c.getId());
+				if (aux != null) {
+					String[] inicio = aux.split("/");
+					DateTime fecha_inicio = new DateTime(inicio[2] + "-" + inicio[1] + "-" + inicio[0]);
+					// Fecha de fin
+					String[] fin = GestorDB.getFechaFinCancelacion(c.getId()).split("/");
+					DateTime fecha_fin = new DateTime(fin[2] + "-" + fin[1] + "-" + fin[0]);
+
+					Interval interval = new Interval(fecha_inicio, fecha_fin);
+					if (interval.contains(fecha_actual))
+						btCancelarInscripcion.setEnabled(true);
+					if(!estado.contains("Pagado"))
+						btCancelarInscripcion.setEnabled(false);
+				}
+			} catch (SQLException ex) {
+				GestorDB.handleSQLException(ex);
+			}
+
 			btCancelarInscripcion.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					cancelarInscripcion();
@@ -394,11 +422,28 @@ public class EstadoCompeticion extends JDialog {
 	}
 
 	protected void cancelarInscripcion() {
+		double devolucion = 0;
 		try {
-			GestorDB.cancelar(usuario.getDni(), c);
-			GestorDB.setNotasPago("Cancelado - Se devolverán X€", usuario.getDni(), c);
+			devolucion = (double)(GestorDB.getDevolucion(c.getId()) * GestorDB.getCantidadPagadaCorredor(usuario.getDni())) / 100d;
 		} catch (SQLException ex) {
 			GestorDB.handleSQLException(ex);
+		}
+		int option = JOptionPane.showConfirmDialog(this,
+				"¿Está seguro de que quiere cancelar su inscripción?\nEn caso afirmativo se le reenvolsarán "
+						+ devolucion + "€",
+				"Confirmar Cancelación", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+		if (option == JOptionPane.YES_OPTION) {
+			try {
+				GestorDB.cancelar(usuario.getDni(), c);
+				devolucion = (double)(GestorDB.getDevolucion(c.getId()) * GestorDB.getCantidadPagada(usuario.getDni())) / 100d;
+				GestorDB.setNotasPago("Cancelado - Se devolverán " + devolucion + "€", usuario.getDni(), c);
+				getBtCancelarInscripcion().setEnabled(false);
+				dispose();
+			} catch (SQLException ex) {
+				GestorDB.handleSQLException(ex);
+			}
+			JOptionPane.showMessageDialog(this, "Cancelación completada con éxito", "Cancelación Completada",
+					JOptionPane.INFORMATION_MESSAGE);
 		}
 	}
 
@@ -466,7 +511,7 @@ public class EstadoCompeticion extends JDialog {
 		}
 		GregorianCalendar cal = new GregorianCalendar();
 		GregorianCalendar cal2 = new GregorianCalendar(Integer.parseInt(c.getFecha().split("/")[2]),
-				Integer.parseInt(c.getFecha().split("/")[1])-1, Integer.parseInt(c.getFecha().split("/")[0]));
+				Integer.parseInt(c.getFecha().split("/")[1]) - 1, Integer.parseInt(c.getFecha().split("/")[0]));
 		if (cal.compareTo(cal2) > 0) {
 			JOptionPane.showMessageDialog(null, "No puedes traspasar el dorsal de una carrera ya finalizada",
 					"Error al traspasar el dorsal", JOptionPane.ERROR_MESSAGE);
