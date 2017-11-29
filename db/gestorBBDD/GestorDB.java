@@ -1402,7 +1402,7 @@ public class GestorDB {
 	public static String getFechaInicioCancelacion(int Id_carrera) throws SQLException {
 		String fecha = "";
 		Carrera carrera = sacarTodasLasCarreras().stream().filter(x -> x.getId() == Id_carrera).findFirst().get();
-		fecha = carrera.getFechaCancelacionActual().getFecha();
+		fecha = carrera.getFechaCancelacionActual()==null?null:carrera.getFechaCancelacionActual().getFecha();
 		return fecha;
 	}
 

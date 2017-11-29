@@ -363,7 +363,7 @@ public class Carrera implements Comparable<Carrera>{
 			if (fActual.compareTo(fPrueba) >= 0 && fActual.compareTo(fPruebaFinal) <= 0)
 				return f;
 		}
-		return fechas_cancelacion.get(fechas_cancelacion.size() - 1);
+		return fechas_cancelacion.size()==0?null:fechas_cancelacion.get(fechas_cancelacion.size() - 1);
 	}
 
 	
