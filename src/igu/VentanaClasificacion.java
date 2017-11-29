@@ -261,10 +261,18 @@ public class VentanaClasificacion extends JDialog {
 				nuevaFila[3] = corredores.get(i).getNombre();
 				nuevaFila[4] = corredores.get(i).getClub();
 				nuevaFila[5] = corredores.get(i).getTiempo();
+				
+				if (nuevaFila[5].equals("DNF")){
+					nuevaFila[1] = "DNF";
+					nuevaFila[5]= "---";
+				}else if(nuevaFila[5].equals("DNS")){
+					nuevaFila[1] = "DNS";
+					nuevaFila[5]= "---";
+				}
+				
 				modeloTabla.addRow(nuevaFila);
 			}
 		}
-
 	}
 
 	/**
