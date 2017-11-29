@@ -14,8 +14,11 @@ import entities.Corredor;
 import entities.Preinscrito;
 import entities.Usuario;
 import logic.Categoria;
+import logic.FechaCancelacion;
 import logic.FechaInscripcion;
 import logic.Inscrito;
+import logic.PuntoControl;
+import logic.Time;
 
 /**
  * Clase que accede a la base de datos y tiene métodos para sacar y añadir datos
@@ -71,6 +74,8 @@ public class GestorDB {
 		while (rs.next()) {
 			ArrayList<Categoria> categorias = new ArrayList<Categoria>();
 			ArrayList<FechaInscripcion> fechas = new ArrayList<FechaInscripcion>();
+			ArrayList<FechaCancelacion> cancelacion = new ArrayList<FechaCancelacion>();
+			ArrayList<PuntoControl> control = new ArrayList<PuntoControl>();
 			int id = rs.getInt("Id_Carrera");
 			String nombre = rs.getString("Nombre");
 			String lugar = rs.getString("Lugar");
@@ -102,13 +107,34 @@ public class GestorDB {
 				int precio = rs3.getInt("Precio");
 				fechas.add(new FechaInscripcion(fi, ff, precio));
 			}
+			PreparedStatement st4 = conexion
+					.prepareStatement("SELECT * FROM FECHA_CANCELACION WHERE Id_Carrera = ?");
+			st4.setInt(1, id);
+			ResultSet rs4 = st4.executeQuery();
+			while (rs4.next()) {
+				String fi = rs4.getString("Fecha_inicio");
+				String ff = rs4.getString("Fecha_fin");
+				int devolver = rs4.getInt("A_Devolver");
+				cancelacion.add(new FechaCancelacion(fi, ff, devolver));
+			}
+			PreparedStatement st5 = conexion
+					.prepareStatement("SELECT * FROM PUNTOSCONTROL WHERE Id_Carrera = ?");
+			st5.setInt(1, id);
+			ResultSet rs5 = st5.executeQuery();
+			while (rs5.next()) {
+				int n_km = rs5.getInt("N_km");
+				String[] tiempo = rs5.getString("Tiempo_max").split(":");
+				control.add(new PuntoControl(n_km,Integer.parseInt(tiempo[0]),Integer.parseInt(tiempo[1])));
+			}
 			Carrera c = new Carrera(id, nombre, lugar, fecha, num_max, km,
-					dureza, edad, tipo, ncuenta, dni, fechas, categorias);
+					dureza, edad, tipo, ncuenta, dni, fechas, categorias,cancelacion,control);
 			carreras.add(c);
 			rs2.close();
 			rs3.close();
 			st2.close();
 			st3.close();
+			rs4.close();
+			st4.close();
 		}
 		rs.close();
 		st.close();
@@ -159,6 +185,27 @@ public class GestorDB {
 			addFechas.setString(2, fi.getFechaFin());
 			addFechas.setDouble(3, fi.getPrecio());
 			addFechas.setInt(4, c.getId());
+			addFechas.executeUpdate();
+			addFechas.close();
+		}
+		for (FechaCancelacion fi : c.getFechas_cancelacion()) {
+			PreparedStatement addFechas = conexion
+					.prepareStatement("INSERT INTO FECHA_CANCELACION "
+							+ "VALUES (?,?,?,?)");
+			addFechas.setInt(1, c.getId());
+			addFechas.setString(2, fi.getFecha());
+			addFechas.setString(3, fi.getFechaFin());
+			addFechas.setDouble(4, fi.getADevolver());
+			addFechas.executeUpdate();
+			addFechas.close();
+		}
+		for (PuntoControl fi : c.getPuntos_control()) {
+			PreparedStatement addFechas = conexion
+					.prepareStatement("INSERT INTO PUNTOSCONTROL "
+							+ "VALUES (?,?,?)");
+			addFechas.setInt(1, c.getId());
+			addFechas.setInt(2, fi.getKm());
+			addFechas.setString(3, fi.getHoras()+":"+fi.getMin());
 			addFechas.executeUpdate();
 			addFechas.close();
 		}
@@ -436,7 +483,7 @@ public class GestorDB {
 		conectar();
 		PreparedStatement addPreinscrito = conexion
 				.prepareStatement("INSERT INTO Preinscritos "
-						+ "VALUES (?,?,'No',?,?,?,?,?,?)");
+						+ "VALUES (?,?,'No',?,?,?,?,?,?,?)");
 		addPreinscrito.setString(1, u.getDni());
 		addPreinscrito.setInt(2, c.getId());
 		addPreinscrito.setString(3, c.getCategoriaParaUsuario(u.getEdad()));
@@ -445,15 +492,27 @@ public class GestorDB {
 		addPreinscrito.setString(6, fecha);
 		addPreinscrito.setString(7, fecha);
 		addPreinscrito.setString(8, "Pendiente de pago");
+		addPreinscrito.setInt(9, 0);
 		addPreinscrito.executeUpdate();
 		addPreinscrito.close();
 		cerrar();
 	}
-
-	// ==========================================================================================
-	// CORREDORES:
-	// ==========================================================================================
-
+	
+	/**
+	 * Metodo que borra un preinscrito de la base de datos
+	 * @param dni
+	 * @throws SQLException 
+	 */
+	public static void deletePreinscrito(String dni) throws SQLException {
+		conectar();
+		PreparedStatement deletePreinscrito= conexion
+				.prepareStatement("DELETE FROM PREINSCRITOS WHERE DNI = ?");
+		deletePreinscrito.setString(1, dni);
+		deletePreinscrito.executeUpdate();
+		deletePreinscrito.close();
+		cerrar();
+	}
+	
 	/**
 	 * Metodo que devuelve un ArrayList de Preinscritos(no pagaron aun) de una
 	 * carrera
@@ -485,6 +544,55 @@ public class GestorDB {
 		return preinscritos;
 	}
 
+
+	// ==========================================================================================
+	// CORREDORES:
+	// ==========================================================================================
+
+	/**
+	 * Metodo que preeinscribe a un usuario en una carrera
+	 * 
+	 * @param u
+	 * @param c
+	 * @throws SQLException
+	 */
+	public static void addCorredor(Usuario u, Carrera c, String fecha, String notaPago,int cantidadPagada, int dorsal)
+			throws SQLException {
+		conectar();
+		PreparedStatement addPreinscrito = conexion
+				.prepareStatement("INSERT INTO Corredores "
+						+ "VALUES (?,?,'DNR',?,?,?,?,?,?,?,?)");
+		addPreinscrito.setString(1, u.getDni());
+		addPreinscrito.setInt(2, c.getId());
+		addPreinscrito.setInt(3, dorsal);
+		addPreinscrito.setString(4, c.getCategoriaParaUsuario(u.getEdad()));
+		addPreinscrito.setString(5, u.getGenero());
+		addPreinscrito.setString(6, u.getNombre());
+		addPreinscrito.setString(7, fecha);
+		addPreinscrito.setString(8, notaPago);
+		addPreinscrito.setString(9, "Si");
+		addPreinscrito.setInt(10, cantidadPagada);
+		addPreinscrito.executeUpdate();
+		addPreinscrito.close();
+		cerrar();
+	}
+	
+	/**
+	 * Metodo que borra un preinscrito de la base de datos
+	 * @param dni
+	 * @throws SQLException 
+	 */
+	public static void deleteCorredor(String dni) throws SQLException {
+		conectar();
+		PreparedStatement deleteCorredor= conexion
+				.prepareStatement("DELETE FROM CORREDORES WHERE DNI = ?");
+		deleteCorredor.setString(1, dni);
+		deleteCorredor.executeUpdate();
+		deleteCorredor.close();
+		cerrar();
+	}
+	
+
 	/**
 	 * Metodo que saca un ArrayList de los Corredores(con dorsal, es decir ya
 	 * pagaron) de una carrera
@@ -493,21 +601,35 @@ public class GestorDB {
 	 * @return
 	 * @throws SQLException
 	 */
-	public static ArrayList<Corredor> findCorredoresByIdCarrera(
-			Integer idCarrera) throws SQLException {
+	public static ArrayList<Corredor> findCorredoresByIdCarrera(Integer idCarrera) throws SQLException {
 		ArrayList<Corredor> corredores = new ArrayList<Corredor>();
 
 		conectar();
-		PreparedStatement pst = conexion
-				.prepareStatement("SELECT * FROM Corredores WHERE Id_Carrera = ? ");
+		PreparedStatement pst = conexion.prepareStatement("SELECT * FROM Corredores WHERE Id_Carrera = ? ");
 		pst.setInt(1, idCarrera);
 		ResultSet rs = pst.executeQuery();
+
 		while (rs.next()) {
-			corredores.add(new Corredor(rs.getString("DNI"), rs
-					.getInt("Id_Carrera"), rs.getString("Tiempo"), rs
-					.getInt("Dorsal"), rs.getString("Categoria"), rs
-					.getString("Genero"), rs.getString("Nombre"), rs
-					.getString("Fecha_Inscripcion")));
+
+			ArrayList<Time> tiempos = new ArrayList<Time>();
+
+			PreparedStatement pst2 = conexion.prepareStatement("SELECT * FROM Tiempos WHERE ID_Carrera = ? and dni=?");
+			pst2.setInt(1, idCarrera);
+			pst2.setInt(2, rs.getInt("DNI"));
+			ResultSet rs3 = pst2.executeQuery();
+
+			while (rs3.next()) {
+				String[] tiempo = rs3.getString("Tiempo").split(":");			
+				if(tiempo!=null) {
+					int horas = Integer.valueOf(tiempo[0]);
+					int minutos = Integer.valueOf(tiempo[1]);
+					int segundos = Integer.valueOf(tiempo[2]);
+					tiempos.add(new Time(horas, minutos, segundos));
+				}
+			}
+			corredores.add(new Corredor(rs.getString("DNI"), rs.getInt("Id_Carrera"), tiempos, rs.getInt("Dorsal"),
+					rs.getString("Categoria"), rs.getString("Genero"), rs.getString("Nombre"),
+					rs.getString("Fecha_Inscripcion")));
 		}
 		rs.close();
 		pst.close();
@@ -524,23 +646,23 @@ public class GestorDB {
 	 * @return corredores
 	 * @throws SQLException
 	 */
-	public static ArrayList<Corredor> findCorredoresByIdCarreraOrderByTiempoByGenero(
-			Integer idCarrera, String genero) throws SQLException {
+	public static ArrayList<Corredor> findCorredoresByIdCarreraOrderByTiempoByGenero(Integer idCarrera, String genero)
+			throws SQLException {
 		ArrayList<Corredor> corredores = new ArrayList<Corredor>();
 		conectar();
 		PreparedStatement pst = conexion
-				.prepareStatement("select Corredores.DNI, Corredores.Id_Carrera, Corredores.Tiempo,"
+				.prepareStatement("select Corredores.DNI, Corredores.Id_Carrera,"
 						+ " Corredores.Dorsal, Corredores.Categoria,Corredores.Genero,  Corredores.Nombre,"
 						+ "Corredores.Fecha_inscripcion, null as nclub from Corredores where Corredores.DNI "
 						+ "not in(SELECT Corredores.DNI FROM Corredores, Club, Pertenece WHERE  "
 						+ "Corredores.DNI = Pertenece.DNI and Pertenece.Id_club = Club.Id_club "
 						+ "and Corredores.Id_Carrera = ? and Corredores.Genero = ?) and Corredores.Id_Carrera = ? and Corredores.Genero = ? union "
-						+ "SELECT Corredores.DNI, Corredores.Id_Carrera, Corredores.Tiempo, "
+						+ "SELECT Corredores.DNI, Corredores.Id_Carrera, "
 						+ "Corredores.Dorsal,  Corredores.Categoria,Corredores.Genero, "
 						+ "Corredores.Nombre,Corredores.Fecha_inscripcion, Club.NombreClub "
 						+ "as nclub FROM Corredores, Club, Pertenece  WHERE  "
 						+ "Corredores.DNI = Pertenece.DNI and Pertenece.Id_club = Club.Id_club "
-						+ "and Corredores.Id_Carrera = ? and Corredores.Genero = ? order by tiempo asc");
+						+ "and Corredores.Id_Carrera = ? and Corredores.Genero = ?");
 		pst.setInt(1, idCarrera);
 		pst.setString(2, genero);
 		pst.setInt(3, idCarrera);
@@ -550,11 +672,27 @@ public class GestorDB {
 
 		ResultSet rs = pst.executeQuery();
 		while (rs.next()) {
-			corredores.add(new Corredor(rs.getString("DNI"), rs
-					.getInt("Id_Carrera"), rs.getString("Tiempo"), rs
-					.getInt("Dorsal"), rs.getString("Categoria"), rs
-					.getString("Genero"), rs.getString("Nombre"), rs
-					.getString("Fecha_inscripcion"), rs.getString("nclub")));
+
+			ArrayList<Time> tiempos = new ArrayList<Time>();
+
+			PreparedStatement pst2 = conexion.prepareStatement("SELECT * FROM Tiempos WHERE ID_Carrera = ? and dni=?");
+			pst2.setInt(1, idCarrera);
+			pst2.setInt(2, rs.getInt("DNI"));
+			ResultSet rs3 = pst2.executeQuery();
+
+			while (rs3.next()) {
+				String[] tiempo = rs3.getString("Tiempo").split(":");
+				if(tiempo!=null) {
+					int horas = Integer.valueOf(tiempo[0]);
+					int minutos = Integer.valueOf(tiempo[1]);
+					int segundos = Integer.valueOf(tiempo[2]);
+					tiempos.add(new Time(horas, minutos, segundos));
+				}
+			}
+
+			corredores.add(new Corredor(rs.getString("DNI"), rs.getInt("Id_Carrera"), tiempos, rs.getInt("Dorsal"),
+					rs.getString("Categoria"), rs.getString("Genero"), rs.getString("Nombre"),
+					rs.getString("Fecha_inscripcion"), rs.getString("nclub")));
 		}
 		rs.close();
 		pst.close();
@@ -572,25 +710,24 @@ public class GestorDB {
 	 * @return corredores
 	 * @throws SQLException
 	 */
-	public static ArrayList<Corredor> findCorredoresByIdCarreraOrderByTiempoByGeneroByCategoria(
-			Integer idCarrera, String genero, String categoria)
-			throws SQLException {
+	public static ArrayList<Corredor> findCorredoresByIdCarreraOrderByTiempoByGeneroByCategoria(Integer idCarrera,
+			String genero, String categoria) throws SQLException {
 		ArrayList<Corredor> corredores = new ArrayList<Corredor>();
 
 		conectar();
 		PreparedStatement pst = conexion
-				.prepareStatement("select Corredores.DNI, Corredores.Id_Carrera, Corredores.Tiempo,"
+				.prepareStatement("select Corredores.DNI, Corredores.Id_Carrera,"
 						+ " Corredores.Dorsal, Corredores.Categoria,Corredores.Genero,  Corredores.Nombre,"
 						+ "Corredores.Fecha_inscripcion, null as nclub from Corredores where Corredores.DNI "
 						+ "not in(SELECT Corredores.DNI FROM Corredores, Club, Pertenece WHERE  "
 						+ "Corredores.DNI = Pertenece.DNI and Pertenece.Id_club = Club.Id_club "
 						+ "and Corredores.Id_Carrera = ? and Corredores.Genero = ? and Corredores.Categoria = ?) and Corredores.Id_Carrera = ? and Corredores.Genero = ? and Corredores.Categoria = ? union "
-						+ "SELECT Corredores.DNI, Corredores.Id_Carrera, Corredores.Tiempo, "
+						+ "SELECT Corredores.DNI, Corredores.Id_Carrera, "
 						+ "Corredores.Dorsal,  Corredores.Categoria,Corredores.Genero, "
 						+ "Corredores.Nombre,Corredores.Fecha_inscripcion, Club.NombreClub "
 						+ "as nclub FROM Corredores, Club, Pertenece  WHERE  "
 						+ "Corredores.DNI = Pertenece.DNI and Pertenece.Id_club = Club.Id_club "
-						+ "and Corredores.Id_Carrera = ? and Corredores.Genero = ? and Corredores.Categoria = ? order by tiempo asc");
+						+ "and Corredores.Id_Carrera = ? and Corredores.Genero = ? and Corredores.Categoria = ?");
 		pst.setInt(1, idCarrera);
 		pst.setString(2, genero);
 		pst.setString(3, categoria);
@@ -602,18 +739,33 @@ public class GestorDB {
 		pst.setString(9, categoria);
 		ResultSet rs = pst.executeQuery();
 		while (rs.next()) {
-			corredores.add(new Corredor(rs.getString("DNI"), rs
-					.getInt("Id_Carrera"), rs.getString("Tiempo"), rs
-					.getInt("Dorsal"), rs.getString("Categoria"), rs
-					.getString("Genero"), rs.getString("Nombre"), rs
-					.getString("Fecha_inscripcion"), rs.getString("nclub")));
+
+			ArrayList<Time> tiempos = new ArrayList<Time>();
+
+			PreparedStatement pst2 = conexion.prepareStatement("SELECT * FROM Tiempos WHERE ID_Carrera = ? and dni=?");
+			pst2.setInt(1, idCarrera);
+			pst2.setInt(2, rs.getInt("DNI"));
+			ResultSet rs3 = pst2.executeQuery();
+
+			while (rs3.next()) {
+				String[] tiempo = rs3.getString("Tiempo").split(":");
+				if(tiempo!=null) {
+					int horas = Integer.valueOf(tiempo[0]);
+					int minutos = Integer.valueOf(tiempo[1]);
+					int segundos = Integer.valueOf(tiempo[2]);
+					tiempos.add(new Time(horas, minutos, segundos));
+				}
+			}
+
+			corredores.add(new Corredor(rs.getString("DNI"), rs.getInt("Id_Carrera"), tiempos, rs.getInt("Dorsal"),
+					rs.getString("Categoria"), rs.getString("Genero"), rs.getString("Nombre"),
+					rs.getString("Fecha_inscripcion"), rs.getString("nclub")));
 		}
 		rs.close();
 		pst.close();
 		cerrar();
 		return corredores;
 	}
-
 	/**
 	 * Metodo que saca un ArrayList de los Corredores de una carrera ordenados
 	 * por tiempo.
@@ -622,34 +774,49 @@ public class GestorDB {
 	 * @return corredores
 	 * @throws SQLException
 	 */
-	public static ArrayList<Corredor> findCorredoresByIdCarreraOrderByTiempo(
-			Integer idCarrera) throws SQLException {
+	public static ArrayList<Corredor> findCorredoresByIdCarreraOrderByTiempo(Integer idCarrera) throws SQLException {
 		ArrayList<Corredor> corredores = new ArrayList<Corredor>();
 
 		conectar();
 		PreparedStatement pst = conexion
-				.prepareStatement("select Corredores.DNI, Corredores.Id_Carrera, Corredores.Tiempo,"
+				.prepareStatement("select Corredores.DNI, Corredores.Id_Carrera,"
 						+ " Corredores.Dorsal, Corredores.Categoria,Corredores.Genero,  Corredores.Nombre,"
 						+ "Corredores.Fecha_inscripcion, null as nclub from Corredores where Corredores.DNI "
 						+ "not in(SELECT Corredores.DNI FROM Corredores, Club, Pertenece WHERE  "
 						+ "Corredores.DNI = Pertenece.DNI and Pertenece.Id_club = Club.Id_club "
 						+ "and Corredores.Id_Carrera = ?) and Corredores.Id_Carrera = ? union "
-						+ "SELECT Corredores.DNI, Corredores.Id_Carrera, Corredores.Tiempo, "
+						+ "SELECT Corredores.DNI, Corredores.Id_Carrera, "
 						+ "Corredores.Dorsal,  Corredores.Categoria,Corredores.Genero, "
 						+ "Corredores.Nombre,Corredores.Fecha_inscripcion, Club.NombreClub "
 						+ "as nclub FROM Corredores, Club, Pertenece  WHERE  "
 						+ "Corredores.DNI = Pertenece.DNI and Pertenece.Id_club = Club.Id_club "
-						+ "and Corredores.Id_Carrera = ? order by tiempo asc");
+						+ "and Corredores.Id_Carrera = ?");
 		pst.setInt(1, idCarrera);
 		pst.setInt(2, idCarrera);
 		pst.setInt(3, idCarrera);
 		ResultSet rs = pst.executeQuery();
 		while (rs.next()) {
-			corredores.add(new Corredor(rs.getString("DNI"), rs
-					.getInt("Id_Carrera"), rs.getString("Tiempo"), rs
-					.getInt("Dorsal"), rs.getString("Categoria"), rs
-					.getString("Genero"), rs.getString("Nombre"), rs
-					.getString("Fecha_inscripcion"), rs.getString("nclub")));
+
+			ArrayList<Time> tiempos = new ArrayList<Time>();
+
+			PreparedStatement pst2 = conexion.prepareStatement("SELECT * FROM Tiempos WHERE ID_Carrera = ? and dni=?");
+			pst2.setInt(1, idCarrera);
+			pst2.setInt(2, rs.getInt("DNI"));
+			ResultSet rs3 = pst2.executeQuery();
+
+			while (rs3.next()) {
+				String[] tiempo = rs3.getString("Tiempo").split(":");
+				if(tiempo!=null) {
+					int horas = Integer.valueOf(tiempo[0]);
+					int minutos = Integer.valueOf(tiempo[1]);
+					int segundos = Integer.valueOf(tiempo[2]);
+					tiempos.add(new Time(horas, minutos, segundos));
+				}
+			}
+
+			corredores.add(new Corredor(rs.getString("DNI"), rs.getInt("Id_Carrera"), tiempos, rs.getInt("Dorsal"),
+					rs.getString("Categoria"), rs.getString("Genero"), rs.getString("Nombre"),
+					rs.getString("Fecha_inscripcion"), rs.getString("nclub")));
 		}
 		rs.close();
 		pst.close();
@@ -665,41 +832,63 @@ public class GestorDB {
 	 * @return corredores
 	 * @throws SQLException
 	 */
-	public static ArrayList<Corredor> findCorredoresByIdCarreraOrderByTiempoByCategoria(
-			Integer idCarrera) throws SQLException {
+	public static ArrayList<Corredor> findCorredoresByIdCarreraOrderByTiempoByCategoria(Integer idCarrera, Integer n_km)
+			throws SQLException {
 		ArrayList<Corredor> corredores = new ArrayList<Corredor>();
 
 		conectar();
 		PreparedStatement pst = conexion
-				.prepareStatement("select Corredores.DNI, Corredores.Id_Carrera, Corredores.Tiempo,"
-						+ " Corredores.Dorsal, Corredores.Categoria,Corredores.Genero,  Corredores.Nombre,"
-						+ "Corredores.Fecha_inscripcion, null as nclub from Corredores where Corredores.DNI "
-						+ "not in(SELECT Corredores.DNI FROM Corredores, Club, Pertenece WHERE  "
-						+ "Corredores.DNI = Pertenece.DNI and Pertenece.Id_club = Club.Id_club "
-						+ "and Corredores.Id_Carrera = ?) and Corredores.Id_Carrera = ? union "
-						+ "SELECT Corredores.DNI, Corredores.Id_Carrera, Corredores.Tiempo, "
-						+ "Corredores.Dorsal,  Corredores.Categoria,Corredores.Genero, "
-						+ "Corredores.Nombre,Corredores.Fecha_inscripcion, Club.NombreClub "
-						+ "as nclub FROM Corredores, Club, Pertenece  WHERE  "
-						+ "Corredores.DNI = Pertenece.DNI and Pertenece.Id_club = Club.Id_club "
-						+ "and Corredores.Id_Carrera = ? order by Categoria, tiempo asc");
+				.prepareStatement("select Corredores.DNI, Corredores.Id_Carrera, "+
+						 "Corredores.Dorsal, Corredores.Categoria,Corredores.Genero,  Corredores.Nombre, "+
+						 "Corredores.Fecha_inscripcion, null as nclub, Tiempos.Tiempo as t from Corredores, Tiempos "+
+						 "where Corredores.DNI not in(SELECT Corredores.DNI FROM Corredores, Club, Pertenece WHERE "+ 
+						 "Corredores.DNI = Pertenece.DNI and Pertenece.Id_club = Club.Id_club "+
+						 "and Corredores.Id_Carrera = ? ) and Corredores.Id_Carrera = ? and Tiempos.Id_carrera = ? and Tiempos.dni = Corredores.DNI and Tiempos.N_km=? "+
+						 "union "+
+						 "SELECT Corredores.DNI, Corredores.Id_Carrera, "+
+						 "Corredores.Dorsal,  Corredores.Categoria,Corredores.Genero, "+
+						 "Corredores.Nombre,Corredores.Fecha_inscripcion, Club.NombreClub "+
+						 "as nclub, Tiempos.Tiempo as t FROM Corredores, Club, Pertenece, Tiempos  WHERE  "+
+						 "Corredores.DNI = Pertenece.DNI and Pertenece.Id_club = Club.Id_club "+
+						 "and Corredores.Id_Carrera = ? and Tiempos.Id_carrera = ? and Tiempos.dni = Corredores.DNI"
+						 + " and Tiempos.N_km=? order by Categoria,Tiempos.Tiempo" );
 		pst.setInt(1, idCarrera);
 		pst.setInt(2, idCarrera);
 		pst.setInt(3, idCarrera);
+		pst.setInt(4, n_km);
+		pst.setInt(5, idCarrera);
+		pst.setInt(6, idCarrera);
+		pst.setInt(7, n_km);
 		ResultSet rs = pst.executeQuery();
 		while (rs.next()) {
-			corredores.add(new Corredor(rs.getString("DNI"), rs
-					.getInt("Id_Carrera"), rs.getString("Tiempo"), rs
-					.getInt("Dorsal"), rs.getString("Categoria"), rs
-					.getString("Genero"), rs.getString("Nombre"), rs
-					.getString("Fecha_inscripcion"), rs.getString("nclub")));
+
+			ArrayList<Time> tiempos = new ArrayList<Time>();
+
+			PreparedStatement pst2 = conexion.prepareStatement("SELECT * FROM Tiempos WHERE ID_Carrera = ? and dni=?");
+			pst2.setInt(1, idCarrera);
+			pst2.setInt(2, rs.getInt("DNI"));
+			ResultSet rs3 = pst2.executeQuery();
+
+			while (rs3.next()) {
+				String[] tiempo = rs3.getString("Tiempo").split(":");
+				if(tiempo!=null) {
+					int horas = Integer.valueOf(tiempo[0]);
+					int minutos = Integer.valueOf(tiempo[1]);
+					int segundos = Integer.valueOf(tiempo[2]);
+					tiempos.add(new Time(horas, minutos, segundos));
+				}
+			}
+
+			corredores.add(new Corredor(rs.getString("DNI"), rs.getInt("Id_Carrera"), tiempos, rs.getInt("Dorsal"),
+					rs.getString("Categoria"), rs.getString("Genero"), rs.getString("Nombre"),
+					rs.getString("Fecha_inscripcion"), rs.getString("nclub")));
 		}
 		rs.close();
 		pst.close();
 		cerrar();
 		return corredores;
 	}
-
+	
 	/**
 	 * Metodo que saca un ArrayList de los Corredores de una carrera con un
 	 * genero pasado por parametro ordenados por categoría y por tiempo.
@@ -709,37 +898,61 @@ public class GestorDB {
 	 * @return corredores
 	 * @throws SQLException
 	 */
-	public static ArrayList<Corredor> findCorredoresByIdCarreraOrderByTiempoByCategoriaByGenero(
-			Integer idCarrera, String genero) throws SQLException {
+	public static ArrayList<Corredor> findCorredoresByIdCarreraOrderByTiempoByCategoriaByGenero(Integer idCarrera,
+			String genero, Integer n_km) throws SQLException {
 		ArrayList<Corredor> corredores = new ArrayList<Corredor>();
 
 		conectar();
 		PreparedStatement pst = conexion
-				.prepareStatement("select Corredores.DNI, Corredores.Id_Carrera, Corredores.Tiempo,"
+				.prepareStatement("select Corredores.DNI, Corredores.Id_Carrera,"
 						+ " Corredores.Dorsal, Corredores.Categoria,Corredores.Genero,  Corredores.Nombre,"
-						+ "Corredores.Fecha_inscripcion, null as nclub from Corredores where Corredores.DNI "
+						+ "Corredores.Fecha_inscripcion, null as nclub, Tiempos.Tiempo as t from Corredores, Tiempos where Corredores.DNI "
 						+ "not in(SELECT Corredores.DNI FROM Corredores, Club, Pertenece WHERE  "
 						+ "Corredores.DNI = Pertenece.DNI and Pertenece.Id_club = Club.Id_club "
-						+ "and Corredores.Id_Carrera = ? and Corredores.Genero = ?) and Corredores.Id_Carrera = ? and Corredores.Genero = ? union "
-						+ "SELECT Corredores.DNI, Corredores.Id_Carrera, Corredores.Tiempo, "
+						+ "and Corredores.Id_Carrera = ? and Corredores.Genero = ?)"
+						+ " and Corredores.Id_Carrera = ? and Corredores.Genero = ? and Tiempos.Id_carrera = ? "
+						+ "and Tiempos.dni = Corredores.DNI and Tiempos.N_km=? "
+						+ " union "
+						+ "SELECT Corredores.DNI, Corredores.Id_Carrera, "
 						+ "Corredores.Dorsal,  Corredores.Categoria,Corredores.Genero, "
 						+ "Corredores.Nombre,Corredores.Fecha_inscripcion, Club.NombreClub "
-						+ "as nclub FROM Corredores, Club, Pertenece  WHERE  "
+						+ "as nclub, Tiempos.Tiempo as t FROM Corredores, Club, Pertenece, Tiempos  WHERE  "
 						+ "Corredores.DNI = Pertenece.DNI and Pertenece.Id_club = Club.Id_club "
-						+ "and Corredores.Id_Carrera = ? and Corredores.Genero = ? order by Categoria, tiempo asc");
+						+ "and Corredores.Id_Carrera = ? and Corredores.Genero = ? and Tiempos.Id_carrera = ? and Tiempos.dni = Corredores.DNI"
+						 + " and Tiempos.N_km=? order by Categoria,Tiempos.Tiempo");
 		pst.setInt(1, idCarrera);
 		pst.setString(2, genero);
 		pst.setInt(3, idCarrera);
 		pst.setString(4, genero);
 		pst.setInt(5, idCarrera);
-		pst.setString(6, genero);
+		pst.setInt(6, n_km);
+		pst.setInt(7, idCarrera);
+		pst.setString(8, genero);
+		pst.setInt(9, idCarrera);
+		pst.setInt(10, n_km);
 		ResultSet rs = pst.executeQuery();
 		while (rs.next()) {
-			corredores.add(new Corredor(rs.getString("DNI"), rs
-					.getInt("Id_Carrera"), rs.getString("Tiempo"), rs
-					.getInt("Dorsal"), rs.getString("Categoria"), rs
-					.getString("Genero"), rs.getString("Nombre"), rs
-					.getString("Fecha_inscripcion"), rs.getString("nclub")));
+
+			ArrayList<Time> tiempos = new ArrayList<Time>();
+
+			PreparedStatement pst2 = conexion.prepareStatement("SELECT * FROM Tiempos WHERE ID_Carrera = ? and dni=?");
+			pst2.setInt(1, idCarrera);
+			pst2.setInt(2, rs.getInt("DNI"));
+			ResultSet rs3 = pst2.executeQuery();
+
+			while (rs3.next()) {
+				String[] tiempo = rs3.getString("Tiempo").split(":");
+				if(tiempo!=null) {
+					int horas = Integer.valueOf(tiempo[0]);
+					int minutos = Integer.valueOf(tiempo[1]);
+					int segundos = Integer.valueOf(tiempo[2]);
+					tiempos.add(new Time(horas, minutos, segundos));
+				}
+			}
+
+			corredores.add(new Corredor(rs.getString("DNI"), rs.getInt("Id_Carrera"), tiempos, rs.getInt("Dorsal"),
+					rs.getString("Categoria"), rs.getString("Genero"), rs.getString("Nombre"),
+					rs.getString("Fecha_inscripcion"), rs.getString("nclub")));
 		}
 		rs.close();
 		pst.close();
@@ -756,24 +969,24 @@ public class GestorDB {
 	 * @return corredores
 	 * @throws SQLException
 	 */
-	public static ArrayList<Corredor> findCorredoresByIdCarreraOrderByTiempoByCategoria(
-			Integer idCarrera, String categoria) throws SQLException {
+	public static ArrayList<Corredor> findCorredoresByIdCarreraOrderByTiempoByCategoria(Integer idCarrera,
+			String categoria) throws SQLException {
 		ArrayList<Corredor> corredores = new ArrayList<Corredor>();
 
 		conectar();
 		PreparedStatement pst = conexion
-				.prepareStatement("select Corredores.DNI, Corredores.Id_Carrera, Corredores.Tiempo,"
+				.prepareStatement("select Corredores.DNI, Corredores.Id_Carrera,"
 						+ " Corredores.Dorsal, Corredores.Categoria,Corredores.Genero,  Corredores.Nombre,"
 						+ "Corredores.Fecha_inscripcion, null as nclub from Corredores where Corredores.DNI "
 						+ "not in(SELECT Corredores.DNI FROM Corredores, Club, Pertenece WHERE  "
 						+ "Corredores.DNI = Pertenece.DNI and Pertenece.Id_club = Club.Id_club "
 						+ "and Corredores.Id_Carrera = ? and Corredores.Categoria = ?) and Corredores.Id_Carrera = ? and Corredores.Categoria = ? union "
-						+ "SELECT Corredores.DNI, Corredores.Id_Carrera, Corredores.Tiempo, "
+						+ "SELECT Corredores.DNI, Corredores.Id_Carrera, "
 						+ "Corredores.Dorsal,  Corredores.Categoria,Corredores.Genero, "
 						+ "Corredores.Nombre,Corredores.Fecha_inscripcion, Club.NombreClub "
 						+ "as nclub FROM Corredores, Club, Pertenece  WHERE  "
 						+ "Corredores.DNI = Pertenece.DNI and Pertenece.Id_club = Club.Id_club "
-						+ "and Corredores.Id_Carrera = ? and Corredores.Categoria = ? order by tiempo asc");
+						+ "and Corredores.Id_Carrera = ? and Corredores.Categoria = ?");
 		pst.setInt(1, idCarrera);
 		pst.setString(2, categoria);
 		pst.setInt(3, idCarrera);
@@ -782,17 +995,34 @@ public class GestorDB {
 		pst.setString(6, categoria);
 		ResultSet rs = pst.executeQuery();
 		while (rs.next()) {
-			corredores.add(new Corredor(rs.getString("DNI"), rs
-					.getInt("Id_Carrera"), rs.getString("Tiempo"), rs
-					.getInt("Dorsal"), rs.getString("Categoria"), rs
-					.getString("Genero"), rs.getString("Nombre"), rs
-					.getString("Fecha_inscripcion"), rs.getString("nclub")));
+
+			ArrayList<Time> tiempos = new ArrayList<Time>();
+
+			PreparedStatement pst2 = conexion.prepareStatement("SELECT * FROM Tiempos WHERE ID_Carrera = ? and dni=?");
+			pst2.setInt(1, idCarrera);
+			pst2.setInt(2, rs.getInt("DNI"));
+			ResultSet rs3 = pst2.executeQuery();
+
+			while (rs3.next()) {
+				String[] tiempo = rs3.getString("Tiempo").split(":");
+				if(tiempo!=null) {
+					int horas = Integer.valueOf(tiempo[0]);
+					int minutos = Integer.valueOf(tiempo[1]);
+					int segundos = Integer.valueOf(tiempo[2]);
+					tiempos.add(new Time(horas, minutos, segundos));
+				}
+			}
+
+			corredores.add(new Corredor(rs.getString("DNI"), rs.getInt("Id_Carrera"), tiempos, rs.getInt("Dorsal"),
+					rs.getString("Categoria"), rs.getString("Genero"), rs.getString("Nombre"),
+					rs.getString("Fecha_inscripcion"), rs.getString("nclub")));
 		}
 		rs.close();
 		pst.close();
 		cerrar();
 		return corredores;
 	}
+
 
 	/**
 	 * Método que saca una lista de todos los inscritos de una carrera, es
@@ -1055,7 +1285,7 @@ public class GestorDB {
 	public static void updateDorsal(Corredor c, int dorsal) throws SQLException {
 		conectar();
 		PreparedStatement ps = conexion
-				.prepareStatement("UPDATE Corredores SET Dorsal = ? WHERE DNI = ?");
+				.prepareStatement("UPDATE Corredores SET Dorsal = ? WHERE DNI = ? and Id_carrera= ?");
 		ps.setInt(1, dorsal);
 		ps.setString(2, c.getDni());
 		ps.executeUpdate();
@@ -1063,4 +1293,192 @@ public class GestorDB {
 		cerrar();
 	}
 
+	/**
+	 * Método que devuelve la cantidad pagada por el usuario hasta el momento. Sirve
+	 * para comprobar las transacciones múltiples
+	 * 
+	 * @param DNI
+	 * @return
+	 * @throws SQLException
+	 */
+	public static int getCantidadPagada(String DNI) throws SQLException {
+		int cantidad = 0;
+		conectar();
+		PreparedStatement ps = conexion.prepareStatement("SELECT CantidadPagada FROM Preinscritos WHERE DNI = ?");
+		ps.setString(1, DNI);
+		ResultSet rs = ps.executeQuery();
+		while (rs.next())
+			cantidad = rs.getInt("CantidadPagada");
+		ps.close();
+		rs.close();
+		cerrar();
+		return cantidad;
+	}
+
+	/**
+	 * Método que devuelve la cantidad pagada por el usuario hasta el momento. Sirve
+	 * para comprobar las transacciones múltiples
+	 * 
+	 * @param DNI
+	 * @return
+	 * @throws SQLException
+	 */
+	public static int getCantidadPagadaCorredor(String DNI) throws SQLException {
+		int cantidad = 0;
+		conectar();
+		PreparedStatement ps = conexion.prepareStatement("SELECT Cantidad_Pagada FROM Corredores WHERE DNI = ?");
+		ps.setString(1, DNI);
+		ResultSet rs = ps.executeQuery();
+		while (rs.next())
+			cantidad = rs.getInt("Cantidad_Pagada");
+		ps.close();
+		rs.close();
+		cerrar();
+		return cantidad;
+	}
+	
+	/**
+	 * Método que modifica la cantidad pagada por el usuario hasta el momento. Sirve
+	 * para comprobar las transacciones múltiples
+	 * 
+	 * @param DNI
+	 * @return
+	 * @throws SQLException
+	 */
+	public static void setCantidadPagada(String DNI, int cantidad) throws SQLException {
+		int aux = getCantidadPagada(DNI);
+		conectar();
+		PreparedStatement ps = conexion.prepareStatement("UPDATE Preinscritos SET CantidadPagada = ? WHERE DNI = ?");
+		ps.setInt(1, aux + cantidad);
+		ps.setString(2, DNI);
+		ps.executeUpdate();
+		ps.close();
+		cerrar();
+	}
+
+	/**
+	 * Método que cancela la inscripción de un corredor para una determinada carrera
+	 * 
+	 * @param dni
+	 * @param c
+	 * @throws SQLException
+	 */
+	public static void cancelar(String DNI, Carrera c) throws SQLException {
+		conectar();
+		PreparedStatement ps = conexion
+				.prepareStatement("UPDATE Corredores SET Pagado = ? WHERE Id_Carrera = ? AND DNI = ?");
+		ps.setString(1, "No");
+		ps.setInt(2, c.getId());
+		ps.setString(3, DNI);
+		ps.executeUpdate();
+		ps.close();
+		cerrar();
+	}
+	
+
+	/**
+	 * Método que devuelve la fecha límite de cancelación de una carrera de id
+	 * recibido como parámetro
+	 * 
+	 * @param Id_carrera
+	 * @return fecha de cancelacion
+	 * @throws SQLException
+	 */
+	public static String getFechaFinCancelacion(int Id_carrera) throws SQLException {
+		String fecha = null;
+		Carrera carrera = sacarTodasLasCarreras().stream().filter(x -> x.getId() == Id_carrera).findFirst().get();
+		fecha = carrera.getFechaCancelacionActual().getFechaFin();
+		return fecha;
+	}
+
+	/**
+	 * Método que devuelve la fecha inicio de cancelación de una carrera de id
+	 * recibido como parámetro
+	 * 
+	 * @param Id_carrera
+	 * @return fecha de cancelacion
+	 * @throws SQLException
+	 */
+	public static String getFechaInicioCancelacion(int Id_carrera) throws SQLException {
+		String fecha = "";
+		Carrera carrera = sacarTodasLasCarreras().stream().filter(x -> x.getId() == Id_carrera).findFirst().get();
+		fecha = carrera.getFechaCancelacionActual().getFecha();
+		return fecha;
+	}
+
+	/**
+	 * Método que devuelve la cantidad correspondiente a devolver para la
+	 * cancelación en una carrera dada
+	 * 
+	 * @param Id_carrera
+	 * @return devolucion
+	 * @throws SQLException
+	 */
+	public static int getDevolucion(int Id_carrera) throws SQLException {
+		int devolucion = 0;
+		conectar();
+		PreparedStatement ps = conexion
+				.prepareStatement("SELECT A_devolver FROM Fecha_Cancelacion WHERE Id_carrera = ?");
+		ps.setInt(1, Id_carrera);
+		ResultSet rs = ps.executeQuery();
+		while (rs.next())
+			devolucion = rs.getInt("A_devolver");
+		ps.close();
+		rs.close();
+		cerrar();
+		return devolucion;
+	}
+	
+	/**
+	 * Elimina los tiempos de una carrera
+	 * 
+	 * @param c
+	 * @param km
+	 * @param tiempo
+	 * @throws SQLException
+	 */
+	public static void removeTiempos(Carrera carrera) throws SQLException {
+		conectar();
+		PreparedStatement ps;
+
+		ps = conexion.prepareStatement("DELETE FROM Tiempos WHERE Id_carrera =?");
+		ps.setInt(1, carrera.getId());
+
+		ps.executeUpdate();
+		ps.close();
+		cerrar();
+
+	}
+	
+	/**
+	 * Actualiza el tiempo de un corredor
+	 * 
+	 * @param c
+	 * @param tiempo
+	 * @throws SQLException
+	 */
+	public static void updateTiempo(Corredor c,Integer km,String tiempo) throws SQLException {
+		conectar();
+		PreparedStatement ps;
+		if(km!=null) {
+			 ps = conexion
+					.prepareStatement("INSERT INTO Tiempos VALUES(?,?,?,?)");
+			 ps.setString(1, c.getDni());
+			 ps.setInt(2, km);
+			 ps.setString(3, tiempo);
+			 ps.setInt(4, c.getIdCarrera());
+		}else {
+			 ps = conexion
+					.prepareStatement("INSERT INTO Tiempos VALUES(?,null,?,?)");
+			 ps.setString(1, c.getDni());
+			 ps.setString(2, tiempo);
+			 ps.setInt(3, c.getIdCarrera());
+		}
+		
+		ps.executeUpdate();
+		ps.close();
+		cerrar();
+	}
+	
+	
 }

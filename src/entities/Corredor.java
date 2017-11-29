@@ -1,5 +1,10 @@
 package entities;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+
+import logic.Time;
+
 /**
  * Clase que representa a un atleta que ya ha pagado su inscripcion
  * y va a disputar la carrera.
@@ -7,7 +12,7 @@ package entities;
  * @author Pablo Menendez y Sara Grimaldos
  *
  */
-public class Corredor implements Comparable<Corredor>{
+public class Corredor implements Comparable<Corredor>, Comparator<Corredor>{
 
 	private String dni;
 	private String nombre;
@@ -15,11 +20,14 @@ public class Corredor implements Comparable<Corredor>{
 	private String fechaInscripcion;
 	private String genero;
 	private String club;
-	private String tiempo;
+	//private String tiempo;
 	private Integer dorsal,idCarrera;
 	//Posiciones 
 	private String posicionAbsoluta;
 	private String posicionCategoria;
+	
+	
+	private ArrayList<Time> tiempos;
 	
 	
 	/**
@@ -32,13 +40,13 @@ public class Corredor implements Comparable<Corredor>{
 	 * @param nombre
 	 * @param fechaInscripcion
 	 */
-	public Corredor(String dni, Integer idCarrera, String tiempo,
+	public Corredor(String dni, Integer idCarrera, ArrayList<Time> tiempos,
 			Integer dorsal, String categoria, String genero, String nombre,
 			String fechaInscripcion) {
 		super();
 		this.dni = dni;
 		this.idCarrera = idCarrera;
-		this.tiempo = tiempo;
+		this.tiempos = tiempos;
 		this.dorsal = dorsal;
 		this.categoria = categoria;
 		this.genero = genero;
@@ -48,13 +56,13 @@ public class Corredor implements Comparable<Corredor>{
 		posicionCategoria="-";
 	}
 
-	public Corredor(String dni, Integer idCarrera, String tiempo,
+	public Corredor(String dni, Integer idCarrera,  ArrayList<Time> tiempos,
 			Integer dorsal, String categoria, String genero, String nombre,
 			String fechaInscripcion,String club) {
 		super();
 		this.dni = dni;
 		this.idCarrera = idCarrera;
-		this.tiempo = tiempo;
+		this.tiempos = tiempos;
 		this.dorsal = dorsal;
 		this.categoria = categoria;
 		this.genero = genero;
@@ -66,7 +74,9 @@ public class Corredor implements Comparable<Corredor>{
 	}
 	
 	
-
+	public Corredor() {
+		super();
+	}
 
 	/**
 	 * @return the posicionAbsoluta
@@ -121,17 +131,14 @@ public class Corredor implements Comparable<Corredor>{
 	public void setIdCarrera(Integer idCarrera) {
 		this.idCarrera = idCarrera;
 	}
-	/**
-	 * @return the tiempo
-	 */
-	public String getTiempo() {
-		return tiempo;
+
+
+	public ArrayList<Time> getTiempos() {
+		return tiempos;
 	}
-	/**
-	 * @param tiempo the tiempo to set
-	 */
-	public void setTiempo(String tiempo) {
-		this.tiempo = tiempo;
+
+	public void setTiempos(ArrayList<Time> tiempos) {
+		this.tiempos = tiempos;
 	}
 
 	public String getDni() {
@@ -241,6 +248,46 @@ public class Corredor implements Comparable<Corredor>{
 		}
 	
 		
+	}
+
+	@Override
+	public int compare(Corredor c1, Corredor c2) {
+		Time tiempoCorredor = null;
+		Time tiempoComparar = null;
+		if (c1.getTiempos().size() != 0 && c2.getTiempos().size() != 0) {
+			tiempoCorredor = c1.getTiempos().get(c1.getTiempos().size() - 1);
+			tiempoComparar = c2.getTiempos().get(c2.getTiempos().size() - 1);
+		} else {
+			if (c1.getTiempos().size() == 0) {
+				if (c2.getTiempos().size() == 0) {
+					tiempoCorredor = new Time(0, 0, 0);
+					tiempoComparar = new Time(0, 0, 0);
+				} else {
+					tiempoCorredor = new Time(0, 0, 0);
+					tiempoComparar = c2.getTiempos().get(
+							c2.getTiempos().size() - 1);
+				}
+			} else {
+				tiempoComparar = new Time(0, 0, 0);
+				tiempoCorredor = c1.getTiempos()
+						.get(c1.getTiempos().size() - 1);
+			}
+		}
+
+		if (tiempoComparar.hour > tiempoCorredor.hour)
+			return -1;
+		if (tiempoComparar.hour == tiempoCorredor.hour) {
+			if (tiempoComparar.minute > tiempoCorredor.minute)
+				return -1;
+			if (tiempoComparar.minute == tiempoCorredor.minute) {
+				if (tiempoComparar.second > tiempoCorredor.second)
+					return -1;
+				if (tiempoComparar.second == tiempoCorredor.second)
+					return 0;
+			}
+		}
+
+		return 1;
 	}
 
 

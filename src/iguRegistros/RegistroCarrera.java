@@ -7,7 +7,9 @@ import entities.Carrera;
 import gestorBBDD.GestorDB;
 import logic.Categoria;
 import logic.Date;
+import logic.FechaCancelacion;
 import logic.FechaInscripcion;
+import logic.PuntoControl;
 
 import java.awt.Color;
 import javax.swing.JLabel;
@@ -35,6 +37,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
+import javax.swing.JRadioButton;
+import javax.swing.ButtonGroup;
 
 /**
  * 
@@ -99,18 +105,39 @@ public class RegistroCarrera extends JDialog {
 	private JComboBox<Integer> cbYearFecha;
 	private JLabel lbCuenta;
 	private JTextField txtCuenta;
+	private JButton btCancelar;
+	private JSeparator separator;
+	private JButton btConfigurarCancelaciones;
+	private JLabel lbCancelacion;
+	private JRadioButton rbSiCancelacion;
+	private JRadioButton rbNoCancelacion;
+	private JSeparator separator_1;
+	private JSeparator separator_3;
+	private JLabel lbTiempoMax;
+	private JButton btPuntosControl;
+	private final ButtonGroup buttonGroup = new ButtonGroup();
+	private boolean cancelacion,control;
+	private JRadioButton rbSiControl;
+	private JRadioButton rbNoControl;
+	private final ButtonGroup buttonGroup_1 = new ButtonGroup();
+	
+	public static ArrayList<FechaCancelacion> fechas_cancelacion;
+	public static ArrayList<PuntoControl> puntos_control;
 
 	/**
 	 * Create the frame.
 	 */
 	public RegistroCarrera() {
+		fechas_cancelacion = new ArrayList<FechaCancelacion>();
+		puntos_control = new ArrayList<PuntoControl>();
+		cancelacion = false;control = false;
 		Calendar fecha = new GregorianCalendar();
 		dia = fecha.get(Calendar.DAY_OF_MONTH);mes = fecha.get(Calendar.MONTH); year = fecha.get(Calendar.YEAR);
 		diaFin = fecha.get(Calendar.DAY_OF_MONTH);mesFin = fecha.get(Calendar.MONTH); yearFin = fecha.get(Calendar.YEAR);
 		diaFecha = fecha.get(Calendar.DAY_OF_MONTH);mesFecha = fecha.get(Calendar.MONTH); yearFecha = fecha.get(Calendar.YEAR);
 		setTitle("Crear una Carrera");
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 750, 631);
+		setBounds(100, 100, 750, 685);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -161,6 +188,18 @@ public class RegistroCarrera extends JDialog {
 		contentPane.add(getCbYearFecha());
 		contentPane.add(getLbCuenta());
 		contentPane.add(getTxtCuenta());
+		contentPane.add(getBtCancelar());
+		contentPane.add(getSeparator());
+		contentPane.add(getBtConfigurarCancelaciones());
+		contentPane.add(getLbCancelacion());
+		contentPane.add(getRbSiCancelacion());
+		contentPane.add(getRbNoCancelacion());
+		contentPane.add(getSeparator_1());
+		contentPane.add(getSeparator_3());
+		contentPane.add(getLbTiempoMax());
+		contentPane.add(getBtPuntosControl());
+		contentPane.add(getRbSiControl());
+		contentPane.add(getRbNoControl());
 	}
 	
 	//==========================================================================================
@@ -382,7 +421,7 @@ public class RegistroCarrera extends JDialog {
 				}
 			});
 			btnEliminarCategoria.setFont(new Font("Tahoma", Font.PLAIN, 10));
-			btnEliminarCategoria.setBounds(210, 504, 154, 23);
+			btnEliminarCategoria.setBounds(210, 500, 154, 27);
 		}
 		return btnEliminarCategoria;
 	}
@@ -527,7 +566,7 @@ public class RegistroCarrera extends JDialog {
 			cbMesFin.addItemListener(new ItemListener() {
 				public void itemStateChanged(ItemEvent arg0) {
 					mesFin = cbMesFin.getSelectedIndex()+1;
-					calcularDias();
+					calcularDiasFin();
 					cbDiaFin.updateUI();
 				}
 			});
@@ -631,7 +670,7 @@ public class RegistroCarrera extends JDialog {
 			lblFechaInicioInscripcin = new JLabel("Fecha Inicio Inscripci\u00F3n:");
 			lblFechaInicioInscripcin.setForeground(Color.DARK_GRAY);
 			lblFechaInicioInscripcin.setFont(new Font("Source Sans Pro Semibold", Font.BOLD, 13));
-			lblFechaInicioInscripcin.setBounds(277, 303, 145, 28);
+			lblFechaInicioInscripcin.setBounds(225, 303, 197, 28);
 		}
 		return lblFechaInicioInscripcin;
 	}
@@ -640,7 +679,7 @@ public class RegistroCarrera extends JDialog {
 			lblFechaFinInscripcion = new JLabel("Fecha Fin Inscripci\u00F3n:");
 			lblFechaFinInscripcion.setForeground(Color.DARK_GRAY);
 			lblFechaFinInscripcion.setFont(new Font("Source Sans Pro Semibold", Font.BOLD, 13));
-			lblFechaFinInscripcion.setBounds(292, 338, 130, 28);
+			lblFechaFinInscripcion.setBounds(225, 338, 197, 28);
 		}
 		return lblFechaFinInscripcion;
 	}
@@ -666,6 +705,11 @@ public class RegistroCarrera extends JDialog {
 	private JButton getBtEliminarFecha() {
 		if (btEliminarFecha == null) {
 			btEliminarFecha = new JButton("Eliminar fecha");
+			btEliminarFecha.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					deleteFecha();
+				}
+			});
 			btEliminarFecha.setFont(new Font("Tahoma", Font.PLAIN, 10));
 			btEliminarFecha.setBounds(575, 463, 154, 28);
 		}
@@ -722,9 +766,161 @@ public class RegistroCarrera extends JDialog {
 				}
 			});
 			btAddCarrera.setFont(new Font("Tahoma", Font.PLAIN, 10));
-			btAddCarrera.setBounds(432, 553, 154, 28);
+			btAddCarrera.setBounds(432, 607, 154, 28);
 		}
 		return btAddCarrera;
+	}
+	
+	private JButton getBtCancelar() {
+		if (btCancelar == null) {
+			btCancelar = new JButton("Cancelar");
+			btCancelar.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					dispose();
+				}
+			});
+			btCancelar.setBounds(596, 607, 133, 28);
+		}
+		return btCancelar;
+	}
+	
+	private JSeparator getSeparator() {
+		if (separator == null) {
+			separator = new JSeparator();
+			separator.setBounds(25, 536, 704, 2);
+		}
+		return separator;
+	}
+	private JButton getBtConfigurarCancelaciones() {
+		if (btConfigurarCancelaciones == null) {
+			btConfigurarCancelaciones = new JButton("Configurar cancelaciones");
+			btConfigurarCancelaciones.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					CarreraConfigurarCancelacion dialog;
+					dialog = new CarreraConfigurarCancelacion();
+					dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+					dialog.setVisible(true);
+					dialog.setLocationRelativeTo(null);
+					dialog.setResizable(false);		
+				}
+			});
+			btConfigurarCancelaciones.setBounds(554, 549, 175, 23);
+			btConfigurarCancelaciones.setEnabled(cancelacion);
+		}
+		return btConfigurarCancelaciones;
+	}
+	private JLabel getLbCancelacion() {
+		if (lbCancelacion == null) {
+			lbCancelacion = new JLabel("Permitir cancelar inscripcion");
+			lbCancelacion.setForeground(Color.DARK_GRAY);
+			lbCancelacion.setFont(new Font("Dialog", Font.BOLD, 13));
+			lbCancelacion.setBounds(238, 545, 202, 28);
+		}
+		return lbCancelacion;
+	}
+	private JRadioButton getRbSiCancelacion() {
+		if (rbSiCancelacion == null) {
+			rbSiCancelacion = new JRadioButton("Si");
+			rbSiCancelacion.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					cancelacion = true;
+					btConfigurarCancelaciones.setEnabled(cancelacion);
+				}
+			});
+			buttonGroup.add(rbSiCancelacion);
+			rbSiCancelacion.setBounds(446, 549, 44, 23);
+		}
+		return rbSiCancelacion;
+	}
+	private JRadioButton getRbNoCancelacion() {
+		if (rbNoCancelacion == null) {
+			rbNoCancelacion = new JRadioButton("No");
+			rbNoCancelacion.setSelected(true);
+			rbSiCancelacion.setSelected(false);
+			rbNoCancelacion.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					cancelacion = false;
+					btConfigurarCancelaciones.setEnabled(cancelacion);
+				}
+			});
+			buttonGroup.add(rbNoCancelacion);
+			rbNoCancelacion.setBounds(497, 549, 51, 23);
+		}
+		return rbNoCancelacion;
+	}
+	private JSeparator getSeparator_1() {
+		if (separator_1 == null) {
+			separator_1 = new JSeparator();
+			separator_1.setBounds(230, 583, 499, 3);
+		}
+		return separator_1;
+	}
+	private JSeparator getSeparator_3() {
+		if (separator_3 == null) {
+			separator_3 = new JSeparator();
+			separator_3.setOrientation(SwingConstants.VERTICAL);
+			separator_3.setBounds(220, 538, 10, 47);
+		}
+		return separator_3;
+	}
+	private JLabel getLbTiempoMax() {
+		if (lbTiempoMax == null) {
+			lbTiempoMax = new JLabel("A\u00F1adir puntos de control:");
+			lbTiempoMax.setForeground(Color.DARK_GRAY);
+			lbTiempoMax.setFont(new Font("Dialog", Font.BOLD, 13));
+			lbTiempoMax.setBounds(25, 545, 185, 28);
+		}
+		return lbTiempoMax;
+	}
+	private JButton getBtPuntosControl() {
+		if (btPuntosControl == null) {
+			btPuntosControl = new JButton("Configurar puntos de control");
+			btPuntosControl.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					CarreraPuntosControl dialog;
+					dialog = new CarreraPuntosControl((int)spDistancia.getValue());
+					dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+					dialog.setVisible(true);
+					dialog.setLocationRelativeTo(null);
+					dialog.setResizable(false);		
+				}
+			});
+			btPuntosControl.setBounds(25, 612, 175, 23);
+			btPuntosControl.setEnabled(control);
+		}
+		return btPuntosControl;
+	}
+	
+	private JRadioButton getRbSiControl() {
+		if (rbSiControl == null) {
+			rbSiControl = new JRadioButton("Si");
+			rbSiControl.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					control = true;
+					btPuntosControl.setEnabled(control);
+				}
+			});
+			buttonGroup_1.add(rbSiControl);
+			rbSiControl.setSelected(false);
+			rbSiControl.setBounds(59, 583, 44, 23);
+		}
+		return rbSiControl;
+	}
+	private JRadioButton getRbNoControl() {
+		if (rbNoControl == null) {
+			rbNoControl = new JRadioButton("No");
+			rbNoControl.setSelected(true);
+			rbNoControl.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					control = false;
+					btPuntosControl.setEnabled(control);
+				}
+			});
+			buttonGroup_1.add(rbNoControl);
+			rbNoControl.setSelected(true);
+			rbNoControl.setBounds(105, 583, 51, 23);
+		}
+		return rbNoControl;
 	}
 	
 	//==========================================================================================
@@ -764,6 +960,16 @@ public class RegistroCarrera extends JDialog {
 					"Error", JOptionPane.ERROR_MESSAGE);
 		}
 		
+	}
+	
+	/**
+	 * Metodo que elimina una fecha de inscripcion
+	 */
+	public void deleteFecha() {
+		if(modeloFechas.size() != 0 && listaFechasInscripcion.getSelectedIndex()!=-1) {
+			modeloFechas.remove(listaFechasInscripcion.getSelectedIndex());
+			listaFechasInscripcion.setModel(modeloFechas);
+		}
 	}
 
 	/**
@@ -905,7 +1111,8 @@ public class RegistroCarrera extends JDialog {
 		Carrera c = null;
 		if(!nombre.equals("") && !lugar.equals("") && fecha != null && dureza != null && tipo!= null && !numCuenta.equals("") && !dni.equals("")
 				&& fechas.size()!=0 && categorias.size()!=0) {
-			c = new Carrera(id+1,nombre,lugar,fecha,participantes,distancia,dureza,edad,tipo,numCuenta,dni,fechas,categorias);
+			c = new Carrera(id+1,nombre,lugar,fecha,participantes,distancia,dureza,edad,tipo,numCuenta,dni,fechas,categorias
+					,fechas_cancelacion,puntos_control);
 		}
 		else {
 			JOptionPane.showMessageDialog(null, "Tienes algun campo sin rellenar o mal rellenado",

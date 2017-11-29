@@ -189,7 +189,7 @@ public class VentanaPrincipal extends JFrame {
 					dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 					dialog.setVisible(true);
 					dialog.setLocationRelativeTo(null);
-					dialog.setResizable(false);		
+					dialog.setResizable(false);	
 				}
 			});
 			mntmCrearCarrera.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_K, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK));
